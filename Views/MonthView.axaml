@@ -1,0 +1,79 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FocusFlowFinal.ViewModels"
+             xmlns:models="using:FocusFlowFinal.Models"
+             xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.Views.MonthView"
+             x:DataType="vm:MonthViewModel">
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,8" Spacing="10">
+			<Button Content="&lt;" Command="{Binding PreviousMonthCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+			<TextBlock Text="{Binding MonthYearTitle}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<Button Content="&gt;" Command="{Binding NextMonthCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+		</StackPanel>
+
+		<ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding DayNamesHeaders}" Height="30" Margin="6,0,6,6">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<UniformGrid Columns="7" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+
+		<ScrollViewer Margin="6">
+			<ItemsControl ItemsSource="{Binding MonthDays}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<UniformGrid Columns="7" />
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Margin="1"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="2">
+							<Button Command="{Binding $parent[UserControl].DataContext.SelectDayCommand}"
+                                    CommandParameter="{Binding Date}"
+                                    Background="Transparent"
+                                    Padding="4,2"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch">
+								<DockPanel>
+									<TextBlock DockPanel.Dock="Top" Text="{Binding DayNumber}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               HorizontalAlignment="Left"/>
+									<ItemsControl ItemsSource="{Binding Events}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Ellipse Width="6" Height="6" Fill="{Binding Color}" Margin="1,0"/>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</DockPanel>
+							</Button>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>

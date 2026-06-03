@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.Views.TasksView"
+             x:DataType="vm:TasksViewModel">
+
+	<UserControl.Resources>
+		<conv:PriorityToBrushConverter x:Key="PriorityToBrushConverter"/>
+	</UserControl.Resources>
+
+	<StackPanel Margin="12">
+		<TextBlock Text="Задачи" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
+		<ListBox ItemsSource="{Binding Tasks}">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="models:TaskItem">
+					<Border Margin="0,4" Padding="12" CornerRadius="10" Background="#F3F4F6">
+						<Grid ColumnDefinitions="Auto, *">
+							<Border Grid.Column="0" Width="6" CornerRadius="3"
+                                    Background="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}"/>
+							<StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+								<TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"/>
+								<TextBlock Text="{Binding Description}" Opacity="0.7" TextWrapping="Wrap"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</StackPanel>
+</UserControl>

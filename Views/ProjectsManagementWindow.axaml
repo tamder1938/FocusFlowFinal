@@ -1,0 +1,92 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:models="using:FocusFlowFinal.Models"
+        xmlns:converters="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.ProjectsManagementWindow"
+        x:DataType="vm:ProjectsManagementViewModel"
+        Title="Управление проектами"
+        Width="360" Height="480"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Resources>
+		<!-- Подключаем конвертер как ресурс для удобства -->
+		<converters:ColorEqualityConverter x:Key="ColorEqualityConverter"/>
+	</Window.Resources>
+
+	<Grid RowDefinitions="Auto, *, Auto" Margin="16">
+
+		<TextBlock Grid.Row="0" Text="Управление проектами" FontSize="16" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,14"/>
+
+		<Grid Grid.Row="1" RowDefinitions="*, Auto">
+
+			<Border Grid.Row="0" Background="{DynamicResource CardBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="4" Margin="0,0,0,16">
+				<ListBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}"
+                         Background="Transparent">
+					<ListBox.ItemTemplate>
+						<DataTemplate DataType="models:ProjectItem">
+							<Grid ColumnDefinitions="Auto, *, Auto" Height="32">
+								<Border Grid.Column="0" Width="12" Height="12" CornerRadius="6"
+                                        Background="{Binding Color}" VerticalAlignment="Center" Margin="4,0,10,0"/>
+								<TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+								<Button Grid.Column="2" Content="✕"
+                                        Command="{Binding $parent[Window].((vm:ProjectsManagementViewModel)DataContext).DeleteProjectCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontSize="11" Padding="6,4" VerticalAlignment="Center"/>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<StackPanel Grid.Row="1" Spacing="10" Margin="0">
+				<TextBlock Text="Новый проект" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+				<Grid ColumnDefinitions="*, Auto">
+					<TextBox Grid.Column="0" Text="{Binding NewProjectName}" Watermark="Введите название проекта" Height="34"
+                             CornerRadius="6,0,0,6" VerticalContentAlignment="Center"
+                             Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<Border Grid.Column="1" Width="34" Height="34" Background="{Binding SelectedColor}"
+                            CornerRadius="0,6,6,0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,1,1"/>
+				</Grid>
+
+				<ItemsControl ItemsSource="{Binding ColorPalette}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4"/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button Width="24" Height="24" CornerRadius="12" Background="{Binding}"
+                                    Command="{Binding $parent[Window].((vm:ProjectsManagementViewModel)DataContext).SelectColorFromPaletteCommand}"
+                                    CommandParameter="{Binding}">
+								<Border Width="6" Height="6" CornerRadius="3" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        IsVisible="{Binding $parent[Window].((vm:ProjectsManagementViewModel)DataContext).SelectedColor, 
+                                                       Converter={StaticResource ColorEqualityConverter}, 
+                                                       ConverterParameter={Binding}}"/>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<Button Content="+ Добавить проект" Command="{Binding AddProjectCommand}"
+                        HorizontalAlignment="Stretch" Height="36"
+                        Background="#2563EB" Foreground="White" FontWeight="Bold" CornerRadius="6" Margin="0,6,0,0"/>
+			</StackPanel>
+		</Grid>
+
+		<Button Grid.Row="2" Content="Готово" Command="{Binding CloseCommand}" CommandParameter="{Binding $parent[Window]}"
+                HorizontalAlignment="Stretch" Height="36"
+                Background="{DynamicResource ButtonBackgroundBrush}"
+                Foreground="{DynamicResource ButtonForegroundBrush}"
+                FontWeight="Medium" CornerRadius="6" Margin="0,16,0,0"/>
+	</Grid>
+</Window>

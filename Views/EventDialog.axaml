@@ -1,0 +1,169 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.EventDialog"
+        x:DataType="vm:EventDialogViewModel"
+        Title="{Binding Loc[EventTitle]}" Width="380" Height="640"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Styles>
+		<Style Selector="TextBox, ComboBox, NumericUpDown, DatePicker">
+			<Setter Property="Margin" Value="0,0,0,8"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+		</Style>
+		<Style Selector="CheckBox">
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+		</Style>
+		<Style Selector="Button">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+		</Style>
+	</Window.Styles>
+
+	<ScrollViewer>
+		<StackPanel Margin="15">
+
+			<TextBlock Text="Загрузить из шаблона:" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+			<ComboBox ItemsSource="{Binding EventTemplates}"
+                      SelectedItem="{Binding SelectedEventTemplate}"
+                      Height="36"
+                      HorizontalAlignment="Stretch"
+                      PlaceholderText="Выберите шаблон..."
+                      Background="{DynamicResource CardBackgroundBrush}"
+                      Foreground="{DynamicResource PrimaryTextBrush}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+
+			<Separator Height="1" Background="{DynamicResource BorderBrush}" Margin="0,4,0,12"/>
+
+			<TextBlock Text="Название:" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<TextBox Text="{Binding Title}" Background="{DynamicResource CardBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+			<CheckBox IsChecked="{Binding IsAllDay}" Content="{Binding Loc[AllDayLbl]}" Margin="0,0,0,10"/>
+
+			<StackPanel IsVisible="{Binding !IsAllDay}">
+				<TextBlock Text="{Binding Loc[StartTimeLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<Grid ColumnDefinitions="Auto, *, Auto, *" Margin="0,0,0,8">
+					<TextBlock Grid.Column="0" Text="Час:" VerticalAlignment="Center" Margin="0,0,5,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="1" Text="{Binding StartHour}" Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBlock Grid.Column="2" Text="Мин:" VerticalAlignment="Center" Margin="10,0,5,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="3" Text="{Binding StartMinute}" Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+				</Grid>
+
+				<TextBlock Text="{Binding Loc[EndTimeLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<Grid ColumnDefinitions="Auto, *, Auto, *" Margin="0,0,0,8">
+					<TextBlock Grid.Column="0" Text="Час:" VerticalAlignment="Center" Margin="0,0,5,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="1" Text="{Binding EndHour}" Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBlock Grid.Column="2" Text="Мин:" VerticalAlignment="Center" Margin="10,0,5,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="3" Text="{Binding EndMinute}" Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"/>
+				</Grid>
+			</StackPanel>
+
+			<TextBlock Text="Цвет:" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<TextBox Text="{Binding Color}" Background="{DynamicResource CardBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+			<TextBlock Text="{Binding Loc[Settings]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<ComboBox SelectedIndex="{Binding RecurrenceIndex}"
+                      Background="{DynamicResource CardBackgroundBrush}"
+                      Foreground="{DynamicResource PrimaryTextBrush}">
+				<ComboBoxItem Content="None"/>
+				<ComboBoxItem Content="Daily"/>
+				<ComboBoxItem Content="Weekdays"/>
+				<ComboBoxItem Content="Weekly"/>
+				<ComboBoxItem Content="Monthly"/>
+				<ComboBoxItem Content="Yearly"/>
+				<ComboBoxItem Content="Shift work"/>
+				<ComboBoxItem Content="Custom Interval"/>
+			</ComboBox>
+
+			<StackPanel IsVisible="{Binding IsWeeklyFieldsVisible}" Margin="5,0,0,8">
+				<TextBlock Text="Days:" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+				<WrapPanel Orientation="Horizontal">
+					<CheckBox IsChecked="{Binding DayMon}" Content="Mon" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayTue}" Content="Tue" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayWed}" Content="Wed" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayThu}" Content="Thu" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayFri}" Content="Fri" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DaySat}" Content="Sat" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DaySun}" Content="Sun"/>
+				</WrapPanel>
+			</StackPanel>
+
+			<StackPanel IsVisible="{Binding IsShiftFieldsVisible}">
+				<TextBlock Text="{Binding Loc[WorkingDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<NumericUpDown Value="{Binding WorkingDays}" Minimum="1" ParsingNumberStyle="Integer"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBlock Text="{Binding Loc[OffDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<NumericUpDown Value="{Binding OffDays}" Minimum="1" ParsingNumberStyle="Integer"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBlock Text="{Binding Loc[CycleStartLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<DatePicker SelectedDate="{Binding CycleStartDate}" Background="{DynamicResource CardBackgroundBrush}"
+                            Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</StackPanel>
+
+			<StackPanel IsVisible="{Binding IsCustomFieldsVisible}">
+				<TextBlock Text="{Binding Loc[IntervalLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<NumericUpDown Value="{Binding IntervalValue}" Minimum="1" ParsingNumberStyle="Integer"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBlock Text="{Binding Loc[IntervalUnitLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<ComboBox SelectedIndex="{Binding IntervalUnitIndex}"
+                          Background="{DynamicResource CardBackgroundBrush}"
+                          Foreground="{DynamicResource PrimaryTextBrush}">
+					<ComboBoxItem Content="Days"/>
+					<ComboBoxItem Content="Weeks"/>
+					<ComboBoxItem Content="Months"/>
+				</ComboBox>
+			</StackPanel>
+
+			<Separator Height="1" Background="{DynamicResource BorderBrush}" Margin="0,12,0,8"/>
+
+			<CheckBox IsChecked="{Binding SaveAsTemplate}" Content="Сохранить как шаблон" Margin="0,0,0,6"
+                      Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<StackPanel>
+				<TextBox Text="{Binding TemplateName}"
+                         Watermark="Название шаблона"
+                         IsEnabled="{Binding SaveAsTemplate}"
+                         Margin="0,0,0,4"
+                         Background="{DynamicResource CardBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBlock Text="Шаблон появится в менеджере шаблонов"
+                           FontSize="10"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           IsEnabled="{Binding SaveAsTemplate}"
+                           Margin="0,0,0,8"/>
+			</StackPanel>
+
+			<Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,15,0,10">
+				<Button Grid.Column="0" Content="Delete" Command="{Binding DeleteCommand}"
+                        IsVisible="{Binding IsEditMode}" Background="#D32F2F" Foreground="White"/>
+				<StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10">
+					<Button Content="Отмена" Command="{Binding CancelCommand}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource ButtonForegroundBrush}"/>
+					<Button Content="Сохранить" Command="{Binding SaveCommand}"
+                            Background="#1A73E8" Foreground="White"/>
+				</StackPanel>
+			</Grid>
+		</StackPanel>
+	</ScrollViewer>
+</Window>

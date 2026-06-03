@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             x:Class="FocusFlowFinal.Views.TemplatesView"
+             x:DataType="vm:TemplatesViewModel">
+
+	<DockPanel Margin="15">
+		<TextBlock DockPanel.Dock="Top" Text="Управление шаблонами" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+		<TabControl>
+			<TabItem Header="Шаблоны задач">
+				<ListBox ItemsSource="{Binding TaskTemplates}">
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="models:TaskTemplate">
+							<Border Margin="0,4" Padding="10" CornerRadius="8" Background="#F3F4F6">
+								<Grid ColumnDefinitions="*, Auto, Auto, Auto">
+									<StackPanel Grid.Column="0" Spacing="2">
+										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+										<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+									</StackPanel>
+									<!-- Кнопка редактирования -->
+									<Button Grid.Column="1" Content="✎"
+                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditTaskTemplateCommand}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0" Padding="8,4" Background="#EFF6FF" Foreground="#2563EB" CornerRadius="6"/>
+									<Button Grid.Column="2" Content="Создать"
+                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateTaskFromTemplateCommand}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0" Padding="12,4" Background="#3B82F6" Foreground="White" CornerRadius="6"/>
+									<Button Grid.Column="3" Content="✕"
+                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTaskTemplateCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
+								</Grid>
+							</Border>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+			<TabItem Header="Шаблоны событий">
+				<ListBox ItemsSource="{Binding EventTemplates}">
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="models:EventTemplate">
+							<Border Margin="0,4" Padding="10" CornerRadius="8" Background="#F3F4F6">
+								<Grid ColumnDefinitions="*, Auto">
+									<StackPanel Grid.Column="0" Spacing="2">
+										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+										<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+									</StackPanel>
+									<Button Grid.Column="1" Content="✕"
+                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteEventTemplateCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
+								</Grid>
+							</Border>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+		</TabControl>
+	</DockPanel>
+</UserControl>

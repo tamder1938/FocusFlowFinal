@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             x:Class="FocusFlowFinal.Views.WeekView"
+             x:DataType="vm:WeekViewModel">
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,8" Spacing="10">
+			<Button Content="&lt;" Command="{Binding PreviousWeekCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+			<TextBlock Text="{Binding WeekRangeTitle}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<Button Content="&gt;" Command="{Binding NextWeekCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+		</StackPanel>
+
+		<!-- ScrollViewer должен иметь ровно один дочерний элемент -->
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+			<Grid>
+				<!-- Сетка дней (видна, когда коллекция готова) -->
+				<ItemsControl ItemsSource="{Binding WeekDaysCustomCollection}"
+                              IsVisible="{Binding WeekDaysCustomCollection.Count, Converter={StaticResource CollectionCountToBoolConverter}}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" Spacing="4" />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Border MinWidth="140"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    CornerRadius="12"
+                                    VerticalAlignment="Stretch">
+								<DockPanel LastChildFill="True">
+									<Border DockPanel.Dock="Top"
+                                            Background="{DynamicResource CardSecondaryBackgroundBrush}"
+                                            CornerRadius="12,12,0,0"
+                                            Padding="8,6">
+										<StackPanel HorizontalAlignment="Center">
+											<TextBlock Text="{Binding DayName}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       HorizontalAlignment="Center"
+                                                       FontWeight="Medium"/>
+											<TextBlock Text="{Binding DayNumber}"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                       HorizontalAlignment="Center"/>
+										</StackPanel>
+									</Border>
+									<ScrollViewer VerticalScrollBarVisibility="Auto">
+										<ItemsControl ItemsSource="{Binding Events}" Margin="6,8,6,8">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Border Background="{Binding Color}"
+                                                            CornerRadius="6"
+                                                            Margin="0,2"
+                                                            Padding="6">
+														<TextBlock Text="{Binding Title}"
+                                                                   FontSize="11"
+                                                                   Foreground="White"
+                                                                   TextWrapping="Wrap"/>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</ScrollViewer>
+								</DockPanel>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<!-- Заглушка (видна, когда коллекция пуста или меньше 7) -->
+				<TextBlock Text="Загрузка календаря..."
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding WeekDaysCustomCollection.Count, Converter={StaticResource CollectionCountToInverseBoolConverter}}"/>
+			</Grid>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>

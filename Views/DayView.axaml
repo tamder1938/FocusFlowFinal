@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             x:Class="FocusFlowFinal.Views.DayView"
+             x:DataType="vm:DayViewModel">
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,8" Spacing="10">
+			<Button Content="&lt;" Command="{Binding PreviousDayCommand}"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                    Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+			<TextBlock Text="{Binding SelectedDateFormatted}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+			<Button Content="&gt;" Command="{Binding NextDayCommand}"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                    Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+			<Button Content="{Binding Loc[AddEventBtn]}" Command="{Binding AddEventCommand}" Margin="10,0,0,0"
+                    Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+		</StackPanel>
+
+		<Border DockPanel.Dock="Top"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                CornerRadius="8" Margin="12,0,12,8" Padding="10"
+                BorderBrush="{DynamicResource SystemControlBorderBaseLowBrush}"
+                BorderThickness="1" BoxShadow="0 2 4 0 #05000000"
+                IsVisible="{Binding DayTasks.Count}">
+			<Grid ColumnDefinitions="60, *">
+				<TextBlock Grid.Column="0" Text="{Binding Loc[Tasks]}" FontSize="11" FontWeight="Bold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+				<ItemsControl Grid.Column="1" ItemsSource="{Binding DayTasks}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="models:TaskItem">
+							<Button Margin="4,2" Padding="10,6"
+                                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                                    CornerRadius="15" Cursor="Hand"
+                                    Command="{Binding $parent[UserControl].((vm:DayViewModel)DataContext).EditTaskFromCalendarCommand}"
+                                    CommandParameter="{Binding}">
+								<StackPanel Orientation="Horizontal" Spacing="6">
+									<Ellipse Width="6" Height="6" Fill="{Binding Color}" VerticalAlignment="Center"/>
+									<TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                                               VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Grid>
+		</Border>
+
+		<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="6,0,6,6">
+			<Grid ColumnDefinitions="60,*" Height="1440" Background="Transparent">
+				<ItemsControl Grid.Column="0" ItemsSource="{Binding HourStrings}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="x:String">
+							<Border Height="60" BorderBrush="{DynamicResource SystemControlBorderBaseLowBrush}" BorderThickness="0,0,0,1">
+								<TextBlock Text="{Binding}" FontSize="12"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<Grid Grid.Column="1" Background="Transparent">
+					<ItemsControl ItemsSource="{Binding HourStrings}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel/>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="x:String">
+								<Border Height="60" BorderBrush="{DynamicResource SystemControlBorderBaseLowBrush}"
+                                        BorderThickness="0,0,0,1" Background="Transparent"/>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<ItemsControl ItemsSource="{Binding EventDisplayItems}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<Canvas Background="Transparent"/>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="models:EventDisplayItem">
+								<Border Background="{Binding Color}" Height="{Binding Height}" Canvas.Top="{Binding Top}"
+                                        Canvas.Left="{Binding Left}" Width="{Binding Width}" CornerRadius="6" Padding="10"
+                                        Tag="{Binding OriginalEvent}" Cursor="Hand" ToolTip.Tip="{Binding Title}"
+                                        Tapped="EventTapped" Opacity="0.95" BoxShadow="0 2 4 0 #10000000">
+									<TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontSize="12" FontWeight="Bold" Foreground="White"/>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</Grid>
+			</Grid>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>

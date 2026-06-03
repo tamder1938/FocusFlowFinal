@@ -1,0 +1,114 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:views="using:FocusFlowFinal.Views"
+        x:Class="FocusFlowFinal.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="FocusFlow" Width="1200" Height="800"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.KeyBindings>
+		<KeyBinding Gesture="Ctrl+D" Command="{Binding SwitchToDayCommand}"/>
+		<KeyBinding Gesture="Ctrl+W" Command="{Binding SwitchToWeekCommand}"/>
+	</Window.KeyBindings>
+
+	<Window.DataTemplates>
+		<DataTemplate DataType="vm:DayViewModel">
+			<views:DayView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:WeekViewModel">
+			<views:WeekView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:MonthViewModel">
+			<views:MonthView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:YearViewModel">
+			<views:YearView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:TaskListViewModel">
+			<views:TaskListView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:TimerViewModel">
+			<views:TimerView/>
+		</DataTemplate>
+	</Window.DataTemplates>
+
+	<Grid RowDefinitions="Auto, *">
+
+		<Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="15,10">
+			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
+				<TextBlock Text="FocusFlow" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</StackPanel>
+
+			<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="2">
+				<Button Content="{Binding Loc[TitleDay]}" Command="{Binding SwitchToDayCommand}"/>
+				<Button Content="{Binding Loc[TitleWeek]}" Command="{Binding SwitchToWeekCommand}"/>
+				<Button Content="{Binding Loc[TitleMonth]}" Command="{Binding SwitchToMonthCommand}"/>
+				<Button Content="{Binding Loc[TitleYear]}" Command="{Binding SwitchToYearCommand}"/>
+			</StackPanel>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+				<TextBlock Text="{Binding SelectedDateFormatted}" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}"/>
+				<Button Content="{Binding Loc[TodayBtn]}" Command="{Binding GoToTodayCommand}"
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
+				<Button Content="{Binding Loc[NewTask]}" Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
+				<!-- Кнопка 🌙 УДАЛЕНА -->
+				<Button Content="📋" Command="{Binding OpenTemplatesCommand}" ToolTip.Tip="Шаблоны"
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
+				<Button Content="{Binding Loc[Settings]}" Command="{Binding OpenSettingsCommand}"
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
+			</StackPanel>
+		</Grid>
+
+		<Grid Grid.Row="1" ColumnDefinitions="2.2*, 1.3*, 1.1*" Margin="10,0,10,10">
+			<!-- Левая колонка: Календарь -->
+			<Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="5" ClipToBounds="True">
+				<ContentControl Content="{Binding CurrentCalendarView}"/>
+			</Border>
+
+			<!-- Центральная колонка: Список задач -->
+			<Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="5" ClipToBounds="True">
+				<ContentControl Content="{Binding CurrentTaskListViewModel}"/>
+			</Border>
+
+			<!-- Правая колонка: Таймер и аналитика -->
+			<ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="5">
+				<StackPanel Spacing="14">
+					<Border Background="{DynamicResource CardSecondaryBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" ClipToBounds="True" BoxShadow="0 2 4 0 #05000000">
+						<ContentControl Content="{Binding CurrentTimerViewModel}"/>
+					</Border>
+
+					<Border Background="{DynamicResource CardSecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18,16" BoxShadow="0 2 4 0 #05000000">
+						<StackPanel Spacing="10">
+							<TextBlock Text="{Binding Loc[AnalyticsTitle]}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+							<TextBlock Text="{Binding Loc[PlanVsFactToday]}" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,-6,0,8"/>
+
+							<Grid ColumnDefinitions="*, Auto" Margin="0,2">
+								<TextBlock Grid.Column="0" Text="{Binding Loc[Plan]}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+								<TextBlock Grid.Column="1" Text="{Binding TodayPlanTimeStr}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+							</Grid>
+							<Border Height="5" Background="{DynamicResource PrimaryTextBrush}" CornerRadius="2.5" Margin="0,0,0,6"/>
+
+							<Grid ColumnDefinitions="*, Auto" Margin="0,2">
+								<TextBlock Grid.Column="0" Text="{Binding Loc[Fact]}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+								<TextBlock Grid.Column="1" Text="{Binding TodayFactTimeStr}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+							</Grid>
+							<ProgressBar Value="{Binding TodayFactProgress}" Height="5" Minimum="0" Maximum="100"
+                                         Background="{DynamicResource ProgressBackgroundBrush}" Foreground="#10B981" CornerRadius="2.5" Margin="0,0,0,6"/>
+
+							<Grid ColumnDefinitions="*, Auto" Margin="0,6,0,0">
+								<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+									<TextBlock Text="{Binding Loc[Deviation]}:" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+									<TextBlock Text="{Binding TodayDeviationStr}" FontSize="11" FontWeight="Bold" Foreground="{Binding TodayDeviationColor}"/>
+								</StackPanel>
+								<Button Grid.Column="1" Content="{Binding Loc[MoreBtn]}" Command="{Binding OpenAnalyticsCommand}"
+                                        FontSize="11" Padding="14,6" Background="#EFF6FF" Foreground="#2563EB" FontWeight="Bold" CornerRadius="6"/>
+							</Grid>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+	</Grid>
+</Window>

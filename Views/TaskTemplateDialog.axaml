@@ -1,0 +1,80 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:models="using:FocusFlowFinal.Models"
+        xmlns:local="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.TaskTemplateDialog"
+        x:DataType="vm:TaskTemplateDialogViewModel"
+        Title="Редактирование шаблона"
+        Width="400" Height="580"
+        WindowStartupLocation="CenterOwner"
+        Background="#F9FAFB">
+
+	<Window.Resources>
+		<local:PriorityToColorConverter x:Key="PriorityToColorConverter"/>
+	</Window.Resources>
+
+	<ScrollViewer>
+		<StackPanel Margin="15" Spacing="10">
+			<Grid ColumnDefinitions="*, Auto">
+				<TextBlock Grid.Column="0" Text="Редактирование шаблона" FontSize="18" FontWeight="Bold" Foreground="#1E3A8A"/>
+				<Button Grid.Column="1" Content="✕" Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Foreground="Gray"/>
+			</Grid>
+
+			<TextBlock Text="Имя шаблона:" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding Name}" Watermark="Например, Утренняя встреча"/>
+
+			<TextBlock Text="Название задачи:" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding Title}"/>
+
+			<TextBlock Text="Описание:" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding Description}" Height="60" TextWrapping="Wrap"/>
+
+			<CheckBox Content="Назначить дату" IsChecked="{Binding HasDate}"/>
+			<CheckBox Content="Привязать ко времени" IsChecked="{Binding IsTimeBound}"/>
+			<Grid ColumnDefinitions="Auto, Auto, Auto, Auto" Margin="0,0,0,5" IsEnabled="{Binding IsTimeBound}">
+				<TextBlock Grid.Column="0" Text="Час:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<TextBox Grid.Column="1" Text="{Binding StartHour}" Width="50"/>
+				<TextBlock Grid.Column="2" Text="Мин:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+				<TextBox Grid.Column="3" Text="{Binding StartMinute}" Width="50"/>
+			</Grid>
+
+			<!-- Длительность (просто поле) -->
+			<TextBlock Text="Длительность (мин):" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding PlannedDurationMinutes}" Width="80"/>
+
+			<TextBlock Text="Приоритет:" FontSize="12" Foreground="Gray"/>
+			<Grid ColumnDefinitions="*, *, *, *">
+				<Button Grid.Column="0" Content="Высокий" Command="{Binding SetPriorityCommand}" CommandParameter="0"
+                        Background="{Binding PriorityIndex, Converter={StaticResource PriorityToColorConverter}, ConverterParameter=0}"
+                        Foreground="White" Height="32" CornerRadius="6" Margin="2"/>
+				<Button Grid.Column="1" Content="Средний" Command="{Binding SetPriorityCommand}" CommandParameter="1"
+                        Background="{Binding PriorityIndex, Converter={StaticResource PriorityToColorConverter}, ConverterParameter=1}"
+                        Foreground="White" Height="32" CornerRadius="6" Margin="2"/>
+				<Button Grid.Column="2" Content="Низкий" Command="{Binding SetPriorityCommand}" CommandParameter="2"
+                        Background="{Binding PriorityIndex, Converter={StaticResource PriorityToColorConverter}, ConverterParameter=2}"
+                        Foreground="White" Height="32" CornerRadius="6" Margin="2"/>
+				<Button Grid.Column="3" Content="Нет" Command="{Binding ClearPriorityCommand}"
+                        Background="{Binding PriorityIndex, Converter={StaticResource PriorityToColorConverter}, ConverterParameter=-1}"
+                        Foreground="White" Height="32" CornerRadius="6" Margin="2"/>
+			</Grid>
+
+			<TextBlock Text="Проект:" FontSize="12" Foreground="Gray"/>
+			<ComboBox ItemsSource="{Binding ProjectsList}" SelectedItem="{Binding SelectedProject}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate DataType="models:ProjectItem">
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<Border Width="10" Height="10" CornerRadius="5" Background="{Binding Color}" VerticalAlignment="Center"/>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+						</StackPanel>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+
+			<Grid ColumnDefinitions="*, *" Margin="0,24,0,0">
+				<Button Grid.Column="0" Content="Отмена" Command="{Binding CancelCommand}" Margin="5" Height="36" CornerRadius="6"/>
+				<Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}" Margin="5" Background="#2563EB" Foreground="White" Height="36" CornerRadius="6" FontWeight="Bold"/>
+			</Grid>
+		</StackPanel>
+	</ScrollViewer>
+</Window>

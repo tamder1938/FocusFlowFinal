@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.Views.TaskListView"
+             x:DataType="vm:TaskListViewModel">
+
+	<UserControl.Resources>
+		<conv:PriorityToBrushConverter x:Key="PriorityToBrushConverter"/>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<!-- Стили (без изменений, они корректны) -->
+		<Style Selector="ListBoxItem">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="FocusAdorner" Value="{x:Null}" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ContentPresenter Name="PART_ContentPresenter"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Padding="{TemplateBinding Padding}"
+                                      Margin="{TemplateBinding Margin}" />
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+
+		<Style Selector="Border.task-card">
+			<Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Margin" Value="0,4" />
+			<Setter Property="Padding" Value="12" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="ListBoxItem:not(:selected) Border.task-card:pointerover">
+			<Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+		</Style>
+
+		<Style Selector="ListBoxItem:selected Border.task-card">
+			<Setter Property="BorderBrush" Value="#2196F3" />
+		</Style>
+
+		<Style Selector="ListBoxItem:selected Border.task-card:pointerover">
+			<Setter Property="BorderBrush" Value="#2196F3" />
+		</Style>
+
+		<Style Selector="Button.edit-task-btn">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Width" Value="28" />
+			<Setter Property="Height" Value="28" />
+			<Setter Property="CornerRadius" Value="4" />
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1" />
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.edit-task-btn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+		</Style>
+
+		<Style Selector="Button.edit-task-btn PathIcon">
+			<Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+		</Style>
+
+		<Style Selector="Button.edit-task-btn:pointerover PathIcon">
+			<Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+		</Style>
+	</UserControl.Styles>
+
+	<DockPanel Margin="15">
+		<TextBlock DockPanel.Dock="Top" Text="{Binding Loc[Tasks]}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"
+                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,0,0,10">
+			<Button Content="Все" Command="{Binding SetPriorityFilterCommand}" CommandParameter="-1"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"
+                    CornerRadius="4" Padding="10,4"/>
+			<Button Content="Высокий" Command="{Binding SetPriorityFilterCommand}" CommandParameter="0"
+                    Background="#EF4444" Foreground="White"
+                    CornerRadius="4" Padding="10,4"/>
+			<Button Content="Средний" Command="{Binding SetPriorityFilterCommand}" CommandParameter="1"
+                    Background="#F59E0B" Foreground="White"
+                    CornerRadius="4" Padding="10,4"/>
+			<Button Content="Низкий" Command="{Binding SetPriorityFilterCommand}" CommandParameter="2"
+                    Background="#10B981" Foreground="White"
+                    CornerRadius="4" Padding="10,4"/>
+		</StackPanel>
+
+		<ListBox x:Name="TasksListBox"
+                 ItemsSource="{Binding FilteredTasks}"
+                 SelectedItem="{Binding SelectedTask}"
+                 Background="Transparent">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="models:TaskItem">
+					<Border Classes="task-card">
+						<Grid ColumnDefinitions="*, Auto, Auto">
+							<StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+								<TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+								<TextBlock Text="{Binding Description}" Opacity="0.7" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+							</StackPanel>
+
+							<Button Grid.Column="1"
+                                    Classes="edit-task-btn"
+                                    VerticalAlignment="Center"
+                                    Margin="12,0,12,0"
+                                    Command="{Binding $parent[UserControl].DataContext.EditTaskCommand}"
+                                    CommandParameter="{Binding}">
+								<PathIcon Width="14" Height="14" Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+							</Button>
+
+							<Border Grid.Column="2"
+                                    Width="10" Height="10"
+                                    CornerRadius="5"
+                                    Background="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}"
+                                    VerticalAlignment="Center"
+                                    Margin="4,0,4,0" />
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</DockPanel>
+</UserControl>

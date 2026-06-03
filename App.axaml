@@ -1,0 +1,52 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.App">
+	<Application.Styles>
+		<FluentTheme />
+	</Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<!-- Светлая тема (значения по умолчанию) -->
+			<SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F4F7FC" />
+			<SolidColorBrush x:Key="CardBackgroundBrush" Color="White" />
+			<SolidColorBrush x:Key="CardSecondaryBackgroundBrush" Color="#F3F4F6" />
+			<SolidColorBrush x:Key="PrimaryTextBrush" Color="#111827" />
+			<SolidColorBrush x:Key="SecondaryTextBrush" Color="#4B5563" />
+			<SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#E5E7EB" />
+			<SolidColorBrush x:Key="ButtonForegroundBrush" Color="#374151" />
+			<SolidColorBrush x:Key="BorderBrush" Color="#E5E7EB" />
+			<SolidColorBrush x:Key="ProgressBackgroundBrush" Color="#F3F4F6" />
+
+			<SolidColorBrush x:Key="SettingsWindowBackground" Color="#F3F4F6"/>
+			<SolidColorBrush x:Key="ThemeBackgroundBrush" Color="#F4F7FC" />
+			<SolidColorBrush x:Key="ThemeBackgroundBrushDark" Color="#1E1E1E" />
+			<SolidColorBrush x:Key="SidePanelBackground" Color="#EEF2F6"/>
+			<SolidColorBrush x:Key="CardBackground" Color="White"/>
+			<SolidColorBrush x:Key="CardBorder" Color="#E5E7EB"/>
+			<SolidColorBrush x:Key="HeaderForeground" Color="#1E3A8A"/>
+			<SolidColorBrush x:Key="PrimaryText" Color="#111827"/>
+			<SolidColorBrush x:Key="SecondaryText" Color="#6B7280"/>
+			<SolidColorBrush x:Key="ButtonBackground" Color="White"/>
+			<SolidColorBrush x:Key="ButtonForeground" Color="#374151"/>
+			<SolidColorBrush x:Key="AccentBackground" Color="#3B82F6"/>
+			<SolidColorBrush x:Key="SideNavButtonBackground" Color="Transparent"/>
+			<SolidColorBrush x:Key="SideNavButtonForeground" Color="#374151"/>
+			<SolidColorBrush x:Key="SideNavButtonHoverBackground" Color="#E5E7EB"/>
+			<SolidColorBrush x:Key="SideNavButtonActiveBackground" Color="#3B82F6"/>
+			<SolidColorBrush x:Key="HotkeyBadgeBackground" Color="White"/>
+			<SolidColorBrush x:Key="HotkeyBadgeBorder" Color="#D1D5DB"/>
+			<SolidColorBrush x:Key="HotkeyText" Color="#2563EB"/>
+			<SolidColorBrush x:Key="ComboBoxBackground" Color="White"/>
+			<SolidColorBrush x:Key="DangerCardBackground" Color="#FEF2F2"/>
+			<SolidColorBrush x:Key="DangerCardBorder" Color="#FEE2E2"/>
+			<SolidColorBrush x:Key="DangerText" Color="#991B1B"/>
+			<SolidColorBrush x:Key="DangerButtonBackground" Color="#EF4444"/>
+
+			<!-- КОНВЕРТЕРЫ (ОБЯЗАТЕЛЬНО) -->
+			<converters:CollectionCountToBoolConverter x:Key="CollectionCountToBoolConverter"/>
+			<converters:CollectionCountToInverseBoolConverter x:Key="CollectionCountToInverseBoolConverter"/>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

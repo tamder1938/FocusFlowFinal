@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:services="clr-namespace:FocusFlowFinal.Services"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             x:Class="FocusFlowFinal.Views.TimerView"
+             x:DataType="vm:TimerViewModel">
+    <StackPanel Margin="15" Spacing="12">
+        <TextBlock Text="{Binding Loc[Timer]}" FontSize="16" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+        <ComboBox ItemsSource="{Binding Templates}"
+                  SelectedItem="{Binding SelectedTemplate}"
+                  HorizontalAlignment="Stretch"
+                  Background="{DynamicResource CardBackgroundBrush}"
+                  Foreground="{DynamicResource PrimaryTextBrush}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="models:TimerTemplate">
+                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <CheckBox IsChecked="{Binding IsCustomMode}" Content="{Binding Loc[CustomSettings]}"
+                  Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+        <StackPanel Spacing="8" IsVisible="{Binding IsCustomMode}">
+            <Grid ColumnDefinitions="*, *" Margin="0,4">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[WorkTime]}" VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding WorkMinutes}" Minimum="1" Maximum="180"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="*, *" Margin="0,4">
+                <TextBlock Grid.Column="0" Text="{Binding Loc[BreakTime]}" VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding BreakMinutes}" Minimum="1" Maximum="60"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="*, *" Margin="0,4">
+                <TextBlock Grid.Column="0" Text="Cycles:" VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding Cycles}" Minimum="1" Maximum="20"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="*, Auto" Margin="0,5,0,0">
+                <TextBox Grid.Column="0" Text="{Binding NewTemplateName}" Watermark="{Binding Loc[TemplateName]}"
+                         Margin="0,0,8,0" Height="32"
+                         Background="{DynamicResource CardBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Button Grid.Column="1" Content="{Binding Loc[SaveAsTemplate]}" Command="{Binding CreateTemplateCommand}"
+                        Background="{DynamicResource AccentBackground}" Foreground="White" Height="32"/>
+            </Grid>
+        </StackPanel>
+
+        <Panel Height="200" Width="200" Margin="0,10">
+            <Ellipse Stroke="LightGray" StrokeThickness="6"/>
+            <TextBlock Text="{Binding TimeDisplay}" FontSize="32" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Panel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+            <Button Content="▶" Command="{Binding StartTimerCommand}" Width="40"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+            <Button Content="⏸" Command="{Binding PauseTimerCommand}" Width="40"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+            <Button Content="⏹" Command="{Binding StopTimerCommand}" Width="40"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>
