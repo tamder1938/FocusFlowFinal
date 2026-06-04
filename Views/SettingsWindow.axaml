@@ -1,127 +1,241 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
         x:Class="FocusFlowFinal.Views.SettingsWindow"
-        x:Name="RootWindow"
-        x:DataType="vm:SettingsViewModel"
         Title="Настройки"
-        Width="700" Height="500"
+        Width="650" Height="500"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource SettingsWindowBackground}"
-        Loaded="OnLoaded">
+        Background="#EEF2F6"
+        CanResize="False">
 
 	<Window.Styles>
-		<Style Selector="Border.Card">
-			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="BorderThickness" Value="1"/>
-			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
-			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
-			<Setter Property="Padding" Value="16"/>
-			<Setter Property="Margin" Value="0,0,0,12"/>
-		</Style>
-
 		<Style Selector="Button.SideNavButton">
 			<Setter Property="CornerRadius" Value="8"/>
 			<Setter Property="Padding" Value="12,8"/>
 			<Setter Property="HorizontalAlignment" Value="Stretch"/>
-			<Setter Property="Background" Value="{DynamicResource SideNavButtonBackground}"/>
-			<Setter Property="Foreground" Value="{DynamicResource SideNavButtonForeground}"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="#6B7280"/>
 			<Setter Property="BorderThickness" Value="0"/>
 			<Setter Property="Cursor" Value="Hand"/>
-		</Style>
-		<Style Selector="Button.SideNavButton:pointerover">
-			<Setter Property="Background" Value="{DynamicResource SideNavButtonHoverBackground}"/>
+			<Setter Property="FontWeight" Value="Medium"/>
 		</Style>
 		<Style Selector="Button.SideNavButton.active">
-			<Setter Property="Background" Value="{DynamicResource SideNavButtonActiveBackground}"/>
+			<Setter Property="Background" Value="#3B82F6"/>
+			<Setter Property="Foreground" Value="White"/>
+		</Style>
+		<Style Selector="Button.SideNavButton:pointerover">
+			<Setter Property="Background" Value="#E5E7EB"/>
+			<Setter Property="Foreground" Value="#1E3A8A"/>
+		</Style>
+		<Style Selector="Button.SideNavButton.active:pointerover">
+			<Setter Property="Background" Value="#2563EB"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
 
+		<Style Selector="Border.ThemeCard">
+			<Setter Property="Width" Value="120"/>
+			<Setter Property="Height" Value="65"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="BorderThickness" Value="1.5"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="Margin" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Border.ThemeCard.active">
+			<Setter Property="BorderBrush" Value="#3B82F6"/>
+			<Setter Property="Background" Value="#F0F9FF"/>
+		</Style>
+
+		<Style Selector="TextBlock.ThemeCardText">
+			<Setter Property="Foreground" Value="#6B7280"/>
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="Margin" Value="0,5,0,0"/>
+		</Style>
+		<Style Selector="Border.ThemeCard.active TextBlock.ThemeCardText">
+			<Setter Property="Foreground" Value="#1E3A8A"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+		</Style>
+
+		<Style Selector="Border.NotifCard">
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="Padding" Value="16"/>
+		</Style>
+
+		<Style Selector="Border.HotkeyCard">
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="Padding" Value="14,12"/>
+			<Setter Property="Margin" Value="0,0,0,8"/>
+		</Style>
 		<Style Selector="Border.HotkeyBadge">
-			<Setter Property="Background" Value="{DynamicResource HotkeyBadgeBackground}"/>
-			<Setter Property="CornerRadius" Value="4"/>
-			<Setter Property="Padding" Value="6,2"/>
-			<Setter Property="BorderBrush" Value="{DynamicResource HotkeyBadgeBorder}"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="12,4"/>
+			<Setter Property="Background" Value="#EFF6FF"/>
+		</Style>
+		<Style Selector="TextBlock.HotkeyText">
+			<Setter Property="Foreground" Value="#3B82F6"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="FontSize" Value="12"/>
+		</Style>
+
+		<Style Selector="Border.DataCard">
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="Padding" Value="16"/>
+			<Setter Property="Margin" Value="0,0,0,12"/>
+		</Style>
+		<Style Selector="Border.DangerZone">
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="#FEF2F2"/>
+			<Setter Property="BorderBrush" Value="#FCA5A5"/>
 			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Padding" Value="16"/>
 		</Style>
 	</Window.Styles>
 
-	<Grid RowDefinitions="*, Auto">
-		<Grid Grid.Row="0" ColumnDefinitions="250, *">
-			<Border Grid.Column="0" Background="{DynamicResource SidePanelBackground}" Padding="16">
+	<Grid RowDefinitions="*, 60">
+		<Grid Grid.Row="0" ColumnDefinitions="220, *">
+			<!-- Левая панель навигации -->
+			<Border Grid.Column="0" Background="#F9FAFB" Padding="16">
 				<StackPanel>
-					<TextBlock Text="Настройки" FontSize="20" FontWeight="Bold"
-                               Foreground="{DynamicResource HeaderForeground}" Margin="0,0,0,24"/>
+					<TextBlock Text="Настройки" FontSize="18" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,24"/>
 					<StackPanel>
-						<Button x:Name="GeneralButton" Content="Общие" Classes="SideNavButton"
-                                Command="{Binding SelectTabCommand}" CommandParameter="General"/>
-						<Button x:Name="NotificationsButton" Content="Уведомления" Classes="SideNavButton"
-                                Command="{Binding SelectTabCommand}" CommandParameter="Notifications"/>
-						<Button x:Name="HotkeysButton" Content="Горячие клавиши" Classes="SideNavButton"
-                                Command="{Binding SelectTabCommand}" CommandParameter="Hotkeys"/>
-						<Button x:Name="DataButton" Content="Данные" Classes="SideNavButton"
-                                Command="{Binding SelectTabCommand}" CommandParameter="Data"/>
+						<Button x:Name="GeneralNavBtn" Content="Общие" Classes="SideNavButton"/>
+						<Button x:Name="NotificationsNavBtn" Content="Уведомления" Classes="SideNavButton"/>
+						<Button x:Name="HotkeysNavBtn" Content="Горячие клавиши" Classes="SideNavButton"/>
+						<Button x:Name="DataNavBtn" Content="Данные" Classes="SideNavButton"/>
 					</StackPanel>
 				</StackPanel>
 			</Border>
 
-			<Border Grid.Column="1" Background="{DynamicResource SettingsWindowBackground}" Padding="20">
+			<!-- Правая область контента -->
+			<Border Grid.Column="1" Background="#EEF2F6" Padding="25">
 				<DockPanel>
-					<TextBlock DockPanel.Dock="Top" Text="Настройки" FontSize="18" FontWeight="Bold"
-                               Foreground="{DynamicResource HeaderForeground}" Margin="0,0,0,16"/>
+					<Button x:Name="CloseButton" DockPanel.Dock="Top" Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
+                            Foreground="#6B7280" FontSize="16" Width="30" Height="30" CornerRadius="15" Cursor="Hand"/>
 
-					<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<!-- Скрытый TabControl для управления видимостью -->
+					<TabControl x:Name="SettingsTabControl" IsVisible="False"/>
+
+					<!-- Панели вкладок (видимость переключается в коде) -->
+					<StackPanel x:Name="GeneralPanel" Spacing="20">
 						<StackPanel>
-							<!-- Вкладка "Общие" -->
-							<StackPanel IsVisible="{Binding IsGeneralTab}">
-								<Border Classes="Card">
-									<StackPanel Spacing="12">
-										<TextBlock Text="Внешний вид" FontSize="14" FontWeight="Bold"
-                                                   Foreground="{DynamicResource PrimaryText}"/>
-										<StackPanel Orientation="Horizontal" Spacing="8">
-											<Button x:Name="LightThemeButton" Content="Светлая"
-                                                    Command="{Binding SetThemeCommand}" CommandParameter="0"
-                                                    Background="{DynamicResource ButtonBackground}"
-                                                    Foreground="{DynamicResource ButtonForeground}"/>
-											<Button x:Name="DarkThemeButton" Content="Тёмная"
-                                                    Command="{Binding SetThemeCommand}" CommandParameter="1"
-                                                    Background="{DynamicResource ButtonBackground}"
-                                                    Foreground="{DynamicResource ButtonForeground}"/>
-											<Button x:Name="AutoThemeButton" Content="Авто"
-                                                    Command="{Binding SetThemeCommand}" CommandParameter="2"
-                                                    Background="{DynamicResource ButtonBackground}"
-                                                    Foreground="{DynamicResource ButtonForeground}"/>
-										</StackPanel>
+							<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">🌙 Внешний вид</TextBlock>
+							<TextBlock Text="Тема оформления" Foreground="#6B7280" Margin="0,0,0,12"/>
+							<StackPanel Orientation="Horizontal" Spacing="12">
+								<Border x:Name="LightThemeCard" Classes="ThemeCard" Tag="0">
+									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+										<TextBlock Text="☀️" FontSize="24" HorizontalAlignment="Center"/>
+										<TextBlock Text="Светлая" Classes="ThemeCardText"/>
 									</StackPanel>
 								</Border>
-
-								<Border Classes="Card">
-									<StackPanel Spacing="12">
-										<TextBlock Text="Язык и регион" FontSize="14" FontWeight="Bold"
-                                                   Foreground="{DynamicResource PrimaryText}"/>
-										<ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
-                                                  Background="{DynamicResource ComboBoxBackground}"
-                                                  Foreground="{DynamicResource PrimaryText}"/>
+								<Border x:Name="DarkThemeCard" Classes="ThemeCard" Tag="1">
+									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+										<TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center"/>
+										<TextBlock Text="Тёмная" Classes="ThemeCardText"/>
+									</StackPanel>
+								</Border>
+								<Border x:Name="AutoThemeCard" Classes="ThemeCard" Tag="2">
+									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+										<TextBlock Text="🔁" FontSize="24" HorizontalAlignment="Center"/>
+										<TextBlock Text="Авто" Classes="ThemeCardText"/>
 									</StackPanel>
 								</Border>
 							</StackPanel>
-
-							<!-- Остальные вкладки без изменений -->
-							<!-- ... -->
 						</StackPanel>
-					</ScrollViewer>
+
+						<StackPanel>
+							<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">🌐 Язык и регион</TextBlock>
+							<TextBlock Text="Язык интерфейса" Foreground="#6B7280" Margin="0,0,0,8"/>
+							<ComboBox x:Name="LanguageCombo" Width="200" HorizontalAlignment="Left">
+								<ComboBoxItem>Русский</ComboBoxItem>
+								<ComboBoxItem>English</ComboBoxItem>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+
+					<StackPanel x:Name="NotificationsPanel" Spacing="12" IsVisible="False">
+						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8">🔔 Уведомления</TextBlock>
+						<Border Classes="NotifCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="Системные уведомления" FontWeight="Bold" Foreground="#1E3A8A"/>
+									<TextBlock Text="Показывать уведомления в системе" Foreground="#6B7280" FontSize="12"/>
+								</StackPanel>
+								<ToggleSwitch x:Name="SystemNotifToggle" Grid.Column="1" IsChecked="True"/>
+							</Grid>
+						</Border>
+						<Border Classes="NotifCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="Звуковые уведомления" FontWeight="Bold" Foreground="#1E3A8A"/>
+									<TextBlock Text="Воспроизводить звук при окончании таймера" Foreground="#6B7280" FontSize="12"/>
+								</StackPanel>
+								<ToggleSwitch x:Name="SoundNotifToggle" Grid.Column="1" IsChecked="False"/>
+							</Grid>
+						</Border>
+					</StackPanel>
+
+					<StackPanel x:Name="HotkeysPanel" Spacing="0" IsVisible="False">
+						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,12">⌨️ Горячие клавиши</TextBlock>
+						<Border Classes="HotkeyCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<TextBlock Text="Переключить на День" VerticalAlignment="Center" Foreground="#374151"/>
+								<Border Grid.Column="1" Classes="HotkeyBadge">
+									<TextBlock Text="Ctrl + 1" Classes="HotkeyText"/>
+								</Border>
+							</Grid>
+						</Border>
+						<Border Classes="HotkeyCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<TextBlock Text="Переключить на Неделю" VerticalAlignment="Center" Foreground="#374151"/>
+								<Border Grid.Column="1" Classes="HotkeyBadge">
+									<TextBlock Text="Ctrl + 2" Classes="HotkeyText"/>
+								</Border>
+							</Grid>
+						</Border>
+						<Border Classes="HotkeyCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<TextBlock Text="Новая задача" VerticalAlignment="Center" Foreground="#374151"/>
+								<Border Grid.Column="1" Classes="HotkeyBadge">
+									<TextBlock Text="Ctrl + N" Classes="HotkeyText"/>
+								</Border>
+							</Grid>
+						</Border>
+					</StackPanel>
+
+					<StackPanel x:Name="DataPanel" Spacing="12" IsVisible="False">
+						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">💾 Импорт и экспорт данных</TextBlock>
+						<Border Classes="DataCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="Резервное копирование" FontWeight="Bold" Foreground="#1E3A8A"/>
+									<TextBlock Text="Создайте резервную копию всех ваших задач" Foreground="#6B7280" FontSize="12"/>
+								</StackPanel>
+								<Button x:Name="ExportBtn" Grid.Column="1" Content="Экспортировать"
+                                        Background="#3B82F6" Foreground="White" CornerRadius="6" Padding="12,6" FontWeight="Bold"/>
+							</Grid>
+						</Border>
+
+						<Border Classes="DangerZone">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Опасная зона" FontWeight="Bold" Foreground="#991B1B"/>
+								<TextBlock Text="Удаление всех данных без возможности восстановления" Foreground="#DC2626" FontSize="12"/>
+								<Button x:Name="ClearAllBtn" Content="Очистить все данные" HorizontalAlignment="Stretch"
+                                        Background="#EF4444" Foreground="White" CornerRadius="6" Padding="0,10" FontWeight="Bold"/>
+							</StackPanel>
+						</Border>
+					</StackPanel>
 				</DockPanel>
 			</Border>
 		</Grid>
 
-		<Border Grid.Row="1" Background="{DynamicResource CardSecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16">
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-				<Button Content="Закрыть" Command="{Binding CancelCommand}"
-                        Background="{DynamicResource ButtonBackground}"
-                        Foreground="{DynamicResource ButtonForeground}" Padding="16,8" CornerRadius="4"/>
-				<Button Content="Сохранить" Command="{Binding SaveCommand}"
-                        Background="{DynamicResource AccentBackground}" Foreground="White" Padding="16,8" CornerRadius="4" FontWeight="Bold"/>
+		<Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="10" Margin="0,0,20,0">
+				<Button x:Name="CancelBtn" Content="Закрыть" Background="White" BorderBrush="#D1D5DB" BorderThickness="1"
+                        Foreground="#2563EB" CornerRadius="6" Padding="16,8" FontWeight="Medium"/>
+				<Button x:Name="SaveBtn" Content="Сохранить" Background="#3B82F6" Foreground="White" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
 			</StackPanel>
 		</Border>
 	</Grid>

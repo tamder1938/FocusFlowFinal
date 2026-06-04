@@ -23,39 +23,104 @@ public partial class TaskListViewModel : ObservableObject
     [ObservableProperty]
     private TaskItem? _selectedTask;
 
-    [ObservableProperty]
     private int _selectedPriorityFilter = -1;
+    public int SelectedPriorityFilter
+    {
+        get => _selectedPriorityFilter;
+        set
+        {
+            if (SetProperty(ref _selectedPriorityFilter, value))
+                ApplyFilter();
+        }
+    }
+
+    private ObservableCollection<ProjectItem> _projects = new();
+    public ObservableCollection<ProjectItem> Projects
+    {
+        get => _projects;
+        set => SetProperty(ref _projects, value);
+    }
+
+    private ProjectItem? _selectedProject;
+    public ProjectItem? SelectedProject
+    {
+        get => _selectedProject;
+        set
+        {
+            if (SetProperty(ref _selectedProject, value))
+                ApplyFilter();
+        }
+    }
 
     public event Action<TaskItem>? FocusRequested;
     public LocalizationService Loc => LocalizationService.Instance;
 
+    // Событие для запуска таймера (чтобы не создавать жёсткую связь)
+    public event Action<TaskItem>? StartTimerRequested;
+
     public TaskListViewModel(IDatabaseService db)
     {
         _db = db;
+        LoadProjects();
         LoadTasks();
+    }
+
+    private void LoadProjects()
+    {
+        Projects.Clear();
+        Projects.Add(new ProjectItem { Id = 0, Name = "Все проекты", Color = "#9CA3AF" });
+        Projects.Add(new ProjectItem { Id = -1, Name = "Без проекта", Color = "#9CA3AF" });
+        var userProjects = _db.GetAllProjects();
+        foreach (var p in userProjects)
+            Projects.Add(p);
+        SelectedProject = Projects.FirstOrDefault();
     }
 
     private void LoadTasks()
     {
         var tasks = _db.GetAllTasks().ToList();
+
         foreach (var task in tasks.Where(t => t.Priority == null).ToList())
         {
             task.Priority = 1;
             _db.UpsertTask(task);
         }
-        AllTasks = new ObservableCollection<TaskItem>(_db.GetAllTasks());
+
+        if (Projects.Count == 0) LoadProjects();
+
+        var projectColors = Projects.ToDictionary(p => p.Id, p => p.Color);
+
+        foreach (var task in tasks)
+        {
+            if (task.ProjectId.HasValue && projectColors.TryGetValue(task.ProjectId.Value, out var color))
+                task.ProjectColor = color;
+            else
+                task.ProjectColor = null;
+        }
+
+        AllTasks = new ObservableCollection<TaskItem>(tasks);
         ApplyFilter();
     }
 
     private void ApplyFilter()
     {
-        if (SelectedPriorityFilter == -1)
-            FilteredTasks = new ObservableCollection<TaskItem>(AllTasks);
-        else
-            FilteredTasks = new ObservableCollection<TaskItem>(AllTasks.Where(t => t.Priority == SelectedPriorityFilter));
+        var query = AllTasks.AsEnumerable();
+
+        if (SelectedPriorityFilter != -1)
+            query = query.Where(t => t.Priority == SelectedPriorityFilter);
+
+        if (SelectedProject != null)
+        {
+            if (SelectedProject.Id == 0) { }
+            else if (SelectedProject.Id == -1)
+                query = query.Where(t => t.ProjectId == null);
+            else
+                query = query.Where(t => t.ProjectId == SelectedProject.Id);
+        }
+
+        FilteredTasks = new ObservableCollection<TaskItem>(query);
     }
 
-    // Публичный метод для обновления списка извне (например, после удаления задачи)
     public void RefreshTasks()
     {
         LoadTasks();
@@ -68,7 +133,6 @@ public partial class TaskListViewModel : ObservableObject
             SelectedPriorityFilter = priority;
         else if (priorityStr == "-1")
             SelectedPriorityFilter = -1;
-        ApplyFilter();
     }
 
     [RelayCommand]
@@ -104,6 +168,13 @@ public partial class TaskListViewModel : ObservableObject
             RefreshCalendarUI();
             TriggerMainStatsRefresh();
         }
+    }
+
+    [RelayCommand]
+    private void StartTimer(TaskItem? task)
+    {
+        if (task != null && task.PlannedDurationMinutes > 0)
+            StartTimerRequested?.Invoke(task);
     }
 
     private void TriggerMainStatsRefresh()

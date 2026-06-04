@@ -8,10 +8,15 @@
 
 	<UserControl.Resources>
 		<conv:PriorityToBrushConverter x:Key="PriorityToBrushConverter"/>
+		<conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+		<conv:ProjectIconGeometryConverter x:Key="ProjectIconGeometryConverter"/>
+		<conv:IdToVisibilityConverter x:Key="IdToVisibilityConverter"/>
+		<conv:DurationToVisibilityConverter x:Key="DurationToVisibilityConverter"/>
+		<conv:HasDurationClassConverter x:Key="HasDurationClassConverter"/>
 	</UserControl.Resources>
 
 	<UserControl.Styles>
-		<!-- Стили (без изменений, они корректны) -->
+		<!-- ListBoxItem стили (без изменений) -->
 		<Style Selector="ListBoxItem">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderBrush" Value="Transparent" />
@@ -43,11 +48,12 @@
 			<Setter Property="Background" Value="Transparent" />
 		</Style>
 
+		<!-- Карточка задачи -->
 		<Style Selector="Border.task-card">
 			<Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
 			<Setter Property="CornerRadius" Value="10" />
 			<Setter Property="Margin" Value="0,4" />
-			<Setter Property="Padding" Value="12" />
+			<Setter Property="Padding" Value="0" />
 			<Setter Property="BorderThickness" Value="2" />
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="Transitions">
@@ -60,15 +66,14 @@
 		<Style Selector="ListBoxItem:not(:selected) Border.task-card:pointerover">
 			<Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
 		</Style>
-
 		<Style Selector="ListBoxItem:selected Border.task-card">
 			<Setter Property="BorderBrush" Value="#2196F3" />
 		</Style>
-
 		<Style Selector="ListBoxItem:selected Border.task-card:pointerover">
 			<Setter Property="BorderBrush" Value="#2196F3" />
 		</Style>
 
+		<!-- Кнопка редактирования -->
 		<Style Selector="Button.edit-task-btn">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0" />
@@ -97,11 +102,102 @@
 		<Style Selector="Button.edit-task-btn:pointerover PathIcon">
 			<Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
 		</Style>
+
+		<!-- Стили для кнопки Play -->
+		<Style Selector="Button.play-timer-btn">
+			<Setter Property="Width" Value="24" />
+			<Setter Property="Height" Value="24" />
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+
+		<!-- Показываем кнопку Play только при наведении на карточку с классом has-duration -->
+		<Style Selector="ListBoxItem:pointerover Border.task-card.has-duration Button.play-timer-btn">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+
+		<Style Selector="Button.play-timer-btn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+		</Style>
+
+		<!-- Маркер приоритета -->
+		<Style Selector="Border.priority-marker">
+			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="10" />
+			<Setter Property="CornerRadius" Value="5" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+
+		<!-- Скрываем маркер приоритета при наведении на карточку с классом has-duration -->
+		<Style Selector="ListBoxItem:pointerover Border.task-card.has-duration Border.priority-marker">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
 	</UserControl.Styles>
 
 	<DockPanel Margin="15">
-		<TextBlock DockPanel.Dock="Top" Text="{Binding Loc[Tasks]}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"
-                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+		<!-- Заголовок и фильтры (без изменений) -->
+		<Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto" Margin="0,0,0,10">
+			<TextBlock Grid.Column="0" Text="{Binding Loc[Tasks]}" FontSize="16" FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+
+			<ComboBox Grid.Column="1"
+                      ItemsSource="{Binding Projects}"
+                      SelectedItem="{Binding SelectedProject}"
+                      Width="160"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      Background="White"
+                      Foreground="#1E3A8A"
+                      BorderBrush="#D1D5DB"
+                      BorderThickness="1"
+                      CornerRadius="6"
+                      Padding="8,4"
+                      FontSize="13">
+				<!-- ItemTemplate оставлен как в вашем исходном коде -->
+				<ComboBox.ItemTemplate>
+					<DataTemplate DataType="models:ProjectItem">
+						<StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+							<Grid Width="16" Height="16">
+								<PathIcon Data="{Binding Id, Converter={StaticResource ProjectIconGeometryConverter}}"
+                                          IsVisible="{Binding Id, Converter={StaticResource IdToVisibilityConverter}, ConverterParameter=-1}"
+                                          Foreground="#6B7280" />
+								<PathIcon Data="{Binding Id, Converter={StaticResource ProjectIconGeometryConverter}}"
+                                          IsVisible="{Binding Id, Converter={StaticResource IdToVisibilityConverter}, ConverterParameter=0}"
+                                          Foreground="#6B7280" />
+								<Border Width="12" Height="12" CornerRadius="6" Background="{Binding Color}"
+                                        IsVisible="{Binding Id, Converter={StaticResource IdToVisibilityConverter}, ConverterParameter=positive}"
+                                        Margin="2" />
+							</Grid>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                       IsVisible="{Binding Id, Converter={StaticResource IdToVisibilityConverter}, ConverterParameter=0}">
+								<TextBlock.Styles>
+									<Style Selector="TextBlock">
+										<Setter Property="FontStyle" Value="Italic" />
+										<Setter Property="Foreground" Value="#6B7280" />
+									</Style>
+								</TextBlock.Styles>
+							</TextBlock>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                       IsVisible="{Binding Id, Converter={StaticResource IdToVisibilityConverter}, ConverterParameter=not0}">
+								<TextBlock.Styles>
+									<Style Selector="TextBlock">
+										<Setter Property="FontStyle" Value="Normal" />
+										<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+									</Style>
+								</TextBlock.Styles>
+							</TextBlock>
+						</StackPanel>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+		</Grid>
 
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,0,0,10">
 			<Button Content="Все" Command="{Binding SetPriorityFilterCommand}" CommandParameter="-1"
@@ -119,36 +215,57 @@
                     CornerRadius="4" Padding="10,4"/>
 		</StackPanel>
 
+		<!-- Список задач -->
 		<ListBox x:Name="TasksListBox"
                  ItemsSource="{Binding FilteredTasks}"
                  SelectedItem="{Binding SelectedTask}"
                  Background="Transparent">
 			<ListBox.ItemTemplate>
 				<DataTemplate x:DataType="models:TaskItem">
-					<Border Classes="task-card">
-						<Grid ColumnDefinitions="*, Auto, Auto">
-							<StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-								<TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-								<TextBlock Text="{Binding Description}" Opacity="0.7" TextWrapping="Wrap"
-                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-							</StackPanel>
+					<!-- Добавляем класс has-duration, если PlannedDurationMinutes > 0 -->
+					<Border Classes="task-card {Binding PlannedDurationMinutes, Converter={StaticResource HasDurationClassConverter}}" Padding="0">
+						<Grid ColumnDefinitions="4, *">
+							<Border Grid.Column="0"
+                                    Background="{Binding ProjectColor, Converter={StaticResource StringToBrushConverter}}"
+                                    CornerRadius="10,0,0,10"
+                                    VerticalAlignment="Stretch" />
 
-							<Button Grid.Column="1"
-                                    Classes="edit-task-btn"
-                                    VerticalAlignment="Center"
-                                    Margin="12,0,12,0"
-                                    Command="{Binding $parent[UserControl].DataContext.EditTaskCommand}"
-                                    CommandParameter="{Binding}">
-								<PathIcon Width="14" Height="14" Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-							</Button>
+							<Grid Grid.Column="1" Margin="12">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
 
-							<Border Grid.Column="2"
-                                    Width="10" Height="10"
-                                    CornerRadius="5"
-                                    Background="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}"
-                                    VerticalAlignment="Center"
-                                    Margin="4,0,4,0" />
+								<Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto">
+									<StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+										<TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+										<TextBlock Text="{Binding Description}" Opacity="0.7" TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+									</StackPanel>
+
+									<Button Grid.Column="1"
+                                            Classes="edit-task-btn"
+                                            VerticalAlignment="Center"
+                                            Margin="12,0,12,0"
+                                            Command="{Binding $parent[UserControl].DataContext.EditTaskCommand}"
+                                            CommandParameter="{Binding}">
+										<PathIcon Width="14" Height="14" Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+									</Button>
+
+									<Grid Grid.Column="2" Width="24" Height="24">
+										<Border Classes="priority-marker"
+                                                Background="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}" />
+										<Button Classes="play-timer-btn"
+                                                Command="{Binding $parent[UserControl].DataContext.StartTimerCommand}"
+                                                CommandParameter="{Binding}" />
+									</Grid>
+								</Grid>
+
+								<!-- Отображение длительности -->
+								<TextBlock Grid.Row="1" Text="{Binding DurationText}" FontSize="11" Opacity="0.5"
+                                           IsVisible="{Binding PlannedDurationMinutes, Converter={StaticResource DurationToVisibilityConverter}}" />
+							</Grid>
 						</Grid>
 					</Border>
 				</DataTemplate>

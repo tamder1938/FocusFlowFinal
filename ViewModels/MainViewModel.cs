@@ -51,6 +51,11 @@ public partial class MainViewModel : ObservableObject
     public bool IsNotMonthView => !IsMonthView;
     public bool IsNotYearView => !IsYearView;
 
+    private void OnStartTimerRequested(TaskItem task)
+    {
+        CurrentTimerViewModel?.StartTaskTimer(task);
+    }
+
     public MainViewModel(IServiceProvider services, ITemplateService templateService)
     {
         _services = services;
@@ -59,6 +64,8 @@ public partial class MainViewModel : ObservableObject
 
         CurrentTaskListViewModel = _services.GetRequiredService<TaskListViewModel>();
         CurrentTimerViewModel = _services.GetRequiredService<TimerViewModel>();
+
+        CurrentTaskListViewModel.StartTimerRequested += OnStartTimerRequested;
         CurrentTaskListViewModel.FocusRequested += OnFocusRequested;
 
         Loc.PropertyChanged += (s, e) =>

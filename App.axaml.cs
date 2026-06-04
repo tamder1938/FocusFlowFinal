@@ -116,8 +116,8 @@ public partial class App : Application
         services.AddTransient<WeekViewModel>();
         services.AddTransient<MonthViewModel>();
         services.AddTransient<YearViewModel>();
-        services.AddTransient<TaskListViewModel>();
-        services.AddTransient<TimerViewModel>();
+        services.AddSingleton<TaskListViewModel>();
+        services.AddSingleton<TimerViewModel>();
         services.AddTransient<SettingsViewModel>();
     }
 }

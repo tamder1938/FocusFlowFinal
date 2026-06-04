@@ -178,7 +178,13 @@ public partial class TimerViewModel : ObservableObject
     {
         ElapsedSeconds++;
         Progress = (double)ElapsedSeconds / TotalSeconds;
-        TimeDisplay = $"{ElapsedSeconds / 60:D2}:{ElapsedSeconds % 60:D2}";
+        var remaining = TotalSeconds - ElapsedSeconds;
+
+        if (remaining < 0)
+            remaining = 0;
+
+        TimeDisplay =
+            $"{remaining / 60:D2}:{remaining % 60:D2}";
 
         if (ElapsedSeconds >= TotalSeconds)
         {
@@ -228,5 +234,39 @@ public partial class TimerViewModel : ObservableObject
                 mainVm.RefreshTodayMiniStats();
             }
         }
+    }
+
+    public void StartTaskTimer(TaskItem task)
+    {
+        StopTimer();
+
+        CurrentTask = task;
+
+        WorkMinutes = task.PlannedDurationMinutes;
+
+        BreakMinutes = 1;
+        Cycles = 1;
+
+        _currentCycle = 1;
+
+        TotalSeconds = task.PlannedDurationMinutes * 60;
+        ElapsedSeconds = 0;
+
+        TimeDisplay = "00:00";
+        Progress = 0;
+
+        State = TimerState.Working;
+
+        var session = new FocusSession
+        {
+            TaskId = task.Id,
+            StartTime = DateTime.Now,
+            PlannedMinutes = task.PlannedDurationMinutes,
+            IsCompleted = false
+        };
+
+        _db.AddFocusSession(session);
+
+        StartDispatcherTimer();
     }
 }

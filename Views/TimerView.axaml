@@ -6,8 +6,14 @@
              x:Class="FocusFlowFinal.Views.TimerView"
              x:DataType="vm:TimerViewModel">
     <StackPanel Margin="15" Spacing="12">
-        <TextBlock Text="{Binding Loc[Timer]}" FontSize="16" FontWeight="Bold"
-                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+		<TextBlock Text="{Binding Loc[Timer]}" FontSize="16" FontWeight="Bold"/>
+
+		<TextBlock Text="{Binding CurrentTask.Title}"
+				   FontSize="15"
+				   FontWeight="SemiBold"
+				   HorizontalAlignment="Center"
+				   TextAlignment="Center"
+				   TextWrapping="Wrap"/>
 
         <ComboBox ItemsSource="{Binding Templates}"
                   SelectedItem="{Binding SelectedTemplate}"
