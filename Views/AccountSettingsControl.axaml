@@ -1,0 +1,292 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FocusFlowFinal.ViewModels"
+             xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.Views.AccountSettingsControl"
+             x:DataType="vm:AccountSettingsViewModel">
+
+	<UserControl.Resources>
+		<conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="TextBlock.SectionHeader">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource HeaderForeground}"/>
+			<Setter Property="Margin" Value="0,0,0,4"/>
+		</Style>
+		<Style Selector="TextBlock.FieldLabel">
+			<Setter Property="FontSize" Value="11"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+			<Setter Property="Margin" Value="0,0,0,2"/>
+		</Style>
+		<Style Selector="Border.AccountCard">
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+			<Setter Property="Padding" Value="14,12"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Margin" Value="0,0,0,8"/>
+		</Style>
+		<Style Selector="Button.PrimaryAction">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="14,7"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="MinWidth" Value="120"/>
+		</Style>
+		<Style Selector="Button.SecondaryAction">
+			<Setter Property="Background" Value="{DynamicResource SecondaryActionBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryActionFgBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="14,7"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="MinWidth" Value="120"/>
+		</Style>
+		<Style Selector="Button.DangerAction">
+			<Setter Property="Background" Value="{DynamicResource DangerButtonBackground}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="14,7"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="MinWidth" Value="120"/>
+		</Style>
+		<Style Selector="Button.IconBtn">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Width" Value="26"/>
+			<Setter Property="Height" Value="26"/>
+			<Setter Property="CornerRadius" Value="5"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.IconBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+		</Style>
+		<Style Selector="TextBox">
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="8,5"/>
+			<Setter Property="FontSize" Value="13"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid>
+		<!-- ═══ СОСТОЯНИЕ 1: нет подписки ═══ -->
+		<StackPanel Spacing="12"
+		            IsVisible="{Binding HasSyncAccess, Converter={StaticResource InverseBoolConverter}}">
+			<TextBlock Classes="SectionHeader" Text="{Binding Loc[Account]}"/>
+
+			<!-- Замыленный превью профиля -->
+			<Border Classes="AccountCard" Opacity="0.4" IsEnabled="False">
+				<StackPanel Spacing="8">
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<Ellipse Width="40" Height="40" Fill="{DynamicResource AccentBackground}"/>
+						<StackPanel VerticalAlignment="Center" Spacing="2">
+							<TextBlock Text="username" FontWeight="Bold" FontSize="13"
+							           Foreground="{DynamicResource PrimaryText}"/>
+							<TextBlock Text="user@example.com" FontSize="11"
+							           Foreground="{DynamicResource SecondaryText}"/>
+						</StackPanel>
+					</StackPanel>
+					<TextBox Text="••••••••" IsReadOnly="True" HorizontalAlignment="Stretch"/>
+				</StackPanel>
+			</Border>
+
+			<!-- Карточка покупки подписки -->
+			<Border Classes="AccountCard" Background="{DynamicResource AccentLightBrush}"
+			        BorderBrush="{DynamicResource AccentBackground}" BorderThickness="1.5">
+				<StackPanel Spacing="10">
+					<TextBlock Text="{Binding Loc[SubscriptionRequiredTitle]}"
+					           FontSize="14" FontWeight="Bold"
+					           Foreground="{DynamicResource AccentTextBrush}"/>
+					<TextBlock Text="{Binding Loc[SubscriptionRequiredText]}"
+					           FontSize="12" TextWrapping="Wrap"
+					           Foreground="{DynamicResource PrimaryText}"/>
+					<!-- Grid вместо StackPanel: карточки тарифов равномерно занимают всю ширину -->
+					<Grid ColumnDefinitions="*,10,*">
+						<Border Grid.Column="0" CornerRadius="8" Padding="12,10"
+						        Background="{DynamicResource CardBackground}"
+						        BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+							<StackPanel Spacing="6" HorizontalAlignment="Center">
+								<TextBlock Text="300 ₽" FontSize="18" FontWeight="Bold"
+								           HorizontalAlignment="Center"
+								           Foreground="{DynamicResource PrimaryText}"/>
+								<TextBlock Text="/ мес" FontSize="11" HorizontalAlignment="Center"
+								           Foreground="{DynamicResource SecondaryText}"/>
+								<Button Classes="PrimaryAction" Content="{Binding Loc[BuyMonthBtn]}"
+								        Command="{Binding BuyMonthCommand}"
+								        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+							</StackPanel>
+						</Border>
+						<Border Grid.Column="2" CornerRadius="8" Padding="12,10"
+						        Background="{DynamicResource CardBackground}"
+						        BorderBrush="{DynamicResource AccentBackground}" BorderThickness="1.5">
+							<StackPanel Spacing="6" HorizontalAlignment="Center">
+								<TextBlock Text="2000 ₽" FontSize="18" FontWeight="Bold"
+								           HorizontalAlignment="Center"
+								           Foreground="{DynamicResource PrimaryText}"/>
+								<TextBlock Text="/ год" FontSize="11" HorizontalAlignment="Center"
+								           Foreground="{DynamicResource SecondaryText}"/>
+								<Button Classes="PrimaryAction" Content="{Binding Loc[BuyYearBtn]}"
+								        Command="{Binding BuyYearCommand}"
+								        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+							</StackPanel>
+						</Border>
+					</Grid>
+				</StackPanel>
+			</Border>
+
+			<TextBlock Text="{Binding StatusMessage}"
+			           Foreground="#EF4444" FontSize="12"
+			           IsVisible="{Binding StatusMessage, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"/>
+		</StackPanel>
+
+		<!-- ═══ СОСТОЯНИЕ 2: есть доступ — профиль + синхронизация ═══ -->
+		<ScrollViewer IsVisible="{Binding HasSyncAccess}">
+			<StackPanel Spacing="0">
+				<TextBlock Classes="SectionHeader" Text="{Binding Loc[Account]}" Margin="0,0,0,12"/>
+
+				<!-- Статус подписки -->
+				<Border Classes="AccountCard"
+				        IsVisible="{Binding SubscriptionStatusText, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}">
+					<TextBlock Text="{Binding SubscriptionStatusText}"
+					           Foreground="{DynamicResource AccentTextBrush}"
+					           FontWeight="SemiBold" FontSize="12"/>
+				</Border>
+
+				<!-- Профиль: аватар + имя + email -->
+				<Border Classes="AccountCard">
+					<StackPanel Spacing="12">
+						<!-- Аватар + кнопка -->
+						<StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+							<Ellipse Width="44" Height="44" Fill="{DynamicResource AccentBackground}"/>
+							<StackPanel VerticalAlignment="Center" Spacing="4">
+								<TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14"
+								           Foreground="{DynamicResource PrimaryText}"/>
+								<Button Content="{Binding Loc[ChooseAvatarBtn]}"
+								        Command="{Binding ChooseAvatarCommand}"
+								        Classes="SecondaryAction" Padding="8,3" FontSize="11" MinWidth="0"/>
+							</StackPanel>
+						</StackPanel>
+
+						<!-- Имя пользователя -->
+						<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Grid.Column="0" Classes="FieldLabel"
+							           Text="{Binding Loc[EditProfileUsername]}"/>
+							<TextBox Grid.Row="1" Grid.Column="0"
+							         Text="{Binding Username}"
+							         IsReadOnly="{Binding IsEditingUsername, Converter={StaticResource InverseBoolConverter}}"
+							         Margin="0,0,8,0"/>
+							<Button Grid.Row="1" Grid.Column="1" Classes="IconBtn"
+							        Command="{Binding ToggleEditUsernameCommand}"
+							        VerticalAlignment="Center">
+								<TextBlock Text="✎" FontSize="13"/>
+							</Button>
+						</Grid>
+
+						<!-- Email -->
+						<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Grid.Column="0" Classes="FieldLabel"
+							           Text="{Binding Loc[EditProfileEmail]}"/>
+							<TextBox Grid.Row="1" Grid.Column="0"
+							         Text="{Binding Email}"
+							         IsReadOnly="{Binding IsEditingEmail, Converter={StaticResource InverseBoolConverter}}"
+							         Margin="0,0,8,0"/>
+							<Button Grid.Row="1" Grid.Column="1" Classes="IconBtn"
+							        Command="{Binding ToggleEditEmailCommand}"
+							        VerticalAlignment="Center">
+								<TextBlock Text="✎" FontSize="13"/>
+							</Button>
+						</Grid>
+
+						<!-- Кнопка сохранить профиль -->
+						<Button Content="{Binding Loc[SaveBtn]}"
+						        Command="{Binding SaveProfileCommand}"
+						        Classes="PrimaryAction" HorizontalAlignment="Stretch"
+						        HorizontalContentAlignment="Center"
+						        IsVisible="{Binding IsEditingUsername}"/>
+					</StackPanel>
+				</Border>
+
+				<!-- Изменить пароль -->
+				<Border Classes="AccountCard">
+					<StackPanel Spacing="8">
+						<Grid ColumnDefinitions="*,Auto">
+							<TextBlock Grid.Column="0" Text="{Binding Loc[ChangePasswordBtn]}"
+							           FontWeight="Bold" FontSize="13" VerticalAlignment="Center"
+							           Foreground="{DynamicResource PrimaryText}"/>
+							<Button Grid.Column="1" Classes="IconBtn"
+							        Command="{Binding ToggleChangePasswordCommand}">
+								<TextBlock Text="✎" FontSize="13"/>
+							</Button>
+						</Grid>
+						<StackPanel Spacing="6" IsVisible="{Binding IsChangingPassword}">
+							<TextBox Text="{Binding CurrentPassword}" PasswordChar="•"
+							         PlaceholderText="{Binding Loc[CurrentPasswordLbl]}"/>
+							<TextBox Text="{Binding NewPassword}" PasswordChar="•"
+							         PlaceholderText="{Binding Loc[NewPasswordLbl]}"/>
+							<Button Content="{Binding Loc[SaveBtn]}"
+							        Command="{Binding ChangePasswordCommand}"
+							        Classes="PrimaryAction" HorizontalAlignment="Stretch"
+							        HorizontalContentAlignment="Center"/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+
+				<!-- Синхронизация -->
+				<Border Classes="AccountCard">
+					<StackPanel Spacing="8">
+						<Grid ColumnDefinitions="*,Auto">
+							<TextBlock Grid.Column="0" Text="{Binding Loc[SyncEnabledLbl]}"
+							           FontWeight="Bold" FontSize="13" VerticalAlignment="Center"
+							           Foreground="{DynamicResource PrimaryText}"/>
+							<ToggleSwitch Grid.Column="1" IsChecked="{Binding SyncEnabled}"
+							             VerticalAlignment="Center"/>
+						</Grid>
+						<StackPanel Spacing="8" IsVisible="{Binding SyncEnabled}">
+							<StackPanel Spacing="2">
+								<TextBlock Classes="FieldLabel" Text="{Binding Loc[LastSyncLbl]}"/>
+								<TextBlock Text="{Binding LastSyncText}" FontSize="13"
+								           Foreground="{DynamicResource PrimaryText}"/>
+								<TextBlock Text="{Binding SyncStatusMessage}" FontSize="11"
+								           Foreground="{DynamicResource AccentTextBrush}"
+								           IsVisible="{Binding SyncStatusMessage, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"/>
+							</StackPanel>
+							<Button Content="{Binding Loc[SyncNowBtn]}"
+							        Command="{Binding SyncNowCommand}"
+							        IsEnabled="{Binding IsSyncing, Converter={StaticResource InverseBoolConverter}}"
+							        Classes="PrimaryAction" HorizontalAlignment="Stretch"
+							        HorizontalContentAlignment="Center"/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+
+				<!-- Статус операций -->
+				<TextBlock Text="{Binding StatusMessage}"
+				           Foreground="{DynamicResource AccentTextBrush}" FontSize="12"
+				           Margin="0,0,0,8"
+				           IsVisible="{Binding StatusMessage, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"/>
+
+				<!-- Выход -->
+				<Button Content="{Binding Loc[LogoutBtn]}"
+				        Command="{Binding LogoutCommand}"
+				        Classes="DangerAction"
+				        HorizontalAlignment="Stretch"
+				        HorizontalContentAlignment="Center"/>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

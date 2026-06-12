@@ -1,10 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:views="using:FocusFlowFinal.Views"
         x:Class="FocusFlowFinal.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
         Title="Настройки"
-        Width="650" Height="500"
+        Width="650" Height="540"
         WindowStartupLocation="CenterOwner"
-        Background="#EEF2F6"
+        Background="{DynamicResource SettingsWindowBackground}"
         CanResize="False">
 
 	<Window.Styles>
@@ -12,230 +15,371 @@
 			<Setter Property="CornerRadius" Value="8"/>
 			<Setter Property="Padding" Value="12,8"/>
 			<Setter Property="HorizontalAlignment" Value="Stretch"/>
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="Foreground" Value="#6B7280"/>
+			<Setter Property="HorizontalContentAlignment" Value="Left"/>
+			<Setter Property="Background" Value="{DynamicResource SideNavButtonBackground}"/>
+			<Setter Property="Foreground" Value="{DynamicResource SideNavButtonForeground}"/>
 			<Setter Property="BorderThickness" Value="0"/>
 			<Setter Property="Cursor" Value="Hand"/>
 			<Setter Property="FontWeight" Value="Medium"/>
 		</Style>
 		<Style Selector="Button.SideNavButton.active">
-			<Setter Property="Background" Value="#3B82F6"/>
+			<Setter Property="Background" Value="{DynamicResource SideNavButtonActiveBackground}"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
 		<Style Selector="Button.SideNavButton:pointerover">
-			<Setter Property="Background" Value="#E5E7EB"/>
-			<Setter Property="Foreground" Value="#1E3A8A"/>
+			<Setter Property="Background" Value="{DynamicResource SideNavButtonHoverBackground}"/>
+			<Setter Property="Foreground" Value="{DynamicResource HeaderForeground}"/>
 		</Style>
 		<Style Selector="Button.SideNavButton.active:pointerover">
-			<Setter Property="Background" Value="#2563EB"/>
+			<Setter Property="Background" Value="{DynamicResource SideNavButtonActiveBackground}"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
 
+		<!-- ИСПРАВЛЕНО (Проблема 1): карточки темы НЕ применяют тему мгновенно —
+             SetThemeCommand только обновляет CurrentThemeMode в памяти ViewModel -->
 		<Style Selector="Border.ThemeCard">
 			<Setter Property="Width" Value="120"/>
 			<Setter Property="Height" Value="65"/>
 			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
 			<Setter Property="BorderThickness" Value="1.5"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
 			<Setter Property="Margin" Value="0"/>
 			<Setter Property="Cursor" Value="Hand"/>
 		</Style>
 		<Style Selector="Border.ThemeCard.active">
-			<Setter Property="BorderBrush" Value="#3B82F6"/>
-			<Setter Property="Background" Value="#F0F9FF"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/>
 		</Style>
 
 		<Style Selector="TextBlock.ThemeCardText">
-			<Setter Property="Foreground" Value="#6B7280"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
 			<Setter Property="FontSize" Value="12"/>
 			<Setter Property="Margin" Value="0,5,0,0"/>
 		</Style>
 		<Style Selector="Border.ThemeCard.active TextBlock.ThemeCardText">
-			<Setter Property="Foreground" Value="#1E3A8A"/>
+			<Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
 			<Setter Property="FontWeight" Value="SemiBold"/>
 		</Style>
 
 		<Style Selector="Border.NotifCard">
 			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
 			<Setter Property="Padding" Value="16"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+			<Setter Property="BorderThickness" Value="1"/>
 		</Style>
 
 		<Style Selector="Border.HotkeyCard">
 			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
 			<Setter Property="Padding" Value="14,12"/>
 			<Setter Property="Margin" Value="0,0,0,8"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+			<Setter Property="BorderThickness" Value="1"/>
 		</Style>
 		<Style Selector="Border.HotkeyBadge">
 			<Setter Property="CornerRadius" Value="6"/>
 			<Setter Property="Padding" Value="12,4"/>
-			<Setter Property="Background" Value="#EFF6FF"/>
+			<Setter Property="Background" Value="{DynamicResource HotkeyBadgeBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource HotkeyBadgeBorder}"/>
+			<Setter Property="BorderThickness" Value="1"/>
 		</Style>
 		<Style Selector="TextBlock.HotkeyText">
-			<Setter Property="Foreground" Value="#3B82F6"/>
+			<Setter Property="Foreground" Value="{DynamicResource HotkeyText}"/>
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="FontSize" Value="12"/>
+		</Style>
+		<Style Selector="TextBlock.SectionHeader">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource HeaderForeground}"/>
+			<Setter Property="Margin" Value="0,0,0,4"/>
+		</Style>
+		<Style Selector="TextBlock.SubLabel">
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
 		</Style>
 
 		<Style Selector="Border.DataCard">
 			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Background" Value="White"/>
+			<Setter Property="Background" Value="{DynamicResource CardBackground}"/>
 			<Setter Property="Padding" Value="16"/>
 			<Setter Property="Margin" Value="0,0,0,12"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+			<Setter Property="BorderThickness" Value="1"/>
 		</Style>
 		<Style Selector="Border.DangerZone">
 			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Background" Value="#FEF2F2"/>
-			<Setter Property="BorderBrush" Value="#FCA5A5"/>
+			<Setter Property="Background" Value="{DynamicResource DangerCardBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource DangerCardBorder}"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Padding" Value="16"/>
+		</Style>
+
+		<!-- ИСПРАВЛЕНО (Проблема 13): кнопка экспорта компактная, не растягивается -->
+		<Style Selector="Button.ExportBtn">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="Padding" Value="14,7"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="HorizontalAlignment" Value="Right"/>
+			<Setter Property="Cursor" Value="Hand"/>
 		</Style>
 	</Window.Styles>
 
 	<Grid RowDefinitions="*, 60">
 		<Grid Grid.Row="0" ColumnDefinitions="220, *">
+
 			<!-- Левая панель навигации -->
-			<Border Grid.Column="0" Background="#F9FAFB" Padding="16">
+			<Border Grid.Column="0" Background="{DynamicResource SidePanelBackground}" Padding="16">
 				<StackPanel>
-					<TextBlock Text="Настройки" FontSize="18" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,24"/>
-					<StackPanel>
-						<Button x:Name="GeneralNavBtn" Content="Общие" Classes="SideNavButton"/>
-						<Button x:Name="NotificationsNavBtn" Content="Уведомления" Classes="SideNavButton"/>
-						<Button x:Name="HotkeysNavBtn" Content="Горячие клавиши" Classes="SideNavButton"/>
-						<Button x:Name="DataNavBtn" Content="Данные" Classes="SideNavButton"/>
+					<TextBlock Text="{Binding Loc[Settings]}" FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource HeaderForeground}" Margin="0,0,0,24"/>
+					<StackPanel Spacing="4">
+						<!-- ИСПРАВЛЕНО (Часть 2, п.5): "Аккаунт" — первая вкладка -->
+						<Button Content="{Binding AccountTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsAccountTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="Account"/>
+						<!-- ИСПРАВЛЕНО (Проблема 9): локализованные подписи вкладок -->
+						<Button Content="{Binding GeneralTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsGeneralTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="General"/>
+						<Button Content="{Binding NotificationsTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsNotificationsTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="Notifications"/>
+						<Button Content="{Binding HotkeysTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsHotkeysTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="Hotkeys"/>
+						<Button Content="{Binding DataTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsDataTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="Data"/>
 					</StackPanel>
 				</StackPanel>
 			</Border>
 
 			<!-- Правая область контента -->
-			<Border Grid.Column="1" Background="#EEF2F6" Padding="25">
-				<DockPanel>
-					<Button x:Name="CloseButton" DockPanel.Dock="Top" Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
-                            Foreground="#6B7280" FontSize="16" Width="30" Height="30" CornerRadius="15" Cursor="Hand"/>
+			<Border Grid.Column="1" Background="{DynamicResource SettingsWindowBackground}" Padding="25">
+				<!-- Grid вместо DockPanel: все вкладки в одной ячейке (0,0), только одна видима -->
+				<Grid>
 
-					<!-- Скрытый TabControl для управления видимостью -->
-					<TabControl x:Name="SettingsTabControl" IsVisible="False"/>
+					<!-- Вкладка: Аккаунт -->
+					<views:AccountSettingsControl DataContext="{Binding Account}"
+                                                   IsVisible="{Binding $parent[Window].((vm:SettingsViewModel)DataContext).IsAccountTab}"/>
 
-					<!-- Панели вкладок (видимость переключается в коде) -->
-					<StackPanel x:Name="GeneralPanel" Spacing="20">
+					<!-- Вкладка: Общие -->
+					<StackPanel Spacing="20" IsVisible="{Binding IsGeneralTab}">
 						<StackPanel>
-							<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">🌙 Внешний вид</TextBlock>
-							<TextBlock Text="Тема оформления" Foreground="#6B7280" Margin="0,0,0,12"/>
+							<TextBlock Classes="SectionHeader" Text="{Binding Loc[Appearance]}"/>
+							<TextBlock Text="{Binding Loc[CustomMode]}" Classes="SubLabel" Margin="0,0,0,12"
+                                       IsVisible="False"/>
 							<StackPanel Orientation="Horizontal" Spacing="12">
-								<Border x:Name="LightThemeCard" Classes="ThemeCard" Tag="0">
+								<!-- ИСПРАВЛЕНО (Проблема 1): Command="SetThemeCommand" — без мгновенного применения -->
+								<Border Classes="ThemeCard" Classes.active="{Binding IsLightSelected}"
+                                        PointerPressed="ThemeCard_PointerPressed" Tag="0">
 									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 										<TextBlock Text="☀️" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="Светлая" Classes="ThemeCardText"/>
+										<TextBlock Text="{Binding Loc[LightTheme]}" Classes="ThemeCardText"/>
 									</StackPanel>
 								</Border>
-								<Border x:Name="DarkThemeCard" Classes="ThemeCard" Tag="1">
+								<Border Classes="ThemeCard" Classes.active="{Binding IsDarkSelected}"
+                                        PointerPressed="ThemeCard_PointerPressed" Tag="1">
 									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 										<TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="Тёмная" Classes="ThemeCardText"/>
+										<TextBlock Text="{Binding Loc[DarkTheme]}" Classes="ThemeCardText"/>
 									</StackPanel>
 								</Border>
-								<Border x:Name="AutoThemeCard" Classes="ThemeCard" Tag="2">
+								<Border Classes="ThemeCard" Classes.active="{Binding IsAutoSelected}"
+                                        PointerPressed="ThemeCard_PointerPressed" Tag="2">
 									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 										<TextBlock Text="🔁" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="Авто" Classes="ThemeCardText"/>
+										<TextBlock Text="{Binding Loc[AutoTheme]}" Classes="ThemeCardText"/>
 									</StackPanel>
 								</Border>
 							</StackPanel>
 						</StackPanel>
 
 						<StackPanel>
-							<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">🌐 Язык и регион</TextBlock>
-							<TextBlock Text="Язык интерфейса" Foreground="#6B7280" Margin="0,0,0,8"/>
-							<ComboBox x:Name="LanguageCombo" Width="200" HorizontalAlignment="Left">
-								<ComboBoxItem>Русский</ComboBoxItem>
-								<ComboBoxItem>English</ComboBoxItem>
-							</ComboBox>
+							<TextBlock Classes="SectionHeader" Text="{Binding Loc[LangRegion]}"/>
+							<TextBlock Text="{Binding Loc[LangRegion]}" Classes="SubLabel" Margin="0,0,0,8"
+                                       IsVisible="False"/>
+							<ComboBox SelectedItem="{Binding SelectedLanguage}"
+                                      ItemsSource="{Binding Languages}"
+                                      Width="200" HorizontalAlignment="Left"
+                                      Background="{DynamicResource CardBackground}"
+                                      Foreground="{DynamicResource PrimaryText}"
+                                      BorderBrush="{DynamicResource CardBorder}"/>
 						</StackPanel>
 					</StackPanel>
 
-					<StackPanel x:Name="NotificationsPanel" Spacing="12" IsVisible="False">
-						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8">🔔 Уведомления</TextBlock>
+					<!-- Вкладка: Уведомления -->
+					<StackPanel Spacing="12" IsVisible="{Binding IsNotificationsTab}">
+						<TextBlock Classes="SectionHeader" Text="{Binding Loc[Notifications]}"/>
 						<Border Classes="NotifCard">
 							<Grid ColumnDefinitions="*, Auto">
 								<StackPanel>
-									<TextBlock Text="Системные уведомления" FontWeight="Bold" Foreground="#1E3A8A"/>
-									<TextBlock Text="Показывать уведомления в системе" Foreground="#6B7280" FontSize="12"/>
+									<TextBlock Text="{Binding Loc[SysNotif]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"/>
+									<TextBlock Text="{Binding Loc[SysNotifSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
 								</StackPanel>
-								<ToggleSwitch x:Name="SystemNotifToggle" Grid.Column="1" IsChecked="True"/>
+								<ToggleSwitch Grid.Column="1" IsChecked="{Binding SystemNotificationsEnabled}"/>
 							</Grid>
 						</Border>
 						<Border Classes="NotifCard">
 							<Grid ColumnDefinitions="*, Auto">
 								<StackPanel>
-									<TextBlock Text="Звуковые уведомления" FontWeight="Bold" Foreground="#1E3A8A"/>
-									<TextBlock Text="Воспроизводить звук при окончании таймера" Foreground="#6B7280" FontSize="12"/>
+									<TextBlock Text="{Binding Loc[SoundNotif]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"/>
+									<TextBlock Text="{Binding Loc[SoundNotifSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
 								</StackPanel>
-								<ToggleSwitch x:Name="SoundNotifToggle" Grid.Column="1" IsChecked="False"/>
+								<ToggleSwitch Grid.Column="1" IsChecked="{Binding SoundNotificationsEnabled}"/>
+							</Grid>
+						</Border>
+						<Border Classes="NotifCard">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="{Binding Loc[MarkTaskOnTimerFinish]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"/>
+									<TextBlock Text="{Binding Loc[MarkTaskOnTimerFinishSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+								</StackPanel>
+								<ToggleSwitch Grid.Column="1" IsChecked="{Binding MarkTaskCompletedOnTimerFinish}"/>
 							</Grid>
 						</Border>
 					</StackPanel>
 
-					<StackPanel x:Name="HotkeysPanel" Spacing="0" IsVisible="False">
-						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,12">⌨️ Горячие клавиши</TextBlock>
-						<Border Classes="HotkeyCard">
-							<Grid ColumnDefinitions="*, Auto">
-								<TextBlock Text="Переключить на День" VerticalAlignment="Center" Foreground="#374151"/>
-								<Border Grid.Column="1" Classes="HotkeyBadge">
-									<TextBlock Text="Ctrl + 1" Classes="HotkeyText"/>
-								</Border>
-							</Grid>
-						</Border>
-						<Border Classes="HotkeyCard">
-							<Grid ColumnDefinitions="*, Auto">
-								<TextBlock Text="Переключить на Неделю" VerticalAlignment="Center" Foreground="#374151"/>
-								<Border Grid.Column="1" Classes="HotkeyBadge">
-									<TextBlock Text="Ctrl + 2" Classes="HotkeyText"/>
-								</Border>
-							</Grid>
-						</Border>
-						<Border Classes="HotkeyCard">
-							<Grid ColumnDefinitions="*, Auto">
-								<TextBlock Text="Новая задача" VerticalAlignment="Center" Foreground="#374151"/>
-								<Border Grid.Column="1" Classes="HotkeyBadge">
-									<TextBlock Text="Ctrl + N" Classes="HotkeyText"/>
-								</Border>
-							</Grid>
-						</Border>
-					</StackPanel>
+					<!-- Вкладка: Горячие клавиши -->
+					<ScrollViewer IsVisible="{Binding IsHotkeysTab}">
+						<StackPanel Spacing="0">
+							<TextBlock Classes="SectionHeader" Margin="0,0,0,12" Text="{Binding Loc[Hotkeys]}"/>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyDay]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrl1]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyWeek]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrl2]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyMonth]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrlM]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyYear]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrlY]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyNewTask]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrlN]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Classes="HotkeyCard">
+								<Grid ColumnDefinitions="*, Auto">
+									<TextBlock Text="{Binding Loc[HotkeyToday]}" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource PrimaryText}"/>
+									<Border Grid.Column="1" Classes="HotkeyBadge">
+										<TextBlock Text="{Binding Loc[HotkeyCtrlT]}" Classes="HotkeyText"/>
+									</Border>
+								</Grid>
+							</Border>
+						</StackPanel>
+					</ScrollViewer>
 
-					<StackPanel x:Name="DataPanel" Spacing="12" IsVisible="False">
-						<TextBlock FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,4">💾 Импорт и экспорт данных</TextBlock>
+					<!-- Вкладка: Данные -->
+					<StackPanel Spacing="12" IsVisible="{Binding IsDataTab}">
+						<TextBlock Classes="SectionHeader" Text="{Binding Loc[ExportData]}"/>
+
+						<!-- ИСПРАВЛЕНО (Проблема 13): Grid с колонками "*, Auto" — текст не перекрывается кнопкой -->
 						<Border Classes="DataCard">
 							<Grid ColumnDefinitions="*, Auto">
-								<StackPanel>
-									<TextBlock Text="Резервное копирование" FontWeight="Bold" Foreground="#1E3A8A"/>
-									<TextBlock Text="Создайте резервную копию всех ваших задач" Foreground="#6B7280" FontSize="12"/>
+								<StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Center">
+									<TextBlock Text="{Binding Loc[Backup]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"
+                                               TextWrapping="Wrap"/>
+									<TextBlock Text="{Binding Loc[BackupSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"
+                                               TextWrapping="Wrap"/>
 								</StackPanel>
-								<Button x:Name="ExportBtn" Grid.Column="1" Content="Экспортировать"
-                                        Background="#3B82F6" Foreground="White" CornerRadius="6" Padding="12,6" FontWeight="Bold"/>
+								<Button Grid.Column="1" Classes="ExportBtn"
+                                        Content="{Binding Loc[ExportBtn]}"
+                                        Command="{Binding ExportDataCommand}"
+                                        VerticalAlignment="Center"/>
 							</Grid>
+						</Border>
+
+						<!-- Зона уведомления об успехе/ошибке экспорта -->
+						<Border IsVisible="{Binding ExportStatusVisible}" CornerRadius="6" Padding="12,8">
+							<Border.Background>
+								<SolidColorBrush Color="{Binding ExportStatusIsError, Converter={x:Static vm:StatusColorConverters.BgConverter}}"/>
+							</Border.Background>
+							<TextBlock Text="{Binding ExportStatusText}" FontSize="13">
+								<TextBlock.Foreground>
+									<SolidColorBrush Color="{Binding ExportStatusIsError, Converter={x:Static vm:StatusColorConverters.FgConverter}}"/>
+								</TextBlock.Foreground>
+							</TextBlock>
 						</Border>
 
 						<Border Classes="DangerZone">
 							<StackPanel Spacing="8">
-								<TextBlock Text="Опасная зона" FontWeight="Bold" Foreground="#991B1B"/>
-								<TextBlock Text="Удаление всех данных без возможности восстановления" Foreground="#DC2626" FontSize="12"/>
-								<Button x:Name="ClearAllBtn" Content="Очистить все данные" HorizontalAlignment="Stretch"
-                                        Background="#EF4444" Foreground="White" CornerRadius="6" Padding="0,10" FontWeight="Bold"/>
+								<TextBlock Text="{Binding Loc[DangerZone]}" FontWeight="Bold"
+                                           Foreground="{DynamicResource DangerText}"/>
+								<TextBlock Text="{Binding Loc[ClearSub]}"
+                                           Foreground="{DynamicResource DangerText}" FontSize="12"/>
+								<Button Content="{Binding Loc[ClearBtn]}"
+                                        Command="{Binding ClearAllDataCommand}"
+                                        HorizontalAlignment="Stretch"
+                                        Background="{DynamicResource DangerButtonBackground}"
+                                        Foreground="White" CornerRadius="6" Padding="0,10" FontWeight="Bold"/>
 							</StackPanel>
 						</Border>
 					</StackPanel>
-				</DockPanel>
+				</Grid>
 			</Border>
 		</Grid>
 
-		<Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="10" Margin="0,0,20,0">
-				<Button x:Name="CancelBtn" Content="Закрыть" Background="White" BorderBrush="#D1D5DB" BorderThickness="1"
-                        Foreground="#2563EB" CornerRadius="6" Padding="16,8" FontWeight="Medium"/>
-				<Button x:Name="SaveBtn" Content="Сохранить" Background="#3B82F6" Foreground="White" CornerRadius="6" Padding="16,8" FontWeight="Bold"/>
+		<!-- Нижняя панель с кнопками -->
+		<Border Grid.Row="1" Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource CardBorder}" BorderThickness="0,1,0,0">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Spacing="10" Margin="0,0,20,0">
+				<!-- ИСПРАВЛЕНО (Проблема 1, 2): «Закрыть» — отмена без применения -->
+				<Button Content="{Binding Loc[Close]}"
+                        Command="{Binding CancelCommand}"
+                        Background="{DynamicResource SecondaryActionBrush}"
+                        BorderThickness="0"
+                        Foreground="{DynamicResource SecondaryActionFgBrush}"
+                        CornerRadius="8" Padding="18,9" FontWeight="SemiBold"/>
+				<!-- ИСПРАВЛЕНО (Проблема 1, 2): «Сохранить» — применяет тему/язык/уведомления -->
+				<Button Content="{Binding Loc[Save]}"
+                        Command="{Binding SaveCommand}"
+                        Background="{DynamicResource PrimaryActionBrush}"
+                        Foreground="White" CornerRadius="8" Padding="18,9" FontWeight="Bold"/>
 			</StackPanel>
 		</Border>
 	</Grid>
