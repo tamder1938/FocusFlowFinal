@@ -4,111 +4,303 @@
         xmlns:views="using:FocusFlowFinal.Views"
         x:Class="FocusFlowFinal.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="FocusFlow" Width="1200" Height="800"
+        Title="FocusFlow"
+        Width="1280" Height="820"
+        MinWidth="1000" MinHeight="600"
         Background="{DynamicResource WindowBackgroundBrush}">
 
 	<Window.KeyBindings>
 		<KeyBinding Gesture="Ctrl+D" Command="{Binding SwitchToDayCommand}"/>
 		<KeyBinding Gesture="Ctrl+W" Command="{Binding SwitchToWeekCommand}"/>
+		<KeyBinding Gesture="Ctrl+M" Command="{Binding SwitchToMonthCommand}"/>
+		<KeyBinding Gesture="Ctrl+Y" Command="{Binding SwitchToYearCommand}"/>
+		<KeyBinding Gesture="Ctrl+N" Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"/>
+		<KeyBinding Gesture="Ctrl+T" Command="{Binding GoToTodayCommand}"/>
 	</Window.KeyBindings>
 
 	<Window.DataTemplates>
-		<DataTemplate DataType="vm:DayViewModel">
-			<views:DayView/>
-		</DataTemplate>
-		<DataTemplate DataType="vm:WeekViewModel">
-			<views:WeekView/>
-		</DataTemplate>
-		<DataTemplate DataType="vm:MonthViewModel">
-			<views:MonthView/>
-		</DataTemplate>
-		<DataTemplate DataType="vm:YearViewModel">
-			<views:YearView/>
-		</DataTemplate>
-		<DataTemplate DataType="vm:TaskListViewModel">
-			<views:TaskListView/>
-		</DataTemplate>
-		<DataTemplate DataType="vm:TimerViewModel">
-			<views:TimerView/>
-		</DataTemplate>
+		<DataTemplate DataType="vm:DayViewModel">   <views:DayView/></DataTemplate>
+		<DataTemplate DataType="vm:WeekViewModel">  <views:WeekView/></DataTemplate>
+		<DataTemplate DataType="vm:MonthViewModel"> <views:MonthView/></DataTemplate>
+		<DataTemplate DataType="vm:YearViewModel">  <views:YearView/></DataTemplate>
+		<DataTemplate DataType="vm:TaskListViewModel"><views:TaskListView/></DataTemplate>
+		<DataTemplate DataType="vm:TimerViewModel"> <views:TimerView/></DataTemplate>
 	</Window.DataTemplates>
 
-	<Grid RowDefinitions="Auto, *">
+	<Window.Styles>
+		<!-- ── Навигационная пилюля (активная) ─────────────────────── -->
+		<Style Selector="Button.nav-pill">
+			<Setter Property="Background"      Value="{DynamicResource NavInactiveBg}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource NavInactiveFg}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="14,6"/>
+			<Setter Property="FontSize"        Value="13"/>
+			<Setter Property="FontWeight"      Value="Medium"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.nav-pill:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+		</Style>
+		<Style Selector="Button.nav-pill.active">
+			<Setter Property="Background" Value="{DynamicResource NavActiveBg}"/>
+			<Setter Property="Foreground" Value="{DynamicResource NavActiveFg}"/>
+		</Style>
+		<Style Selector="Button.nav-pill.active:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+		</Style>
 
-		<Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="15,10">
-			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
-				<TextBlock Text="FocusFlow" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
-			</StackPanel>
+		<!-- ── Кнопка «Сегодня» ──────────────────────────────────────── -->
+		<Style Selector="Button.today-btn">
+			<Setter Property="Background"      Value="{DynamicResource ButtonBackgroundBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource ButtonBorderBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="12,5"/>
+			<Setter Property="FontSize"        Value="13"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
 
-			<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="2">
-				<Button Content="{Binding Loc[TitleDay]}" Command="{Binding SwitchToDayCommand}"/>
-				<Button Content="{Binding Loc[TitleWeek]}" Command="{Binding SwitchToWeekCommand}"/>
-				<Button Content="{Binding Loc[TitleMonth]}" Command="{Binding SwitchToMonthCommand}"/>
-				<Button Content="{Binding Loc[TitleYear]}" Command="{Binding SwitchToYearCommand}"/>
-			</StackPanel>
+		<!-- ── Кнопка «+ Задача» ─────────────────────────────────────── -->
+		<Style Selector="Button.add-task-btn">
+			<Setter Property="Background"      Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="14,6"/>
+			<Setter Property="FontSize"        Value="13"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.add-task-btn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+		</Style>
 
-			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
-				<TextBlock Text="{Binding SelectedDateFormatted}" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}"/>
-				<Button Content="{Binding Loc[TodayBtn]}" Command="{Binding GoToTodayCommand}"
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
-				<Button Content="{Binding Loc[NewTask]}" Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
-				<!-- Кнопка 🌙 УДАЛЕНА -->
-				<Button Content="📋" Command="{Binding OpenTemplatesCommand}" ToolTip.Tip="Шаблоны"
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
-				<Button Content="{Binding Loc[Settings]}" Command="{Binding OpenSettingsCommand}"
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource ButtonForegroundBrush}"/>
-			</StackPanel>
-		</Grid>
+		<!-- ── Иконка-кнопка (луна, шестерёнка) ─────────────────────── -->
+		<Style Selector="Button.icon-btn">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Width"           Value="32"/>
+			<Setter Property="Height"          Value="32"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment"   Value="Center"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.icon-btn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+		</Style>
+	</Window.Styles>
 
-		<Grid Grid.Row="1" ColumnDefinitions="2.2*, 1.3*, 1.1*" Margin="10,0,10,10">
-			<!-- Левая колонка: Календарь -->
-			<Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="5" ClipToBounds="True">
+	<Grid RowDefinitions="52, *">
+
+		<!-- ═══════════════════════════════════════════════════════════
+		     ШАПКА: Logo | Nav | Date + Сегодня + Задача | Moon | Gear
+		     ═══════════════════════════════════════════════════════════ -->
+		<Border Grid.Row="0"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+			<Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" Margin="16,0">
+
+				<!-- Логотип -->
+				<StackPanel Grid.Column="0" Orientation="Horizontal"
+                            Spacing="8" VerticalAlignment="Center" Margin="0,0,20,0">
+					<Border Width="28" Height="28" CornerRadius="6"
+                            Background="{DynamicResource AccentBackground}">
+						<TextBlock Text="F" Foreground="White" FontWeight="Bold"
+                                   FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+					</Border>
+					<TextBlock Text="FocusFlow" FontSize="15" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               VerticalAlignment="Center"/>
+				</StackPanel>
+
+				<!-- Навигационные пилюли -->
+				<Border Grid.Column="1"
+                        Background="{DynamicResource WindowBackgroundBrush}"
+                        CornerRadius="8" Padding="4,3">
+					<StackPanel Orientation="Horizontal" Spacing="2">
+						<Button Classes="nav-pill"
+                                Classes.active="{Binding IsDayView}"
+                                Content="{Binding Loc[TitleDay]}"
+                                Command="{Binding SwitchToDayCommand}"
+                                ToolTip.Tip="Ctrl+D"/>
+						<Button Classes="nav-pill"
+                                Classes.active="{Binding IsWeekView}"
+                                Content="{Binding Loc[TitleWeek]}"
+                                Command="{Binding SwitchToWeekCommand}"
+                                ToolTip.Tip="Ctrl+W"/>
+						<Button Classes="nav-pill"
+                                Classes.active="{Binding IsMonthView}"
+                                Content="{Binding Loc[TitleMonth]}"
+                                Command="{Binding SwitchToMonthCommand}"
+                                ToolTip.Tip="Ctrl+M"/>
+						<Button Classes="nav-pill"
+                                Classes.active="{Binding IsYearView}"
+                                Content="{Binding Loc[TitleYear]}"
+                                Command="{Binding SwitchToYearCommand}"
+                                ToolTip.Tip="Ctrl+Y"/>
+					</StackPanel>
+				</Border>
+
+				<!-- Дата + Сегодня + Задача -->
+				<StackPanel Grid.Column="3" Orientation="Horizontal"
+                            VerticalAlignment="Center" Spacing="8">
+					<TextBlock Text="{Binding SelectedDateFormatted}"
+                               FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               VerticalAlignment="Center"/>
+					<Button Classes="today-btn"
+                            Content="{Binding Loc[TodayBtn]}"
+                            Command="{Binding GoToTodayCommand}"
+                            ToolTip.Tip="Ctrl+T"/>
+					<Button Classes="add-task-btn"
+                            Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"
+                            ToolTip.Tip="Ctrl+N">
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBlock Text="+" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+							<TextBlock Text="{Binding Loc[Tasks]}" VerticalAlignment="Center"/>
+						</StackPanel>
+					</Button>
+				</StackPanel>
+
+				<!-- Иконка настроек (кнопка переключения темы удалена — Проблема 1) -->
+				<StackPanel Grid.Column="4" Orientation="Horizontal"
+                            VerticalAlignment="Center" Spacing="2" Margin="8,0,0,0">
+					<Button Classes="icon-btn" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Loc[Settings]}">
+						<PathIcon Width="16" Height="16"
+                                  Foreground="{DynamicResource SecondaryTextBrush}"
+                                  Data="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+					</Button>
+				</StackPanel>
+
+			</Grid>
+		</Border>
+
+		<!-- ═══════════════════════════════════════════════════════════
+		     КОНТЕНТ: Календарь | Задачи | Таймер+Аналитика
+		     ═══════════════════════════════════════════════════════════ -->
+		<Grid Grid.Row="1" ColumnDefinitions="2.2*, 1.2*, 1*" Margin="12,12,12,12">
+
+			<!-- Календарь -->
+			<Border Grid.Column="0"
+                    Background="{DynamicResource CardBackgroundBrush}"
+                    CornerRadius="12"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    Margin="0,0,6,0"
+                    ClipToBounds="True"
+                    BoxShadow="0 2 8 0 #08000000">
 				<ContentControl Content="{Binding CurrentCalendarView}"/>
 			</Border>
 
-			<!-- Центральная колонка: Список задач -->
-			<Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="5" ClipToBounds="True">
+			<!-- Задачи -->
+			<Border Grid.Column="1"
+                    Background="{DynamicResource CardBackgroundBrush}"
+                    CornerRadius="12"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    Margin="0,0,6,0"
+                    ClipToBounds="True"
+                    BoxShadow="0 2 8 0 #08000000">
 				<ContentControl Content="{Binding CurrentTaskListViewModel}"/>
 			</Border>
 
-			<!-- Правая колонка: Таймер и аналитика -->
-			<ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="5">
-				<StackPanel Spacing="14">
-					<Border Background="{DynamicResource CardSecondaryBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" ClipToBounds="True" BoxShadow="0 2 4 0 #05000000">
+			<!-- Таймер + Аналитика -->
+			<ScrollViewer Grid.Column="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+				<StackPanel Spacing="10">
+
+					<!-- Таймер -->
+					<Border Background="{DynamicResource CardBackgroundBrush}"
+                            CornerRadius="12"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            ClipToBounds="True"
+                            BoxShadow="0 2 8 0 #08000000">
 						<ContentControl Content="{Binding CurrentTimerViewModel}"/>
 					</Border>
 
-					<Border Background="{DynamicResource CardSecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18,16" BoxShadow="0 2 4 0 #05000000">
-						<StackPanel Spacing="10">
-							<TextBlock Text="{Binding Loc[AnalyticsTitle]}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-							<TextBlock Text="{Binding Loc[PlanVsFactToday]}" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,-6,0,8"/>
+					<!-- Аналитика -->
+					<Border Background="{DynamicResource CardBackgroundBrush}"
+                            CornerRadius="12"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="16"
+                            BoxShadow="0 2 8 0 #08000000">
+						<StackPanel Spacing="8">
 
-							<Grid ColumnDefinitions="*, Auto" Margin="0,2">
-								<TextBlock Grid.Column="0" Text="{Binding Loc[Plan]}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-								<TextBlock Grid.Column="1" Text="{Binding TodayPlanTimeStr}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+							<TextBlock Text="{Binding Loc[AnalyticsTitle]}"
+                                       FontSize="14" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+							<TextBlock Text="{Binding Loc[PlanVsFactToday]}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Margin="0,0,0,4"/>
+
+							<!-- Plan -->
+							<Grid ColumnDefinitions="*, Auto">
+								<TextBlock Grid.Column="0" Text="{Binding Loc[Plan]}"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+								<TextBlock Grid.Column="1" Text="{Binding TodayPlanTimeStr}"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
 							</Grid>
-							<Border Height="5" Background="{DynamicResource PrimaryTextBrush}" CornerRadius="2.5" Margin="0,0,0,6"/>
+							<ProgressBar Value="100" Height="4" Minimum="0" Maximum="100"
+                                         Background="{DynamicResource ProgressBackgroundBrush}"
+                                         Foreground="{DynamicResource PrimaryTextBrush}"
+                                         CornerRadius="2" Margin="0,0,0,4"/>
 
-							<Grid ColumnDefinitions="*, Auto" Margin="0,2">
-								<TextBlock Grid.Column="0" Text="{Binding Loc[Fact]}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-								<TextBlock Grid.Column="1" Text="{Binding TodayFactTimeStr}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+							<!-- Fact -->
+							<Grid ColumnDefinitions="*, Auto">
+								<TextBlock Grid.Column="0" Text="{Binding Loc[Fact]}"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+								<TextBlock Grid.Column="1" Text="{Binding TodayFactTimeStr}"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
 							</Grid>
-							<ProgressBar Value="{Binding TodayFactProgress}" Height="5" Minimum="0" Maximum="100"
-                                         Background="{DynamicResource ProgressBackgroundBrush}" Foreground="#10B981" CornerRadius="2.5" Margin="0,0,0,6"/>
+							<ProgressBar Value="{Binding TodayFactProgress}"
+                                         Height="4" Minimum="0" Maximum="100"
+                                         Background="{DynamicResource ProgressBackgroundBrush}"
+                                         Foreground="#10B981"
+                                         CornerRadius="2" Margin="0,0,0,6"/>
 
-							<Grid ColumnDefinitions="*, Auto" Margin="0,6,0,0">
-								<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-									<TextBlock Text="{Binding Loc[Deviation]}:" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
-									<TextBlock Text="{Binding TodayDeviationStr}" FontSize="11" FontWeight="Bold" Foreground="{Binding TodayDeviationColor}"/>
+							<!-- Отклонение + Подробнее -->
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel Grid.Column="0" Orientation="Horizontal"
+                                            Spacing="4" VerticalAlignment="Center">
+									<TextBlock Text="{Binding Loc[Deviation]}:"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+									<TextBlock Text="{Binding TodayDeviationStr}"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding TodayDeviationColor}"/>
 								</StackPanel>
-								<Button Grid.Column="1" Content="{Binding Loc[MoreBtn]}" Command="{Binding OpenAnalyticsCommand}"
-                                        FontSize="11" Padding="14,6" Background="#EFF6FF" Foreground="#2563EB" FontWeight="Bold" CornerRadius="6"/>
+								<Button Grid.Column="1"
+                                        Content="{Binding Loc[MoreBtn]}"
+                                        Command="{Binding OpenAnalyticsCommand}"
+                                        FontSize="11" Padding="10,5"
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource AccentBackground}"
+                                        BorderBrush="{DynamicResource AccentBackground}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"/>
 							</Grid>
 						</StackPanel>
 					</Border>
+
 				</StackPanel>
 			</ScrollViewer>
+
 		</Grid>
 	</Grid>
 </Window>

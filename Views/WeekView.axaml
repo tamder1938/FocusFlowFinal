@@ -2,84 +2,150 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
              xmlns:models="clr-namespace:FocusFlowFinal.Models"
+             xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
              x:Class="FocusFlowFinal.Views.WeekView"
              x:DataType="vm:WeekViewModel">
+
+	<UserControl.Resources>
+		<conv:BoolToStrikethroughConverter x:Key="BoolToStrikethroughConverter"/>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<!-- Заголовок дня — кнопка без фона -->
+		<Style Selector="Button.day-hdr">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding"         Value="4,6"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.day-hdr:pointerover">
+			<Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+		</Style>
+
+		<!-- Блок события — кнопка-обёртка -->
+		<Style Selector="Button.ev-btn">
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="Margin"          Value="2,2,2,0"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.ev-btn:pointerover">
+			<Setter Property="Opacity" Value="0.82"/>
+		</Style>
+	</UserControl.Styles>
+
 	<DockPanel>
-		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,8" Spacing="10">
-			<Button Content="&lt;" Command="{Binding PreviousWeekCommand}"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-			<TextBlock Text="{Binding WeekRangeTitle}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
+
+		<!-- Навигация -->
+		<Grid DockPanel.Dock="Top"
+              ColumnDefinitions="Auto, *, Auto"
+              Margin="14,10,14,0">
+			<Button Grid.Column="0"
+                    Content="‹" FontSize="18"
+                    Command="{Binding PreviousWeekCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
+			<TextBlock Grid.Column="1"
+                       Text="{Binding WeekRangeTitle}"
+                       FontSize="14" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<Button Content="&gt;" Command="{Binding NextWeekCommand}"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-		</StackPanel>
+			<Button Grid.Column="2"
+                    Content="›" FontSize="18"
+                    Command="{Binding NextWeekCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
+		</Grid>
 
-		<!-- ScrollViewer должен иметь ровно один дочерний элемент -->
-		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-			<Grid>
-				<!-- Сетка дней (видна, когда коллекция готова) -->
-				<ItemsControl ItemsSource="{Binding WeekDaysCustomCollection}"
-                              IsVisible="{Binding WeekDaysCustomCollection.Count, Converter={StaticResource CollectionCountToBoolConverter}}">
-					<ItemsControl.ItemsPanel>
-						<ItemsPanelTemplate>
-							<StackPanel Orientation="Horizontal" Spacing="4" />
-						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<Border MinWidth="140"
-                                    Background="{DynamicResource CardBackgroundBrush}"
-                                    CornerRadius="12"
-                                    VerticalAlignment="Stretch">
-								<DockPanel LastChildFill="True">
-									<Border DockPanel.Dock="Top"
-                                            Background="{DynamicResource CardSecondaryBackgroundBrush}"
-                                            CornerRadius="12,12,0,0"
-                                            Padding="8,6">
-										<StackPanel HorizontalAlignment="Center">
-											<TextBlock Text="{Binding DayName}"
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       FontWeight="Medium"/>
+		<!-- Колонки дней -->
+		<ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+			<ItemsControl ItemsSource="{Binding WeekDaysCustomCollection}"
+                          IsVisible="{Binding IsWeekReady}"
+                          Margin="6,8,6,8">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<UniformGrid Rows="1" Columns="7"/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="models:WeekDayItem">
+						<Border BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="0,0,1,0"
+                                VerticalAlignment="Stretch">
+							<DockPanel>
+
+								<!-- Заголовок дня: Пн / 11 -->
+								<Button DockPanel.Dock="Top"
+                                        Classes="day-hdr"
+                                        Command="{Binding $parent[UserControl].DataContext.SelectDayCommand}"
+                                        CommandParameter="{Binding DayDate}"
+                                        ToolTip.Tip="Открыть день">
+									<StackPanel HorizontalAlignment="Center" Spacing="2">
+										<TextBlock Text="{Binding DayName}"
+                                                   FontSize="10" FontWeight="Medium"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   HorizontalAlignment="Center"/>
+										<!-- Число: синий круг = сегодня, иначе — просто текст -->
+										<Grid Width="26" Height="26" HorizontalAlignment="Center">
+											<Border Width="26" Height="26" CornerRadius="13"
+                                                    Background="#3B82F6"
+                                                    IsVisible="{Binding IsToday}"/>
 											<TextBlock Text="{Binding DayNumber}"
-                                                       FontSize="18"
-                                                       FontWeight="Bold"
-                                                       Foreground="{DynamicResource PrimaryTextBrush}"
-                                                       HorizontalAlignment="Center"/>
-										</StackPanel>
-									</Border>
-									<ScrollViewer VerticalScrollBarVisibility="Auto">
-										<ItemsControl ItemsSource="{Binding Events}" Margin="6,8,6,8">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<Border Background="{Binding Color}"
-                                                            CornerRadius="6"
-                                                            Margin="0,2"
-                                                            Padding="6">
-														<TextBlock Text="{Binding Title}"
-                                                                   FontSize="11"
-                                                                   Foreground="White"
-                                                                   TextWrapping="Wrap"/>
-													</Border>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</ScrollViewer>
-								</DockPanel>
-							</Border>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+										</Grid>
+									</StackPanel>
+								</Button>
 
-				<!-- Заглушка (видна, когда коллекция пуста или меньше 7) -->
-				<TextBlock Text="Загрузка календаря..."
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding WeekDaysCustomCollection.Count, Converter={StaticResource CollectionCountToInverseBoolConverter}}"/>
-			</Grid>
+								<!-- Разделитель -->
+								<Border DockPanel.Dock="Top" Height="1"
+                                        Background="{DynamicResource BorderBrush}"/>
+
+								<!-- Список событий дня -->
+								<ScrollViewer VerticalScrollBarVisibility="Auto">
+									<ItemsControl ItemsSource="{Binding Events}" Margin="0,4,0,0">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate x:DataType="models:CalendarEvent">
+												<Button Classes="ev-btn"
+                                                        Command="{Binding $parent[UserControl].DataContext.EditEventCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip.Tip="{Binding Title}">
+													<Border CornerRadius="6" Padding="6,5"
+                                                            Background="{Binding Color}">
+														<StackPanel Spacing="1">
+															<TextBlock Text="{Binding Title}"
+                                                                       FontSize="11" FontWeight="SemiBold"
+                                                                       Foreground="White"
+                                                                       TextWrapping="Wrap"
+                                                                       MaxLines="2"/>
+															<TextBlock Text="{Binding Start, StringFormat='{}{0:HH:mm}'}"
+                                                                       FontSize="10" Foreground="White"
+                                                                       Opacity="0.8"/>
+														</StackPanel>
+													</Border>
+												</Button>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</ScrollViewer>
+
+							</DockPanel>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
 		</ScrollViewer>
+
 	</DockPanel>
 </UserControl>

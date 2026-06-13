@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Text.Json;
 using LiteDB;
 
 namespace FocusFlowFinal.Models;
@@ -17,6 +16,41 @@ public class AppSettings
     public string HotkeyWeek { get; set; } = "Ctrl+W";
     public string HotkeyNewTask { get; set; } = "Ctrl+N";
 
+    // ===================== Часть 2-3: аккаунт / синхронизация =====================
+
+    /// <summary>true — пользователь уже видел стартовый экран входа (LoginWindow)
+    /// и сделал выбор (войти или работать локально). Используется, чтобы
+    /// не показывать LoginWindow повторно при каждом запуске.</summary>
+    public bool HasCompletedFirstRun { get; set; } = false;
+
+    /// <summary>true — пользователь выбрал "Продолжить без синхронизации".
+    /// Все функции работают локально, вкладка "Аккаунт" заблокирована.</summary>
+    public bool IsLocalOnlyMode { get; set; } = true;
+
+    /// <summary>JWT-токен сессии (заглушка). В реальной реализации должен
+    /// храниться через защищённое хранилище (DPAPI / Keychain / libsecret),
+    /// а не в обычном JSON-файле настроек.</summary>
+    public string? AuthToken { get; set; }
+
+    /// <summary>Email последнего авторизованного пользователя (для отображения в UI).</summary>
+    public string? AccountEmail { get; set; }
+
+    /// <summary>Логин (username) последнего авторизованного пользователя.</summary>
+    public string? AccountUsername { get; set; }
+
+    /// <summary>Включена ли облачная синхронизация (требует активной подписки или dev-доступа).</summary>
+    public bool SyncEnabled { get; set; } = false;
+
+    /// <summary>Дата/время последней успешной синхронизации (UTC).</summary>
+    public DateTime? LastSyncUtc { get; set; }
+
+    /// <summary>URL базового адреса серверного API. Настраивается через appsettings
+    /// или хранится здесь после первого запуска (см. инструкцию по серверу).</summary>
+    public string CloudApiBaseUrl { get; set; } = "https://api.focusflow.example.com";
+
+    /// <summary>Автоматически отмечать задачу выполненной при завершении всех циклов таймера.</summary>
+    public bool MarkTaskCompletedOnTimerFinish { get; set; } = false;
+
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FocusFlow", "settings.json");
@@ -28,7 +62,6 @@ public class AppSettings
             if (File.Exists(SettingsPath))
             {
                 string json = File.ReadAllText(SettingsPath);
-                // ЯВНО указываем System.Text.Json.JsonSerializer
                 return System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
         }

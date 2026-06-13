@@ -17,6 +17,7 @@ public partial class TimerViewModel : ObservableObject
     private DispatcherTimer? _timer;
     private DateTime _segmentStartTime;
     private int _currentCycle = 0;
+    private int _totalWorkedSeconds = 0; // tracks actual pomodoro work time, not wall-clock
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -244,11 +245,12 @@ public partial class TimerViewModel : ObservableObject
         {
             if (State == TimerState.Idle)
             {
-                _currentCycle    = 1;
-                _segmentStartTime = DateTime.Now;
-                TotalSeconds     = WorkMinutes * 60;
-                ElapsedSeconds   = 0;
-                State            = TimerState.Working;
+                _currentCycle        = 1;
+                _totalWorkedSeconds  = 0;
+                _segmentStartTime    = DateTime.Now;
+                TotalSeconds         = WorkMinutes * 60;
+                ElapsedSeconds       = 0;
+                State                = TimerState.Working;
 
                 var session = new FocusSession
                 {
@@ -288,8 +290,14 @@ public partial class TimerViewModel : ObservableObject
             var activeSession = _db.GetActiveSession();
             if (activeSession != null)
             {
+                // Use timer-tracked work seconds (not wall-clock) to avoid inflating
+                // ActualMinutes when the completion dialog stays open for a long time.
+                int workedSecs = _totalWorkedSeconds;
+                if (State == TimerState.Working)
+                    workedSecs += ElapsedSeconds; // partial segment if manually stopped
+
                 activeSession.EndTime       = DateTime.Now;
-                activeSession.ActualMinutes = (int)(activeSession.EndTime.Value - activeSession.StartTime).TotalMinutes;
+                activeSession.ActualMinutes = Math.Max(1, workedSecs / 60);
                 activeSession.IsCompleted   = true;
                 _db.UpdateFocusSession(activeSession);
             }
@@ -337,11 +345,13 @@ public partial class TimerViewModel : ObservableObject
 
         if (State == TimerState.Working)
         {
+            _totalWorkedSeconds += TotalSeconds; // record completed work segment
             TimerFinished?.Invoke(CurrentTask?.Title);
             _currentCycle++;
 
             if (_currentCycle > Cycles * 2 - 1)
             {
+                ElapsedSeconds = 0; // prevent StopTimer from double-counting
                 StopDispatcherTimer();
                 await HandleTimerCompletionAsync();
                 return;
@@ -358,6 +368,7 @@ public partial class TimerViewModel : ObservableObject
 
             if (_currentCycle > Cycles * 2)
             {
+                ElapsedSeconds = 0; // prevent StopTimer from double-counting
                 StopDispatcherTimer();
                 await HandleTimerCompletionAsync();
                 return;
@@ -385,7 +396,8 @@ public partial class TimerViewModel : ObservableObject
         var vm     = new TimerCompletionViewModel(CurrentTask);
         var dialog = new TimerCompletionDialog { DataContext = vm };
         var owner  = GetOwnerWindow();
-        await dialog.ShowDialog(owner ?? dialog);
+        if (owner == null) { AutoCompleteCurrentTask(); StopTimer(); return; }
+        await dialog.ShowDialog(owner);
 
         var task = CurrentTask; // сохраняем до StopTimer()
 
@@ -474,11 +486,12 @@ public partial class TimerViewModel : ObservableObject
     {
         StopTimer();
 
-        CurrentTask  = task;
-        WorkMinutes  = task.PlannedDurationMinutes;
-        BreakMinutes = 1;
-        Cycles       = 1;
-        _currentCycle = 1;
+        CurrentTask         = task;
+        WorkMinutes         = task.PlannedDurationMinutes;
+        BreakMinutes        = 1;
+        Cycles              = 1;
+        _currentCycle       = 1;
+        _totalWorkedSeconds = 0;
 
         TotalSeconds   = task.PlannedDurationMinutes * 60;
         ElapsedSeconds = 0;

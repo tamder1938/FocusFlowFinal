@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Title="FocusFlow"
+        Width="380" Height="460"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Styles>
+		<Style Selector="TextBox">
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Padding" Value="10,8"/>
+			<Setter Property="Margin" Value="0,0,0,12"/>
+		</Style>
+		<Style Selector="Button.primary">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Button.primary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
+		</Style>
+		<Style Selector="Button.link">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.secondary">
+			<Setter Property="Background" Value="{DynamicResource SecondaryActionBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryActionFgBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		</Style>
+	</Window.Styles>
+
+	<StackPanel Margin="28" Spacing="0" VerticalAlignment="Center">
+
+		<!-- Логотип -->
+		<Border Width="56" Height="56" CornerRadius="14"
+                Background="{DynamicResource AccentBackground}"
+                HorizontalAlignment="Center" Margin="0,0,0,16">
+			<TextBlock Text="F" FontSize="28" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+		</Border>
+
+		<TextBlock Text="{Binding Loc[LoginTitle]}"
+                   FontSize="18" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}"
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+		<TextBlock Text="{Binding Loc[LoginEmailLbl]}" FontSize="12"
+                   Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+		<TextBox Text="{Binding Email}" Watermark="email@example.com"/>
+
+		<TextBlock Text="{Binding Loc[LoginPasswordLbl]}" FontSize="12"
+                   Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+		<TextBox Text="{Binding Password}" PasswordChar="•"/>
+
+		<!-- Сообщение об ошибке -->
+		<TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="#EF4444" FontSize="12"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"/>
+
+		<Button Classes="primary" Content="{Binding Loc[LoginBtn]}"
+                Command="{Binding LoginCommand}"
+                IsEnabled="{Binding !IsBusy}"
+                Margin="0,4,0,10"/>
+
+		<Button Classes="link" Content="{Binding Loc[RegisterLinkBtn]}"
+                Command="{Binding OpenRegisterCommand}"
+                Margin="0,0,0,20"/>
+
+		<Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,16"/>
+
+		<Button Classes="secondary" Content="{Binding Loc[ContinueWithoutSyncBtn]}"
+                Command="{Binding ContinueWithoutSyncCommand}"/>
+
+	</StackPanel>
+</Window>

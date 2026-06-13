@@ -65,10 +65,7 @@
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
 		</Style>
 
-		<!-- ИСПРАВЛЕНО (Проблема 4): кнопка Play — единственный элемент справа,
-		     отражает приоритет цветом иконки. Кружок приоритета убран полностью.
-		     Кнопка всегда видима (если есть длительность), при наведении на неё
-		     появляется лёгкий фон-подсветка. -->
+		<!-- Кнопка Play -->
 		<Style Selector="Button.play-btn">
 			<Setter Property="Width" Value="32"/>
 			<Setter Property="Height" Value="32"/>
@@ -85,7 +82,6 @@
 				</Transitions>
 			</Setter>
 		</Style>
-		<!-- ИСПРАВЛЕНО (Проблема 4): лёгкое затемнение фона при наведении на кнопку -->
 		<Style Selector="Button.play-btn:pointerover">
 			<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}"/>
 		</Style>
@@ -104,18 +100,6 @@
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
 
-		<!-- ИСПРАВЛЕНО (Проблема 6): Expander для выполненных задач -->
-		<Style Selector="Expander.completed-expander">
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-			<Setter Property="Margin" Value="0,8,0,0"/>
-		</Style>
-		<Style Selector="Expander.completed-expander /template/ ToggleButton">
-			<Setter Property="Background" Value="{DynamicResource CardSecondaryBackgroundBrush}"/>
-			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Padding" Value="10,8"/>
-		</Style>
-
 		<!-- Чекбокс выполнения -->
 		<Style Selector="CheckBox.task-check">
 			<Setter Property="Background" Value="Transparent"/>
@@ -123,7 +107,7 @@
 			<Setter Property="Margin" Value="0,0,8,0"/>
 		</Style>
 
-		<!-- Фильтры статуса: серый / синий / фиолетовый, отличаются от фильтров приоритета -->
+		<!-- Фильтры статуса: серый / синий / фиолетовый -->
 		<Style Selector="Button.filter-btn.filter-status-all">
 			<Setter Property="Background" Value="#4B5563"/>
 			<Setter Property="Foreground" Value="#D1D5DB"/>
@@ -148,6 +132,14 @@
 			<Setter Property="Background" Value="#7C3AED"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
+
+		<!-- Подзадача в карточке -->
+		<Style Selector="CheckBox.subtask-check">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="0,0,6,0"/>
+			<Setter Property="MinWidth" Value="0"/>
+			<Setter Property="Padding" Value="0"/>
+		</Style>
 	</UserControl.Styles>
 
 	<DockPanel Margin="15">
@@ -157,7 +149,6 @@
 			<TextBlock Grid.Column="0" Text="{Binding Loc[Tasks]}"
                        FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
                        Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<!-- ИСПРАВЛЕНО (Проблема 12): "Все проекты"/"Без проекта" локализованы в TaskListViewModel.LoadProjects -->
 			<ComboBox Grid.Column="1"
                       ItemsSource="{Binding Projects}"
                       SelectedItem="{Binding SelectedProject}"
@@ -180,25 +171,21 @@
 
 		<!-- Фильтры по приоритету -->
 		<WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
-			<!-- ИСПРАВЛЕНО (4.2): "Все" — нейтральный серый, контрастный текст -->
 			<Button Classes="filter-btn" Content="{Binding Loc[FilterAll]}" Margin="0,0,4,0"
                     Command="{Binding SetPriorityFilterCommand}" CommandParameter="-1"
                     Background="#6B7280" Foreground="White"/>
-			<!-- ИСПРАВЛЕНО (4.2): "Высокий" — насыщенный красный -->
 			<Button Classes="filter-btn" Content="{Binding Loc[FilterHigh]}" Margin="0,0,4,0"
                     Command="{Binding SetPriorityFilterCommand}" CommandParameter="0"
                     Background="#EF4444" Foreground="White"/>
-			<!-- ИСПРАВЛЕНО (4.2): "Средний" — насыщенный оранжевый -->
 			<Button Classes="filter-btn" Content="{Binding Loc[FilterMedium]}" Margin="0,0,4,0"
                     Command="{Binding SetPriorityFilterCommand}" CommandParameter="1"
                     Background="#F59E0B" Foreground="White"/>
-			<!-- ИСПРАВЛЕНО (4.2): "Низкий" — насыщенный зелёный -->
 			<Button Classes="filter-btn" Content="{Binding Loc[FilterLow]}"
                     Command="{Binding SetPriorityFilterCommand}" CommandParameter="2"
                     Background="#10B981" Foreground="White"/>
 		</WrapPanel>
 
-		<!-- Фильтр по статусу выполнения — цвета отличаются от фильтров приоритета -->
+		<!-- Фильтр по статусу выполнения -->
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="0,0,0,10">
 			<Button Classes="filter-btn filter-status-all"
                     Classes.active="{Binding CompletionFilter, Converter={x:Static conv:CompletionFilterConverter.IsAll}}"
@@ -214,90 +201,43 @@
                     Command="{Binding SetCompletionFilterCommand}" CommandParameter="2"/>
 		</StackPanel>
 
-		<!-- Expander для выполненных задач: виден только при фильтре "Все", развёрнут по умолчанию -->
-		<Expander DockPanel.Dock="Bottom" Classes="completed-expander"
-                  Header="{Binding CompletedTasksHeader}"
-                  IsVisible="{Binding HasCompletedTasks}"
-                  IsExpanded="{Binding IsCompletedExpanderExpanded}">
-			<ListBox ItemsSource="{Binding CompletedTasks}"
-                     Background="Transparent" MaxHeight="400">
-				<ListBox.ItemTemplate>
-					<DataTemplate x:DataType="models:TaskItem">
-						<Border Classes="task-card" Padding="0" Opacity="{Binding IsCompleted, Converter={StaticResource IsCompletedToOpacityConverter}}">
-							<Grid ColumnDefinitions="4,*">
-								<Border Grid.Column="0"
-                                        Background="{Binding ProjectColor, Converter={StaticResource StringToBrushConverter}}"
-                                        CornerRadius="10,0,0,10" VerticalAlignment="Stretch"/>
-								<Grid Grid.Column="1" Margin="10,8,10,8">
-									<Grid.RowDefinitions>
-										<RowDefinition Height="Auto"/>
-										<RowDefinition Height="Auto"/>
-									</Grid.RowDefinitions>
-									<Grid Grid.Row="0" ColumnDefinitions="Auto,*">
-										<!-- Чекбокс снятия отметки выполнения -->
-										<CheckBox Grid.Column="0" Classes="task-check"
-                                                  IsChecked="{Binding IsCompleted, Mode=OneWay}"
-                                                  Command="{Binding $parent[UserControl].DataContext.ToggleTaskCompletionCommand}"
-                                                  CommandParameter="{Binding}"/>
-										<!-- Название + описание + длительность -->
-										<StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-											<TextBlock Text="{Binding Title}"
-                                                       FontSize="14" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"
-                                                       TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToStrikethroughConverter}}"/>
-											<TextBlock Text="{Binding Description}"
-                                                       FontSize="12" Opacity="0.55"
-                                                       TextWrapping="Wrap"
-                                                       IsVisible="{Binding Description, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
-											<TextBlock Text="{Binding DurationText}"
-                                                       FontSize="11" Opacity="0.5"
-                                                       IsVisible="{Binding HasDuration}"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
-										</StackPanel>
-									</Grid>
-								</Grid>
-							</Grid>
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
-		</Expander>
-
-		<!-- Список активных задач -->
-		<ListBox ItemsSource="{Binding ActiveTasks}"
+		<!-- Единый список задач: активные сначала, затем выполненные -->
+		<ListBox ItemsSource="{Binding FilteredTasks}"
                  SelectedItem="{Binding SelectedTask}"
                  Background="Transparent">
 			<ListBox.ItemTemplate>
 				<DataTemplate x:DataType="models:TaskItem">
-					<Border Classes="task-card" Padding="0">
+					<Border Classes="task-card" Padding="0"
+					        Opacity="{Binding IsCompleted, Converter={StaticResource IsCompletedToOpacityConverter}}">
 						<Grid ColumnDefinitions="4,*">
+							<!-- Цветная полоска проекта слева -->
 							<Border Grid.Column="0"
                                     Background="{Binding ProjectColor, Converter={StaticResource StringToBrushConverter}}"
                                     CornerRadius="10,0,0,10" VerticalAlignment="Stretch"/>
+
+							<!-- Содержимое карточки -->
 							<Grid Grid.Column="1" Margin="10,8,10,8">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
 
-								<!-- ИСПРАВЛЕНО (Проблема 4): колонка справа теперь ОДНА —
-								     либо кнопка Play (если HasDuration), либо ничего. -->
+								<!-- Строка 0: чекбокс + текст + кнопки -->
 								<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
 
-									<!-- Чекбокс выполнения (Проблема 6) -->
+									<!-- Чекбокс выполнения — активен всегда -->
 									<CheckBox Grid.Column="0" Classes="task-check"
                                               IsChecked="{Binding IsCompleted, Mode=OneWay}"
                                               Command="{Binding $parent[UserControl].DataContext.ToggleTaskCompletionCommand}"
                                               CommandParameter="{Binding}"/>
 
-									<!-- Название + описание -->
+									<!-- Название + описание + длительность + счётчик подзадач -->
 									<StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
 										<TextBlock Text="{Binding Title}"
                                                    FontSize="14" FontWeight="SemiBold"
+                                                   TextWrapping="Wrap"
                                                    Foreground="{DynamicResource PrimaryTextBrush}"
-                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToStrikethroughConverter}}"
-                                                   Opacity="{Binding IsCompleted, Converter={StaticResource IsCompletedToOpacityConverter}}"/>
+                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToStrikethroughConverter}}"/>
 										<TextBlock Text="{Binding Description}"
                                                    FontSize="12" Opacity="0.55"
                                                    TextWrapping="Wrap"
@@ -313,7 +253,7 @@
                                                    Foreground="{DynamicResource AccentBackground}"/>
 									</StackPanel>
 
-									<!-- Кнопка редактирования (скрыта для выполненных) -->
+									<!-- Кнопка редактирования (только для незавершённых) -->
 									<Button Grid.Column="2" Classes="edit-btn" Margin="8,0,4,0"
                                             IsVisible="{Binding IsCompleted, Converter={StaticResource InverseBoolConverter}}"
                                             Command="{Binding $parent[UserControl].DataContext.EditTaskCommand}"
@@ -323,8 +263,7 @@
                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
 									</Button>
 
-									<!-- Кнопка Play: видима только если есть длительность И задача не выполнена.
-									     Цвет иконки = приоритет задачи (красный/жёлтый/зелёный). -->
+									<!-- Кнопка Play (только если HasDuration и не выполнена) -->
 									<Button Grid.Column="3" Classes="play-btn"
                                             IsVisible="{Binding CanStartTimer}"
                                             Command="{Binding $parent[UserControl].DataContext.StartTimerCommand}"
@@ -335,6 +274,30 @@
                                                   Foreground="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}"/>
 									</Button>
 								</Grid>
+
+								<!-- Строка 1: список подзадач (если есть) -->
+								<ItemsControl Grid.Row="1"
+								              ItemsSource="{Binding SubtaskViewItems}"
+								              IsVisible="{Binding HasSubtasks}"
+								              Margin="26,4,4,2">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="models:SubtaskViewItem">
+											<StackPanel Orientation="Horizontal"
+											            Margin="0,3,0,0"
+											            VerticalAlignment="Center">
+												<CheckBox Classes="subtask-check"
+												          IsChecked="{Binding IsCompleted}"/>
+												<TextBlock Text="{Binding Title}"
+												           FontSize="12"
+												           VerticalAlignment="Center"
+												           TextWrapping="Wrap"
+												           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToStrikethroughConverter}}"
+												           Foreground="{DynamicResource SecondaryTextBrush}"
+												           Opacity="0.85"/>
+											</StackPanel>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
 							</Grid>
 						</Grid>
 					</Border>

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
@@ -13,6 +13,26 @@ public partial class YearMonthItem : ObservableObject
 {
     [ObservableProperty] private string _monthName = string.Empty;
     [ObservableProperty] private ObservableCollection<YearDayItem> _days = new();
+
+    /// <summary>true, если это текущий календарный месяц (для подсветки в YearView).</summary>
+    [ObservableProperty] private bool _isCurrentMonth;
+
+    /// <summary>Кол-во выполненных задач в этом месяце.</summary>
+    [ObservableProperty] private int _completedTasksCount;
+
+    /// <summary>Общее кол-во задач с дедлайном в этом месяце.</summary>
+    [ObservableProperty] private int _totalTasksCount;
+
+    /// <summary>Текст вида "Выполнено: 2/7" для текущего месяца.</summary>
+    public string ProgressText => $"{LocalizationService.Instance["Done"]}: {CompletedTasksCount}/{TotalTasksCount}";
+
+    /// <summary>Доля выполненных задач (0-100) для прогресс-бара.</summary>
+    public double ProgressPercent => TotalTasksCount > 0
+        ? (double)CompletedTasksCount / TotalTasksCount * 100
+        : 0;
+
+    /// <summary>Показывать блок прогресса только если есть хотя бы одна задача.</summary>
+    public bool HasProgress => TotalTasksCount > 0;
 }
 
 public partial class YearDayItem : ObservableObject
@@ -77,11 +97,17 @@ public partial class YearViewModel : ObservableObject
 
         var allTasksThisYear = _db.GetAllTasks()
             .Where(t => t.DueDate.HasValue && t.DueDate.Value.Year == CurrentYear)
-            .Select(t => t.DueDate.Value.Date)
+            .ToList();
+
+        var tasksByDate = allTasksThisYear
+            .Where(t => t.DueDate.HasValue)
+            .Select(t => t.DueDate!.Value.Date)
             .ToHashSet();
 
         string[] monthKeys = { "January", "February", "March", "April", "May", "June",
                                "July", "August", "September", "October", "November", "December" };
+
+        var today = DateTime.Today;
 
         for (int m = 0; m < 12; m++)
         {
@@ -89,7 +115,18 @@ public partial class YearViewModel : ObservableObject
             var firstDayOfMonth = new DateTime(CurrentYear, monthNumber, 1);
             string monthName = LocalizationService.Instance[monthKeys[m]];
 
-            var monthItem = new YearMonthItem { MonthName = monthName };
+            var monthItem = new YearMonthItem
+            {
+                MonthName       = monthName,
+                IsCurrentMonth  = (CurrentYear == today.Year && monthNumber == today.Month)
+            };
+
+            // Прогресс выполнения задач за месяц
+            var monthTasks = allTasksThisYear
+                .Where(t => t.DueDate!.Value.Month == monthNumber)
+                .ToList();
+            monthItem.TotalTasksCount     = monthTasks.Count;
+            monthItem.CompletedTasksCount = monthTasks.Count(t => t.IsCompleted);
 
             int diff = (7 + (firstDayOfMonth.DayOfWeek - DayOfWeek.Monday)) % 7;
             var gridStart = firstDayOfMonth.AddDays(-diff);
@@ -98,9 +135,8 @@ public partial class YearViewModel : ObservableObject
             {
                 var date = gridStart.AddDays(i);
 
-                // ИСПРАВЛЕНИЕ: Проверяем наличие событий через GetEventsForDisplay, который точно доступен
                 var dayEvents = _db.GetEventsForDisplay(date.Date);
-                bool dayHasActivity = allTasksThisYear.Contains(date.Date) || dayEvents.Any();
+                bool dayHasActivity = tasksByDate.Contains(date.Date) || dayEvents.Any();
 
                 var dayItem = new YearDayItem
                 {

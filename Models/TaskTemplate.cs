@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using LiteDB;
 
 namespace FocusFlowFinal.Models;
@@ -16,4 +17,5 @@ public class TaskTemplate
     public bool IsTimeBound { get; set; }
     public int StartHour { get; set; } = 9;
     public int StartMinute { get; set; }
+    public List<Subtask> Subtasks { get; set; } = new();
 }

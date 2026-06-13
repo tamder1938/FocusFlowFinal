@@ -1,11 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
 using FocusFlowFinal.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -18,31 +17,68 @@ public partial class EventDialogViewModel : ObservableObject
     private readonly int _originalId;
     private readonly int? _originalTaskId;
     private readonly DateTime _selectedDate;
-    private readonly DateTime _originalSeriesStartDate; // Храним дату старта самой серии
+    private readonly DateTime _originalSeriesStartDate;
     private readonly ITemplateService _templateService;
 
     public LocalizationService Loc => LocalizationService.Instance;
 
+    // === Предустановленные цвета ===
+    public static readonly string[] PresetColors = new[]
+    {
+        "#EF4444", // Красный
+        "#F97316", // Оранжевый
+        "#EAB308", // Жёлтый
+        "#22C55E", // Зелёный
+        "#3B82F6", // Синий
+        "#8B5CF6", // Фиолетовый
+        "#EC4899", // Розовый
+        "#6B7280"  // Серый
+    };
+
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private bool _isAllDay;
+
+    // ИСПРАВЛЕНО (Часть 1, п.2): дата события теперь редактируема через DatePicker
+    // в самом диалоге — пользователь может выбрать произвольный день,
+    // не закрывая окно и не возвращаясь в месячный календарь.
+    [ObservableProperty] private DateTimeOffset _eventDate;
     [ObservableProperty] private int _startHour;
     [ObservableProperty] private int _startMinute;
     [ObservableProperty] private int _endHour;
     [ObservableProperty] private int _endMinute;
-    [ObservableProperty] private string _color = "#3498db";
+
+    // Цвет события: основное свойство — HEX строка
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPresetSelected))]
+    private string _color = "#3498db";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsWeeklyFieldsVisible))]
     [NotifyPropertyChangedFor(nameof(IsShiftFieldsVisible))]
     [NotifyPropertyChangedFor(nameof(IsCustomFieldsVisible))]
+    [NotifyPropertyChangedFor(nameof(IsMonthlyFieldsVisible))]
+    [NotifyPropertyChangedFor(nameof(IsYearlyFieldsVisible))]
+    [NotifyPropertyChangedFor(nameof(HasRecurrence))]
     private int _recurrenceIndex;
 
-    public bool IsWeeklyFieldsVisible => RecurrenceIndex == 3;
-    public bool IsShiftFieldsVisible => RecurrenceIndex == 6;
-    public bool IsCustomFieldsVisible => RecurrenceIndex == 7;
+    public bool IsWeeklyFieldsVisible  => RecurrenceIndex == 3;
+    public bool IsShiftFieldsVisible   => RecurrenceIndex == 6;
+    public bool IsCustomFieldsVisible  => RecurrenceIndex == 7;
+    public bool IsMonthlyFieldsVisible => RecurrenceIndex == 4;
+    public bool IsYearlyFieldsVisible  => RecurrenceIndex == 5;
+
+    // Показываем поле даты окончания только если есть повторение
+    public bool HasRecurrence => RecurrenceIndex != 0;
 
     public bool IsEditMode => _originalId != 0;
     public bool IsDeleted { get; private set; }
+
+    // === Выбор дня начала для Monthly ===
+    [ObservableProperty] private int _monthlyDay = 1;
+
+    // === Выбор дня и месяца начала для Yearly ===
+    [ObservableProperty] private int _yearlyDay   = 1;
+    [ObservableProperty] private int _yearlyMonth = 1;
 
     [ObservableProperty] private bool _dayMon;
     [ObservableProperty] private bool _dayTue;
@@ -59,18 +95,31 @@ public partial class EventDialogViewModel : ObservableObject
     [ObservableProperty] private int _intervalValue = 1;
     [ObservableProperty] private int _intervalUnitIndex = 0;
 
-    // Свойства сохранения и вывода шаблонов событий
+    // Дата окончания серии повторений
+    [ObservableProperty] private DateTimeOffset? _recurrenceEndDate = null;
+
     [ObservableProperty] private bool _saveAsTemplate;
     [ObservableProperty] private string _templateName = string.Empty;
     [ObservableProperty] private ObservableCollection<EventTemplate> _eventTemplates = new();
     [ObservableProperty] private EventTemplate? _selectedEventTemplate;
-
     [ObservableProperty] private CalendarEvent? _resultEvent;
 
     public string SelectedDeleteMode { get; private set; } = "Cancel";
-
-    // ИСПРАВЛЕНИЕ: Явно указан аргумент типа <DateTime>
     public List<DateTime> DatesToRemove { get; private set; } = new List<DateTime>();
+
+    /// <summary>
+    /// Возвращает true, если данный hex совпадает с текущим выбранным цветом.
+    /// Используется в XAML для подсветки активного кружка.
+    /// </summary>
+    public bool IsPresetSelected => PresetColors.Any(c =>
+        string.Equals(c, Color, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Команда выбора предустановленного цвета из кружка.</summary>
+    [RelayCommand]
+    private void SelectColor(string hex)
+    {
+        Color = hex;
+    }
 
     public EventDialogViewModel(CalendarEvent evt, DateTime selectedDate, ITemplateService? templateService = null)
     {
@@ -78,21 +127,24 @@ public partial class EventDialogViewModel : ObservableObject
         _originalTaskId = evt.TaskId;
         _selectedDate = selectedDate;
 
+        // ИСПРАВЛЕНО (Часть 1, п.2): для нового события — дата клика в календаре,
+        // для существующего — дата самого события (evt.Start).
+        EventDate = new DateTimeOffset(evt.Id != 0 ? evt.Start.Date : selectedDate.Date);
+
         var services = ((App)Avalonia.Application.Current!).Services!;
         var db = services.GetRequiredService<IDatabaseService>();
         _templateService = templateService ?? services.GetRequiredService<ITemplateService>();
 
-        // Извлекаем настоящую дату старта серии из базы, чтобы не брать виртуальную
         var dbEvent = _originalId != 0 ? db.GetEventById(_originalId) : null;
         _originalSeriesStartDate = dbEvent != null ? dbEvent.Start : evt.Start;
 
-        _title = evt.Title;
-        _isAllDay = evt.IsAllDay;
-        _startHour = evt.Start.Hour;
-        _startMinute = evt.Start.Minute;
-        _endHour = evt.End.Hour;
-        _endMinute = evt.End.Minute;
-        _color = evt.Color ?? "#3498db";
+        _title        = evt.Title;
+        _isAllDay     = evt.IsAllDay;
+        _startHour    = evt.Start.Hour;
+        _startMinute  = evt.Start.Minute;
+        _endHour      = evt.End.Hour;
+        _endMinute    = evt.End.Minute;
+        _color        = evt.Color ?? "#3498db";
         _recurrenceIndex = (int)evt.Recurrence;
 
         if (evt.DaysOfWeek != null)
@@ -107,12 +159,22 @@ public partial class EventDialogViewModel : ObservableObject
         }
 
         if (evt.WorkingDays.HasValue) WorkingDays = evt.WorkingDays.Value;
-        if (evt.OffDays.HasValue) OffDays = evt.OffDays.Value;
+        if (evt.OffDays.HasValue)     OffDays     = evt.OffDays.Value;
 
         CycleStartDate = new DateTimeOffset(evt.CycleStartDate ?? _selectedDate.Date);
 
-        if (evt.IntervalValue.HasValue) IntervalValue = evt.IntervalValue.Value;
-        if (evt.IntervalUnit.HasValue) IntervalUnitIndex = (int)evt.IntervalUnit.Value;
+        if (evt.IntervalValue.HasValue) IntervalValue    = evt.IntervalValue.Value;
+        if (evt.IntervalUnit.HasValue)  IntervalUnitIndex = (int)evt.IntervalUnit.Value;
+
+        // Загружаем дату окончания из модели
+        RecurrenceEndDate = evt.RecurrenceEndDate.HasValue
+            ? new DateTimeOffset(evt.RecurrenceEndDate.Value)
+            : null;
+
+        // Загружаем день начала повторения
+        _monthlyDay   = evt.RecurrenceStartDay ?? evt.Start.Day;
+        _yearlyDay    = evt.RecurrenceStartDay ?? evt.Start.Day;
+        _yearlyMonth  = evt.RecurrenceStartMonth ?? evt.Start.Month;
 
         LoadEventTemplates();
     }
@@ -120,40 +182,38 @@ public partial class EventDialogViewModel : ObservableObject
     private void LoadEventTemplates()
     {
         EventTemplates.Clear();
-        var templates = _templateService.GetEventTemplates();
-        foreach (var t in templates)
+        foreach (var t in _templateService.GetEventTemplates())
             EventTemplates.Add(t);
     }
 
     partial void OnSelectedEventTemplateChanged(EventTemplate? value)
     {
-        if (value != null)
+        if (value == null) return;
+
+        Title          = value.Title;
+        IsAllDay       = value.IsAllDay;
+        StartHour      = value.StartHour;
+        StartMinute    = value.StartMinute;
+        EndHour        = value.EndHour;
+        EndMinute      = value.EndMinute;
+        Color          = value.Color ?? "#3498db";
+        RecurrenceIndex = (int)value.Recurrence;
+
+        if (value.DaysOfWeek != null)
         {
-            Title = value.Title;
-            IsAllDay = value.IsAllDay;
-            StartHour = value.StartHour;
-            StartMinute = value.StartMinute;
-            EndHour = value.EndHour;
-            EndMinute = value.EndMinute;
-            Color = value.Color ?? "#3498db";
-            RecurrenceIndex = (int)value.Recurrence;
-
-            if (value.DaysOfWeek != null)
-            {
-                DayMon = value.DaysOfWeek.Contains(DayOfWeek.Monday);
-                DayTue = value.DaysOfWeek.Contains(DayOfWeek.Tuesday);
-                DayWed = value.DaysOfWeek.Contains(DayOfWeek.Wednesday);
-                DayThu = value.DaysOfWeek.Contains(DayOfWeek.Thursday);
-                DayFri = value.DaysOfWeek.Contains(DayOfWeek.Friday);
-                DaySat = value.DaysOfWeek.Contains(DayOfWeek.Saturday);
-                DaySun = value.DaysOfWeek.Contains(DayOfWeek.Sunday);
-            }
-
-            if (value.WorkingDays.HasValue) WorkingDays = value.WorkingDays.Value;
-            if (value.OffDays.HasValue) OffDays = value.OffDays.Value;
-            if (value.IntervalValue.HasValue) IntervalValue = value.IntervalValue.Value;
-            if (value.IntervalUnit.HasValue) IntervalUnitIndex = (int)value.IntervalUnit.Value;
+            DayMon = value.DaysOfWeek.Contains(DayOfWeek.Monday);
+            DayTue = value.DaysOfWeek.Contains(DayOfWeek.Tuesday);
+            DayWed = value.DaysOfWeek.Contains(DayOfWeek.Wednesday);
+            DayThu = value.DaysOfWeek.Contains(DayOfWeek.Thursday);
+            DayFri = value.DaysOfWeek.Contains(DayOfWeek.Friday);
+            DaySat = value.DaysOfWeek.Contains(DayOfWeek.Saturday);
+            DaySun = value.DaysOfWeek.Contains(DayOfWeek.Sunday);
         }
+
+        if (value.WorkingDays.HasValue) WorkingDays    = value.WorkingDays.Value;
+        if (value.OffDays.HasValue)     OffDays        = value.OffDays.Value;
+        if (value.IntervalValue.HasValue) IntervalValue = value.IntervalValue.Value;
+        if (value.IntervalUnit.HasValue)  IntervalUnitIndex = (int)value.IntervalUnit.Value;
     }
 
     [RelayCommand]
@@ -167,7 +227,8 @@ public partial class EventDialogViewModel : ObservableObject
             return;
         }
 
-        var desktop = App.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
+        var desktop = App.Current?.ApplicationLifetime as
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
         var currentWindow = desktop?.Windows.FirstOrDefault(w => w.DataContext == this);
         if (currentWindow == null) return;
 
@@ -191,30 +252,7 @@ public partial class EventDialogViewModel : ObservableObject
         }
         else if (modeWindow.DeleteResult == "Custom")
         {
-            // ИСПРАВЛЕНИЕ: Явно указан аргумент типа <DateTime>
-            var upcomingDates = new List<DateTime>();
-            DateTime startPoint = _selectedDate.Date;
-
-            for (int i = 0; i < 35; i++)
-            {
-                DateTime targetDate = startPoint.AddDays(i);
-                bool match = RecurrenceIndex switch
-                {
-                    1 => true,
-                    2 => targetDate.DayOfWeek != DayOfWeek.Saturday && targetDate.DayOfWeek != DayOfWeek.Sunday,
-                    3 => (targetDate.DayOfWeek == DayOfWeek.Monday && DayMon) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Tuesday && DayTue) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Wednesday && DayWed) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Thursday && DayThu) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Friday && DayFri) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Saturday && DaySat) ||
-                         (targetDate.DayOfWeek == DayOfWeek.Sunday && DaySun),
-                    _ => targetDate.DayOfWeek == _selectedDate.DayOfWeek
-                };
-
-                if (match) upcomingDates.Add(targetDate);
-            }
-
+            var upcomingDates = BuildUpcomingDates(60);
             var customDaysWindow = new DeleteCustomDaysWindow(upcomingDates);
             await customDaysWindow.ShowDialog(currentWindow);
 
@@ -228,45 +266,118 @@ public partial class EventDialogViewModel : ObservableObject
         }
     }
 
+    private List<DateTime> BuildUpcomingDates(int daysAhead)
+    {
+        var result = new List<DateTime>();
+        var startPoint = _selectedDate.Date;
+
+        for (int i = 0; i < daysAhead; i++)
+        {
+            var target = startPoint.AddDays(i);
+            bool match = RecurrenceIndex switch
+            {
+                1 => true,
+                2 => target.DayOfWeek != DayOfWeek.Saturday && target.DayOfWeek != DayOfWeek.Sunday,
+                3 =>
+                    (target.DayOfWeek == DayOfWeek.Monday    && DayMon) ||
+                    (target.DayOfWeek == DayOfWeek.Tuesday   && DayTue) ||
+                    (target.DayOfWeek == DayOfWeek.Wednesday && DayWed) ||
+                    (target.DayOfWeek == DayOfWeek.Thursday  && DayThu) ||
+                    (target.DayOfWeek == DayOfWeek.Friday    && DayFri) ||
+                    (target.DayOfWeek == DayOfWeek.Saturday  && DaySat) ||
+                    (target.DayOfWeek == DayOfWeek.Sunday    && DaySun),
+                4 => target.Day == MonthlyDay,
+                5 => target.Day == YearlyDay && target.Month == YearlyMonth,
+                6 => IsShiftWorkingDay(target),
+                7 => IsCustomIntervalDay(target),
+                _ => false
+            };
+
+            if (match) result.Add(target);
+        }
+
+        return result;
+    }
+
+    private bool IsShiftWorkingDay(DateTime date)
+    {
+        var cycleStart = CycleStartDate?.DateTime.Date ?? _originalSeriesStartDate.Date;
+        if (date < cycleStart) return false;
+
+        int working = WorkingDays > 0 ? WorkingDays : 2;
+        int off     = OffDays > 0     ? OffDays     : 2;
+        int total   = working + off;
+        int passed  = (date - cycleStart).Days;
+        int pos     = passed % total;
+        return pos < working;
+    }
+
+    private bool IsCustomIntervalDay(DateTime date)
+    {
+        if (IntervalValue <= 0) return false;
+        var origin = _originalSeriesStartDate.Date;
+        int daysDiff = (date - origin).Days;
+        if (daysDiff < 0) return false;
+
+        return IntervalUnitIndex switch
+        {
+            0 => daysDiff % IntervalValue == 0,
+            1 => daysDiff % (IntervalValue * 7) == 0,
+            2 => ((date.Year - origin.Year) * 12 + date.Month - origin.Month) % IntervalValue == 0 &&
+                 date.Day == origin.Day,
+            _ => false
+        };
+    }
+
     [RelayCommand]
     private void Save()
     {
-        if (string.IsNullOrWhiteSpace(Title))
-            return;
+        if (string.IsNullOrWhiteSpace(Title)) return;
 
-        DateTime start;
-        DateTime end;
+        // ИСПРАВЛЕНО (Часть 1, п.2): для серий повторений сохраняем исходную дату начала серии,
+        // для нового или неповторяющегося события — берём дату, выбранную пользователем в DatePicker.
+        DateTime baseDate = (RecurrenceIndex != 0 && _originalId != 0)
+            ? _originalSeriesStartDate.Date
+            : EventDate.Date;
 
-        // Фиксируем дату на дне создания серии, чтобы сохранение не сдвигало начало цепочки повторений
-        DateTime baseDate = (RecurrenceIndex != 0 && _originalId != 0) ? _originalSeriesStartDate.Date : _selectedDate.Date;
-
+        DateTime start, end;
         if (IsAllDay)
         {
             start = baseDate;
-            end = baseDate.AddDays(1).AddSeconds(-1);
+            end   = baseDate.AddDays(1).AddSeconds(-1);
         }
         else
         {
             start = baseDate.AddHours(StartHour).AddMinutes(StartMinute);
-            end = baseDate.AddHours(EndHour).AddMinutes(EndMinute);
-            if (end <= start)
-                return;
+            end   = baseDate.AddHours(EndHour).AddMinutes(EndMinute);
+            if (end <= start) return;
         }
 
         ResultEvent = new CalendarEvent
         {
-            Id = _originalId,
-            Title = Title.Trim(),
-            Start = start,
-            End = end,
-            Color = Color,
-            TaskId = _originalTaskId,
-            IsAllDay = IsAllDay,
-            Recurrence = (RecurrenceType)RecurrenceIndex,
-            DaysOfWeek = new List<DayOfWeek>()
+            Id          = _originalId,
+            Title       = Title.Trim(),
+            Start       = start,
+            End         = end,
+            Color       = Color,
+            TaskId      = _originalTaskId,
+            IsAllDay    = IsAllDay,
+            Recurrence  = (RecurrenceType)RecurrenceIndex,
+            DaysOfWeek  = new List<DayOfWeek>(),
+            RecurrenceEndDate = RecurrenceEndDate?.DateTime.Date
         };
 
-        // БЛОК ИСПРАВЛЕН: Теперь эти строки находятся строго внутри метода Save()
+        // Сохраняем день начала повторения для Monthly/Yearly
+        if (RecurrenceIndex == 4) // Monthly
+        {
+            ResultEvent.RecurrenceStartDay = MonthlyDay;
+        }
+        else if (RecurrenceIndex == 5) // Yearly
+        {
+            ResultEvent.RecurrenceStartDay   = YearlyDay;
+            ResultEvent.RecurrenceStartMonth = YearlyMonth;
+        }
+
         if (DayMon) ResultEvent.DaysOfWeek.Add(DayOfWeek.Monday);
         if (DayTue) ResultEvent.DaysOfWeek.Add(DayOfWeek.Tuesday);
         if (DayWed) ResultEvent.DaysOfWeek.Add(DayOfWeek.Wednesday);
@@ -277,36 +388,36 @@ public partial class EventDialogViewModel : ObservableObject
 
         if (RecurrenceIndex == 6)
         {
-            ResultEvent.WorkingDays = WorkingDays;
-            ResultEvent.OffDays = OffDays;
+            ResultEvent.WorkingDays    = WorkingDays;
+            ResultEvent.OffDays        = OffDays;
             ResultEvent.CycleStartDate = CycleStartDate?.DateTime ?? baseDate;
         }
 
         if (RecurrenceIndex == 7)
         {
             ResultEvent.IntervalValue = IntervalValue;
-            ResultEvent.IntervalUnit = (IntervalUnit)IntervalUnitIndex;
+            ResultEvent.IntervalUnit  = (IntervalUnit)IntervalUnitIndex;
         }
 
         if (SaveAsTemplate && !string.IsNullOrWhiteSpace(TemplateName))
         {
             var eventTemplate = new EventTemplate
             {
-                Name = TemplateName.Trim(),
-                Title = ResultEvent.Title,
-                IsAllDay = ResultEvent.IsAllDay,
-                StartHour = StartHour,
-                StartMinute = StartMinute,
-                EndHour = EndHour,
-                EndMinute = EndMinute,
-                Color = ResultEvent.Color,
-                Recurrence = ResultEvent.Recurrence,
-                DaysOfWeek = new List<DayOfWeek>(ResultEvent.DaysOfWeek),
-                WorkingDays = ResultEvent.WorkingDays,
-                OffDays = ResultEvent.OffDays,
+                Name         = TemplateName.Trim(),
+                Title        = ResultEvent.Title,
+                IsAllDay     = ResultEvent.IsAllDay,
+                StartHour    = StartHour,
+                StartMinute  = StartMinute,
+                EndHour      = EndHour,
+                EndMinute    = EndMinute,
+                Color        = ResultEvent.Color,
+                Recurrence   = ResultEvent.Recurrence,
+                DaysOfWeek   = new List<DayOfWeek>(ResultEvent.DaysOfWeek),
+                WorkingDays  = ResultEvent.WorkingDays,
+                OffDays      = ResultEvent.OffDays,
                 CycleStartDate = ResultEvent.CycleStartDate,
-                IntervalValue = ResultEvent.IntervalValue,
-                IntervalUnit = ResultEvent.IntervalUnit,
+                IntervalValue  = ResultEvent.IntervalValue,
+                IntervalUnit   = ResultEvent.IntervalUnit
             };
             _templateService.SaveEventTemplate(eventTemplate);
             LoadEventTemplates();
@@ -317,12 +428,32 @@ public partial class EventDialogViewModel : ObservableObject
 
     [RelayCommand]
     private void Cancel() => CloseWindow(false);
+
     private void CloseWindow(bool result)
     {
-        if (App.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        if (App.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var window = desktop.Windows.FirstOrDefault(w => w.DataContext == this);
-            window?.Close(result);
+            desktop.Windows.FirstOrDefault(w => w.DataContext == this)?.Close(result);
         }
     }
+
+    public IReadOnlyList<string> RecurrenceItems => new[]
+    {
+        Loc["Recurrence_None"],
+        Loc["Recurrence_Daily"],
+        Loc["Recurrence_Weekdays"],
+        Loc["Recurrence_Weekly"],
+        Loc["Recurrence_Monthly"],
+        Loc["Recurrence_Yearly"],
+        Loc["Recurrence_Shift"],
+        Loc["Recurrence_Custom"]
+    };
+
+    public IReadOnlyList<string> IntervalUnitItems => new[]
+    {
+        Loc["IntervalUnit_Days"],
+        Loc["IntervalUnit_Weeks"],
+        Loc["IntervalUnit_Months"]
+    };
 }

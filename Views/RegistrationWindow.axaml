@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.RegistrationWindow"
+        x:DataType="vm:RegistrationViewModel"
+        Title="FocusFlow"
+        Width="380" Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Styles>
+		<Style Selector="TextBox">
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Padding" Value="10,8"/>
+			<Setter Property="Margin" Value="0,0,0,12"/>
+		</Style>
+		<Style Selector="TextBlock.lbl">
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+			<Setter Property="Margin" Value="0,0,0,4"/>
+		</Style>
+		<Style Selector="Button.primary">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Button.primary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
+		</Style>
+		<Style Selector="Button.link">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+	</Window.Styles>
+
+	<StackPanel Margin="28" Spacing="0" VerticalAlignment="Center">
+
+		<TextBlock Text="{Binding Loc[RegisterTitle]}"
+                   FontSize="18" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}"
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+		<TextBlock Classes="lbl" Text="{Binding Loc[RegisterUsernameLbl]}"/>
+		<TextBox Text="{Binding Username}"/>
+
+		<TextBlock Classes="lbl" Text="{Binding Loc[LoginEmailLbl]}"/>
+		<TextBox Text="{Binding Email}" Watermark="email@example.com"/>
+
+		<TextBlock Classes="lbl" Text="{Binding Loc[LoginPasswordLbl]}"/>
+		<TextBox Text="{Binding Password}" PasswordChar="•"/>
+
+		<TextBlock Classes="lbl" Text="{Binding Loc[RegisterConfirmPasswordLbl]}"/>
+		<TextBox Text="{Binding ConfirmPassword}" PasswordChar="•"/>
+
+		<TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="#EF4444" FontSize="12"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"/>
+
+		<Button Classes="primary" Content="{Binding Loc[RegisterBtn]}"
+                Command="{Binding RegisterCommand}"
+                IsEnabled="{Binding !IsBusy}"
+                Margin="0,4,0,10"/>
+
+		<Button Classes="link" Content="{Binding Loc[BackToLoginBtn]}"
+                Command="{Binding CancelCommand}"/>
+
+	</StackPanel>
+</Window>

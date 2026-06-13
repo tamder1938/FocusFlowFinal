@@ -1,7 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -9,7 +10,15 @@ namespace FocusFlowFinal.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    [ObservableProperty] private bool _isGeneralTab = true;
+    public LocalizationService Loc => LocalizationService.Instance;
+
+    // ИСПРАВЛЕНО (Часть 2, п.5): подмодель вкладки "Аккаунт"
+    public AccountSettingsViewModel Account { get; }
+
+    // ── Вкладки ──────────────────────────────────────────────────────
+    // ИСПРАВЛЕНО (Часть 2, п.5): "Аккаунт" — первая вкладка
+    [ObservableProperty] private bool _isAccountTab = true;
+    [ObservableProperty] private bool _isGeneralTab;
     [ObservableProperty] private bool _isNotificationsTab;
     [ObservableProperty] private bool _isHotkeysTab;
     [ObservableProperty] private bool _isDataTab;
@@ -17,74 +26,303 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _selectedLanguage = "Русский";
     public ObservableCollection<string> Languages { get; } = new() { "Русский", "English" };
 
+    // ИСПРАВЛЕНО (Проблема 1, 2): временные значения, применяются только по «Сохранить».
+    // CurrentThemeMode хранит выбор пользователя ДО сохранения и используется
+    // только для подсветки выбранной карточки темы — само приложение тему не меняет.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLightSelected))]
+    [NotifyPropertyChangedFor(nameof(IsDarkSelected))]
+    [NotifyPropertyChangedFor(nameof(IsAutoSelected))]
+    private int _currentThemeMode; // 0=Light,1=Dark,2=Auto
+
+    // ИСПРАВЛЕНО (Проблема 1): вычисляемые флаги для подсветки карточек темы в XAML
+    public bool IsLightSelected => CurrentThemeMode == 0;
+    public bool IsDarkSelected  => CurrentThemeMode == 1;
+    public bool IsAutoSelected  => CurrentThemeMode == 2;
+
     [ObservableProperty] private bool _systemNotificationsEnabled = true;
     [ObservableProperty] private bool _soundNotificationsEnabled = true;
+    [ObservableProperty] private bool _markTaskCompletedOnTimerFinish;
 
-    [ObservableProperty] private int _currentThemeMode; // 0=Light,1=Dark,2=Auto
+    // Исходные значения — на случай отмены (кнопка «Закрыть»), хотя поскольку
+    // мы больше не применяем изменения мгновенно, откатывать по факту нечего.
+    // Оставлены для ясности и возможного использования в будущем.
+    private readonly int _originalThemeMode;
+    private readonly string _originalLanguage;
+    private readonly bool _originalSystemNotifications;
+    private readonly bool _originalSoundNotifications;
+
+    // Зона "Данные" — статус экспорта/очистки
+    [ObservableProperty] private string _exportStatusText = string.Empty;
+    [ObservableProperty] private bool _exportStatusIsError;
+    [ObservableProperty] private bool _exportStatusVisible;
 
     public SettingsViewModel()
     {
         var settings = AppSettings.Load();
-        CurrentThemeMode = settings.ThemeMode;
-        SelectedLanguage = settings.Language;
-        SystemNotificationsEnabled = settings.SystemNotifications;
-        SoundNotificationsEnabled = settings.SoundNotifications;
+
+        _originalThemeMode           = settings.ThemeMode;
+        _originalLanguage             = settings.Language;
+        _originalSystemNotifications  = settings.SystemNotifications;
+        _originalSoundNotifications   = settings.SoundNotifications;
+
+        CurrentThemeMode                 = settings.ThemeMode;
+        SelectedLanguage                 = settings.Language;
+        SystemNotificationsEnabled       = settings.SystemNotifications;
+        SoundNotificationsEnabled        = settings.SoundNotifications;
+        MarkTaskCompletedOnTimerFinish   = settings.MarkTaskCompletedOnTimerFinish;
+
+        // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
+        var services = ((App)App.Current!).Services!;
+        Account = new AccountSettingsViewModel(
+            services.GetRequiredService<IAuthService>(),
+            services.GetRequiredService<IPaymentService>(),
+            services.GetRequiredService<ISyncService>());
+
+        // ИСПРАВЛЕНО (Проблема 9): обновляем локализованные подписи вкладок при смене языка
+        Loc.PropertyChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(AccountTabLabel));
+            OnPropertyChanged(nameof(GeneralTabLabel));
+            OnPropertyChanged(nameof(NotificationsTabLabel));
+            OnPropertyChanged(nameof(HotkeysTabLabel));
+            OnPropertyChanged(nameof(DataTabLabel));
+        };
     }
+
+    // ── Локализованные заголовки вкладок (Проблема 9; Часть 2, п.5) ─
+    public string AccountTabLabel       => Loc["Account"];
+    public string GeneralTabLabel       => Loc["General"];
+    public string NotificationsTabLabel => Loc["Notifications"];
+    public string HotkeysTabLabel       => Loc["Hotkeys"];
+    public string DataTabLabel          => Loc["Data"];
 
     [RelayCommand]
     private void SelectTab(string tabName)
     {
-        IsGeneralTab = tabName == "General";
+        IsAccountTab       = tabName == "Account";
+        IsGeneralTab       = tabName == "General";
         IsNotificationsTab = tabName == "Notifications";
-        IsHotkeysTab = tabName == "Hotkeys";
-        IsDataTab = tabName == "Data";
+        IsHotkeysTab       = tabName == "Hotkeys";
+        IsDataTab          = tabName == "Data";
     }
 
+    // ИСПРАВЛЕНО (Проблема 1): SetTheme больше НЕ применяет тему мгновенно.
+    // Только запоминает выбор в памяти (CurrentThemeMode), используемый для
+    // подсветки выбранной карточки. Реальное применение — в SaveCommand.
     [RelayCommand]
     private void SetTheme(string themeModeStr)
     {
-        int newMode = int.Parse(themeModeStr);
-        var app = App.Current as App;
-        if (app != null)
-        {
-            // Применяем тему через App (один вызов!)
-            app.ApplyTheme(newMode);
+        if (int.TryParse(themeModeStr, out int newMode))
             CurrentThemeMode = newMode;
-
-            // Сохраняем в настройки
-            var settings = AppSettings.Load();
-            settings.ThemeMode = newMode;
-            settings.Save();
-        }
     }
 
+    // ИСПРАВЛЕНО (Проблема 1, 2): применяем тему, язык и уведомления
+    // ТОЛЬКО при нажатии «Сохранить».
     [RelayCommand]
     private void Save()
     {
         var settings = AppSettings.Load();
-        settings.ThemeMode = CurrentThemeMode;
-        settings.Language = SelectedLanguage;
-        settings.SystemNotifications = SystemNotificationsEnabled;
-        settings.SoundNotifications = SoundNotificationsEnabled;
+        settings.ThemeMode                       = CurrentThemeMode;
+        settings.Language                        = SelectedLanguage;
+        settings.SystemNotifications             = SystemNotificationsEnabled;
+        settings.SoundNotifications              = SoundNotificationsEnabled;
+        settings.MarkTaskCompletedOnTimerFinish  = MarkTaskCompletedOnTimerFinish;
         settings.Save();
 
+        // Применяем тему здесь, а не при клике по карточке
+        (App.Current as App)?.ApplyTheme(settings.ThemeMode);
+
+        // Применяем язык
         LocalizationService.Instance.CurrentLanguage = settings.Language;
+
+        // Уведомляем главное окно — обновить данные (тема могла повлиять
+        // на формат/локализацию задач, дату и т.п.)
+        RefreshMainWindow();
+
         CloseWindow();
     }
 
+    // ИСПРАВЛЕНО (Проблема 1, 2): «Закрыть» — НЕ применяет никакие изменения.
+    // Поскольку SetTheme больше не трогает реальную тему приложения,
+    // здесь достаточно просто закрыть окно — приложение остаётся как было.
     [RelayCommand]
     private void Cancel() => CloseWindow();
 
     [RelayCommand]
     private async System.Threading.Tasks.Task ExportData()
     {
-        // Логика экспорта
+        var owner = GetOwnerWindow();
+        if (owner == null) return;
+
+        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(owner);
+        if (topLevel == null) return;
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+        {
+            Title = Loc["ExportBtn"],
+            DefaultExtension = "json",
+            SuggestedFileName = $"FocusFlow_backup_{System.DateTime.Now:yyyy-MM-dd_HH-mm}.json",
+            FileTypeChoices = new[]
+            {
+                new Avalonia.Platform.Storage.FilePickerFileType("JSON") { Patterns = new[] { "*.json" } }
+            }
+        });
+
+        if (file == null) return;
+
+        try
+        {
+            var services = ((App)App.Current!).Services!;
+            var db = services.GetRequiredService<IDatabaseService>();
+
+            var rangeStart = new System.DateTime(2000, 1, 1);
+            var rangeEnd   = new System.DateTime(2100, 1, 1);
+
+            var tasks    = db.GetAllTasks().ToList();
+            var projects = db.GetAllProjects().ToList();
+            var sessions = db.GetSessionsForPeriod(rangeStart, rangeEnd).ToList();
+            var events   = db.GetEventsForPeriod(rangeStart, rangeEnd)
+                              .GroupBy(e => e.Id).Select(g => g.First()).ToList();
+
+            var dto = new
+            {
+                ExportDate = System.DateTime.Now,
+                AppVersion = "FocusFlow 1.0",
+                Tasks = tasks,
+                Events = events,
+                Projects = projects,
+                Sessions = sessions
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(dto, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+            });
+
+            await using var stream = await file.OpenWriteAsync();
+            await using var writer = new System.IO.StreamWriter(stream);
+            await writer.WriteAsync(json);
+
+            ShowExportStatus($"✅ {Loc["ExportSuccess"]}", false);
+        }
+        catch (System.Exception ex)
+        {
+            ShowExportStatus($"❌ {Loc["ExportError"]}{ex.Message}", true);
+        }
     }
 
     [RelayCommand]
-    private void ClearAllData()
+    private async System.Threading.Tasks.Task ClearAllData()
     {
-        // Логика очистки данных
+        var owner = GetOwnerWindow();
+        if (owner == null) return;
+
+        bool confirmed = await ShowConfirmDialog(owner, Loc["ClearConfirm"]);
+        if (!confirmed) return;
+
+        try
+        {
+            var services = ((App)App.Current!).Services!;
+            var db = services.GetRequiredService<IDatabaseService>();
+            db.ClearAllData();
+
+            RefreshMainWindow();
+            ShowExportStatus($"✅ {Loc["ClearSuccess"]}", false);
+        }
+        catch (System.Exception ex)
+        {
+            ShowExportStatus($"❌ {ex.Message}", true);
+        }
+    }
+
+    private void ShowExportStatus(string message, bool isError)
+    {
+        ExportStatusText    = message;
+        ExportStatusIsError = isError;
+        ExportStatusVisible = true;
+    }
+
+    private void RefreshMainWindow()
+    {
+        if (App.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            if (desktop.MainWindow?.DataContext is MainViewModel mainVm)
+            {
+                mainVm.CurrentTaskListViewModel?.RefreshTasks();
+                mainVm.RefreshTodayMiniStats();
+
+                if (mainVm.CurrentCalendarView is DayViewModel dayVm) dayVm.LoadEvents();
+                else if (mainVm.CurrentCalendarView is WeekViewModel weekVm) weekVm.RefreshWeek();
+                else if (mainVm.CurrentCalendarView is MonthViewModel monthVm) monthVm.RefreshMonth();
+                else if (mainVm.CurrentCalendarView is YearViewModel yearVm) yearVm.GoToYear(yearVm.CurrentYear);
+            }
+        }
+    }
+
+    private Avalonia.Controls.Window? GetOwnerWindow()
+    {
+        if (App.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            return desktop.Windows.FirstOrDefault(w => w.DataContext == this);
+        return null;
+    }
+
+    private async System.Threading.Tasks.Task<bool> ShowConfirmDialog(Avalonia.Controls.Window owner, string message)
+    {
+        var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+
+        var yesBtn = new Avalonia.Controls.Button
+        {
+            Content = Loc["Yes"], Width = 90, Margin = new Avalonia.Thickness(0, 0, 8, 0),
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#EF4444")),
+            Foreground = Avalonia.Media.Brushes.White,
+            CornerRadius = new Avalonia.CornerRadius(6)
+        };
+        var noBtn = new Avalonia.Controls.Button
+        {
+            Content = Loc["No"], Width = 90,
+            CornerRadius = new Avalonia.CornerRadius(6)
+        };
+
+        var dialog = new Avalonia.Controls.Window
+        {
+            Title = Loc["DangerZone"],
+            Width = 360,
+            Height = 170,
+            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+            Background = (Avalonia.Media.IBrush?)App.Current?.Resources["CardBackground"],
+            CanResize = false,
+            Content = new Avalonia.Controls.StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 18,
+                Children =
+                {
+                    new Avalonia.Controls.TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                        Foreground = (Avalonia.Media.IBrush?)App.Current?.Resources["PrimaryText"]
+                    },
+                    new Avalonia.Controls.StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Children = { yesBtn, noBtn }
+                    }
+                }
+            }
+        };
+
+        yesBtn.Click += (_, _) => { tcs.TrySetResult(true); dialog.Close(); };
+        noBtn.Click  += (_, _) => { tcs.TrySetResult(false); dialog.Close(); };
+        dialog.Closed += (_, _) => tcs.TrySetResult(false);
+
+        await dialog.ShowDialog(owner);
+        return await tcs.Task;
     }
 
     private void CloseWindow()

@@ -4,25 +4,25 @@ using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
 using FocusFlowFinal.Views;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace FocusFlowFinal.ViewModels;
 
-/// <summary>Фильтр отображения задач по статусу выполнения (Проблема 6, 12).</summary>
+/// <summary>Фильтр отображения задач по статусу выполнения.</summary>
 public enum CompletionFilter { All = 0, Active = 1, Done = 2 }
 
 public partial class TaskListViewModel : ObservableObject
 {
     private readonly IDatabaseService _db;
 
-    // Полный список задач, загруженный из БД
+    // Полный список задач из БД
     [ObservableProperty] private ObservableCollection<TaskItem> _allTasks = new();
 
-    // ИСПРАВЛЕНО (Проблема 6): два отдельных списка — активные и выполненные задачи
-    [ObservableProperty] private ObservableCollection<TaskItem> _activeTasks = new();
-    [ObservableProperty] private ObservableCollection<TaskItem> _completedTasks = new();
+    // Единый отображаемый список: активные → выполненные
+    [ObservableProperty] private ObservableCollection<TaskItem> _filteredTasks = new();
 
     [ObservableProperty] private TaskItem? _selectedTask;
 
@@ -58,38 +58,22 @@ public partial class TaskListViewModel : ObservableObject
     public event Action<TaskItem>? StartTimerRequested;
     public LocalizationService Loc => LocalizationService.Instance;
 
-    // Expander для выполненных задач: развёрнут по умолчанию
-    [ObservableProperty] private bool _isCompletedExpanderExpanded = true;
-
-    // ИСПРАВЛЕНО (Проблема 6): заголовок "Выполненные задачи" для Expander
-    public string CompletedTasksHeader =>
-        $"{Loc["CompletedTasksHeader"]} ({CompletedTasks.Count})";
-
-    /// <summary>true, если есть хотя бы одна выполненная задача (для IsVisible Expander-а).</summary>
-    public bool HasCompletedTasks => CompletedTasks.Count > 0;
-
     public TaskListViewModel(IDatabaseService db)
     {
         _db = db;
 
-        // ИСПРАВЛЕНО (Проблема 9, 10, 12): при смене языка перезагружаем
-        // проекты (локализованные имена "Все проекты"/"Без проекта")
-        // и пересчитываем DurationText/CompletedTasksHeader.
         Loc.PropertyChanged += (_, _) =>
         {
             var keepProjectId = SelectedProject?.Id;
             LoadProjects();
             SelectedProject = Projects.FirstOrDefault(p => p.Id == keepProjectId) ?? Projects.FirstOrDefault();
             ApplyFilter();
-            OnPropertyChanged(nameof(CompletedTasksHeader));
-            OnPropertyChanged(nameof(HasCompletedTasks));
         };
 
         LoadProjects();
         LoadTasks();
     }
 
-    // ИСПРАВЛЕНО (Проблема 12): "Все проекты" и "Без проекта" локализованы
     private void LoadProjects()
     {
         var previousSelection = SelectedProject?.Id;
@@ -114,27 +98,47 @@ public partial class TaskListViewModel : ObservableObject
         var projectColors = Projects.ToDictionary(p => p.Id, p => p.Color);
         foreach (var task in tasks)
         {
+            // Цвет проекта для цветной полоски
             if (task.ProjectId.HasValue && projectColors.TryGetValue(task.ProjectId.Value, out var color))
                 task.ProjectColor = color;
             else
                 task.ProjectColor = null;
+
+            // Инициализируем observable-обёртки подзадач
+            var capturedTask = task;
+            task.InitSubtaskViewItems(() => OnSubtaskToggled(capturedTask));
         }
 
         AllTasks = new ObservableCollection<TaskItem>(tasks);
         ApplyFilter();
     }
 
-    // ИСПРАВЛЕНО (Проблема 6): разделяем задачи на активные / выполненные,
-    // применяя при этом фильтры по приоритету и проекту к обеим коллекциям.
+    private void OnSubtaskToggled(TaskItem task)
+    {
+        // Автовыполнение: если все подзадачи выполнены → отмечаем задачу
+        if (task.Subtasks.Count > 0)
+        {
+            bool allDone = task.Subtasks.All(s => s.IsCompleted);
+            if (task.IsCompleted != allDone)
+                task.IsCompleted = allDone;
+        }
+
+        _db.UpsertTask(task);
+        ApplyFilter();
+        TriggerMainStatsRefresh();
+        RefreshCalendarUI();
+    }
+
+    // ── Фильтрация ───────────────────────────────────────────────────
+    // При фильтре «Все»: сначала активные (по приоритету, затем по дате),
+    // затем выполненные (так же). При остальных фильтрах — только нужная группа.
     private void ApplyFilter()
     {
         var query = AllTasks.AsEnumerable();
 
-        // Фильтр по приоритету
         if (SelectedPriorityFilter != -1)
             query = query.Where(t => t.Priority == SelectedPriorityFilter);
 
-        // Фильтр по проекту
         if (SelectedProject != null)
         {
             if      (SelectedProject.Id == 0)  { /* все проекты */ }
@@ -144,37 +148,45 @@ public partial class TaskListViewModel : ObservableObject
 
         var filtered = query.ToList();
 
-        var active    = filtered.Where(t => !t.IsCompleted).OrderBy(t => t.Priority).ToList();
-        var completed = filtered.Where(t => t.IsCompleted).OrderBy(t => t.Priority).ToList();
+        IEnumerable<TaskItem> result;
 
-        // Фильтр по статусу:
-        // Done    → выполненные задачи в основном списке (с визуальным стилем "выполнено"),
-        //           Expander скрыт.
-        // Active  → только невыполненные, Expander скрыт.
-        // All     → невыполненные в основном списке, выполненные в Expander.
         switch (CompletionFilter)
         {
-            case CompletionFilter.Done:
-                ActiveTasks    = new ObservableCollection<TaskItem>(completed);
-                CompletedTasks = new ObservableCollection<TaskItem>();
-                break;
             case CompletionFilter.Active:
-                ActiveTasks    = new ObservableCollection<TaskItem>(active);
-                CompletedTasks = new ObservableCollection<TaskItem>();
+                result = filtered
+                    .Where(t => !t.IsCompleted)
+                    .OrderBy(t => t.Priority)
+                    .ThenBy(t => t.DueDate ?? DateTime.MaxValue);
                 break;
-            default: // All
-                ActiveTasks    = new ObservableCollection<TaskItem>(active);
-                CompletedTasks = new ObservableCollection<TaskItem>(completed);
+
+            case CompletionFilter.Done:
+                result = filtered
+                    .Where(t => t.IsCompleted)
+                    .OrderBy(t => t.Priority)
+                    .ThenBy(t => t.DueDate ?? DateTime.MaxValue);
+                break;
+
+            default: // All: сначала активные, потом выполненные
+                var active = filtered
+                    .Where(t => !t.IsCompleted)
+                    .OrderBy(t => t.Priority)
+                    .ThenBy(t => t.DueDate ?? DateTime.MaxValue);
+
+                var completed = filtered
+                    .Where(t => t.IsCompleted)
+                    .OrderBy(t => t.Priority)
+                    .ThenBy(t => t.DueDate ?? DateTime.MaxValue);
+
+                result = active.Concat(completed);
                 break;
         }
 
-        OnPropertyChanged(nameof(CompletedTasksHeader));
-        OnPropertyChanged(nameof(HasCompletedTasks));
+        FilteredTasks = new ObservableCollection<TaskItem>(result);
     }
 
     public void RefreshTasks() => LoadTasks();
 
-    // ── Фильтр по приоритету ─────────────────────────────────────
+    // ── Фильтр по приоритету ─────────────────────────────────────────
     [RelayCommand]
     private void SetPriorityFilter(string priorityStr)
     {
@@ -182,7 +194,6 @@ public partial class TaskListViewModel : ObservableObject
             SelectedPriorityFilter = priority;
     }
 
-    // ИСПРАВЛЕНО (Проблема 12): фильтр статуса выполнения, локализованные подписи в XAML
     [RelayCommand]
     private void SetCompletionFilter(string filterStr)
     {
@@ -194,21 +205,31 @@ public partial class TaskListViewModel : ObservableObject
         };
     }
 
-    // ── Переключение статуса выполнения (Проблема 6) ─────────────
-    /// <summary>
-    /// Инвертирует <see cref="TaskItem.IsCompleted"/>, сохраняет в БД и
-    /// перемещает задачу между списками ActiveTasks / CompletedTasks.
-    /// </summary>
+    // ── Переключение статуса выполнения ──────────────────────────────
     [RelayCommand]
     private void ToggleTaskCompletion(TaskItem? task)
     {
         if (task == null) return;
         task.IsCompleted = !task.IsCompleted;
 
-        // При фильтре «Все» авто-разворачиваем Expander, чтобы пользователь
-        // видел, куда переместилась только что выполненная задача.
-        if (task.IsCompleted && CompletionFilter == CompletionFilter.All)
-            IsCompletedExpanderExpanded = true;
+        if (task.Subtasks.Count > 0)
+        {
+            if (task.IsCompleted)
+            {
+                // Задача отмечена выполненной → помечаем все подзадачи тоже
+                foreach (var sub in task.Subtasks)
+                    sub.IsCompleted = true;
+            }
+            else
+            {
+                // Задача снята с выполнения → сбрасываем все подзадачи
+                foreach (var sub in task.Subtasks)
+                    sub.IsCompleted = false;
+            }
+            // Перестраиваем SubtaskViewItems, чтобы чекбоксы сразу отразили новое состояние
+            var capturedTask = task;
+            task.InitSubtaskViewItems(() => OnSubtaskToggled(capturedTask));
+        }
 
         _db.UpsertTask(task);
         ApplyFilter();
@@ -216,11 +237,7 @@ public partial class TaskListViewModel : ObservableObject
         RefreshCalendarUI();
     }
 
-    // ── Редактирование и добавление ──────────────────────────────
-
-    // ИСПРАВЛЕНО (Проблема 5): после закрытия диалога ВСЕГДА вызываем
-    // LoadTasks(), независимо от результата — это гарантирует, что
-    // удалённая через TaskDialog задача исчезнет из списка.
+    // ── Редактирование и добавление ──────────────────────────────────
     [RelayCommand]
     private async Task EditTask(TaskItem? task)
     {
@@ -228,8 +245,6 @@ public partial class TaskListViewModel : ObservableObject
 
         var dialogVm = new TaskDialogViewModel(task);
 
-        // ИСПРАВЛЕНО (Проблема 5): подписка на TaskDeleted — при удалении
-        // обновляем список задач и статистику немедленно.
         dialogVm.TaskDeleted += _ =>
         {
             LoadTasks();
@@ -247,8 +262,6 @@ public partial class TaskListViewModel : ObservableObject
         if (result == true)
             _db.UpsertTask(task);
 
-        // ИСПРАВЛЕНО (Проблема 5): обновляем список в любом случае —
-        // это покрывает как сохранение, так и удаление задачи.
         LoadTasks();
         RefreshCalendarUI();
         TriggerMainStatsRefresh();
@@ -286,7 +299,7 @@ public partial class TaskListViewModel : ObservableObject
             StartTimerRequested?.Invoke(task);
     }
 
-    // ── Вспомогательные ─────────────────────────────────────────
+    // ── Вспомогательные ──────────────────────────────────────────────
     private void TriggerMainStatsRefresh()
     {
         if (Avalonia.Application.Current?.ApplicationLifetime is

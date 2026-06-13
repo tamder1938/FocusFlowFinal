@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:conv="using:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.TimerCompletionDialog"
+        x:DataType="vm:TimerCompletionViewModel"
+        Title="{Binding Loc[TimerDoneTitle]}"
+        Width="380" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Styles>
+		<Style Selector="Button.action-yes">
+			<Setter Property="Background" Value="#10B981"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.action-neutral">
+			<Setter Property="Background" Value="{DynamicResource SecondaryActionBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryActionFgBrush}"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.action-danger">
+			<Setter Property="Background" Value="#EF4444"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.action-accent">
+			<Setter Property="Background" Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+	</Window.Styles>
+
+	<StackPanel Margin="24,22,24,24" Spacing="16">
+
+		<!-- Иконка + Заголовок -->
+		<StackPanel Spacing="6">
+			<TextBlock Text="⏱" FontSize="28" HorizontalAlignment="Center"/>
+			<TextBlock Text="{Binding Loc[TimerDoneTitle]}"
+			           FontSize="17" FontWeight="Bold" HorizontalAlignment="Center"
+			           Foreground="{DynamicResource PrimaryTextBrush}"/>
+		</StackPanel>
+
+		<!-- ШАГ 1: Вопрос о выполнении задачи -->
+		<StackPanel Spacing="14" IsVisible="{Binding IsAskingQuestion}">
+			<StackPanel Spacing="4">
+				<TextBlock Text="{Binding Loc[TimerDoneQuestion]}"
+				           FontSize="13" HorizontalAlignment="Center"
+				           Foreground="{DynamicResource SecondaryTextBrush}"/>
+				<TextBlock Text="{Binding TaskTitle}"
+				           FontSize="15" FontWeight="SemiBold"
+				           HorizontalAlignment="Center" TextWrapping="Wrap"
+				           Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</StackPanel>
+			<Grid ColumnDefinitions="*,12,*">
+				<Button Grid.Column="0" Classes="action-yes"
+				        Content="{Binding Loc[Yes]}"
+				        Command="{Binding MarkCompletedCommand}"
+				        HorizontalAlignment="Stretch"/>
+				<Button Grid.Column="2" Classes="action-neutral"
+				        Content="{Binding Loc[No]}"
+				        Command="{Binding ExpandOptionsCommand}"
+				        HorizontalAlignment="Stretch"/>
+			</Grid>
+		</StackPanel>
+
+		<!-- ШАГ 2: Варианты действий -->
+		<StackPanel Spacing="10" IsVisible="{Binding IsShowingOptions}">
+			<TextBlock Text="{Binding Loc[TimerDoneOptions]}"
+			           FontSize="13" HorizontalAlignment="Center"
+			           Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+			<!-- Продлить таймер -->
+			<Border Background="{DynamicResource CardBackgroundBrush}"
+			        CornerRadius="8" Padding="12,10"
+			        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+				<StackPanel Spacing="6">
+					<Grid ColumnDefinitions="*,12,Auto,8,Auto">
+						<TextBlock Grid.Column="0" Text="{Binding Loc[TimerExtendLabel]}"
+						           VerticalAlignment="Center" FontSize="13"
+						           Foreground="{DynamicResource PrimaryTextBrush}"/>
+						<TextBox Grid.Column="2" Text="{Binding ExtendMinutesText}"
+						         PlaceholderText="{Binding Loc[TimerCompletion_ExtendWatermark]}"
+						         Width="100" Height="34"
+						         Background="{DynamicResource InputBackgroundBrush}"
+						         Foreground="{DynamicResource PrimaryTextBrush}"/>
+						<TextBlock Grid.Column="4" Text="{Binding Loc[TimerExtendMinSuffix]}"
+						           VerticalAlignment="Center" FontSize="12"
+						           Foreground="{DynamicResource SecondaryTextBrush}"/>
+					</Grid>
+					<TextBlock Text="{Binding ExtendError}"
+					           IsVisible="{Binding ExtendError, Converter={x:Static conv:NullOrEmptyToBoolConverter.IsNotNullOrEmpty}}"
+					           Foreground="#EF4444" FontSize="11" Margin="2,0,0,0"/>
+				</StackPanel>
+			</Border>
+			<Button Classes="action-accent" Content="{Binding Loc[TimerExtendBtn]}"
+			        Command="{Binding ExtendCommand}"
+			        HorizontalAlignment="Stretch"/>
+
+			<Button Classes="action-neutral" Content="{Binding Loc[TimerDeferBtn]}"
+			        Command="{Binding DeferCommand}"
+			        HorizontalAlignment="Stretch"/>
+
+			<Button Classes="action-danger" Content="{Binding Loc[TimerDeleteTaskBtn]}"
+			        Command="{Binding DeleteTaskCommand}"
+			        HorizontalAlignment="Stretch"/>
+		</StackPanel>
+
+	</StackPanel>
+</Window>

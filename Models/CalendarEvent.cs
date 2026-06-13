@@ -1,4 +1,4 @@
-﻿using LiteDB;
+using LiteDB;
 using System;
 using System.Collections.Generic;
 
@@ -23,13 +23,18 @@ public enum IntervalUnit
     Months
 }
 
-public class CalendarEvent
+public class CalendarEvent : ISyncableEntity
 {
     [BsonId]
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
+
+    // ИСПРАВЛЕНО (Часть 2-3, п.3): поля синхронизации
+    public Guid SyncId { get; set; } = Guid.NewGuid();
+    public DateTime LastModified { get; set; } = DateTime.UtcNow;
+    public bool IsDeleted { get; set; } = false;
     public string Color { get; set; } = "#3498db";
     public int? TaskId { get; set; }
 
@@ -45,6 +50,17 @@ public class CalendarEvent
     public int? IntervalValue { get; set; }
     public IntervalUnit? IntervalUnit { get; set; }
 
-    // ПОЛЕ ИСКЛЮЧЕНИЙ: Сюда сохраняются даты, в которые серийное событие было отменено
+    // Дата окончания повторений. Если задана — события после этой даты не показываются.
+    public DateTime? RecurrenceEndDate { get; set; }
+
+    // День месяца для ежемесячного повторения (1-31).
+    // Если null — используется день из Start.
+    public int? RecurrenceStartDay { get; set; }
+
+    // Месяц для ежегодного повторения (1-12).
+    // Если null — используется месяц из Start.
+    public int? RecurrenceStartMonth { get; set; }
+
+    // Сюда сохраняются даты, в которые серийное событие было отменено (исключения)
     public List<DateTime> ExceptionDates { get; set; } = new();
 }

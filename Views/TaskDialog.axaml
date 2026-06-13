@@ -4,75 +4,199 @@
         xmlns:models="using:FocusFlowFinal.Models"
         x:Class="FocusFlowFinal.Views.TaskDialog"
         x:DataType="vm:TaskDialogViewModel"
-        Title="{Binding Loc[TaskTitle]}" Width="380" Height="680"
+        Title="{Binding Loc[TaskTitle]}" Width="420" Height="760"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
 	<Window.Styles>
-		<Style Selector="ToggleButton.priority-btn">
-			<Setter Property="Height" Value="32"/>
-			<Setter Property="CornerRadius" Value="6"/>
-			<Setter Property="Margin" Value="2"/>
-			<Setter Property="FontWeight" Value="Bold"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
+
+		<!-- ── Поля ввода: светлый/тёмный фон без рамки, скругление 8 ── -->
+		<Style Selector="TextBox, ComboBox, DatePicker">
+			<Setter Property="Background"      Value="{DynamicResource InputBackgroundBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderBrush"     Value="Transparent"/>
 			<Setter Property="BorderThickness" Value="0"/>
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
-			<Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Padding"         Value="10,8"/>
+			<Setter Property="Margin"          Value="0,0,0,12"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+		</Style>
+		<Style Selector="TextBox:focus, ComboBox:focus, DatePicker:focus">
+			<Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="BorderThickness" Value="1"/>
 		</Style>
 
-		<Style Selector="ToggleButton.priority-btn.high:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.high:checked /template/ ContentPresenter,
-                       ToggleButton.priority-btn.high:checked:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.high:pressed /template/ ContentPresenter">
+		<!-- ── Подписи полей ───────────────────────────────────────── -->
+		<Style Selector="TextBlock.field-label">
+			<Setter Property="FontSize"   Value="12"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+			<Setter Property="Margin"     Value="0,0,0,6"/>
+		</Style>
+
+		<!-- ── Чекбоксы с подписью ─────────────────────────────────── -->
+		<Style Selector="CheckBox">
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="FontSize"   Value="13"/>
+			<Setter Property="Margin"     Value="0,0,0,4"/>
+		</Style>
+
+		<!-- ── Pill-кнопки приоритета ──────────────────────────────── -->
+		<Style Selector="ToggleButton.priority-pill">
+			<Setter Property="Height"          Value="36"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Margin"          Value="3,0"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="FontSize"        Value="13"/>
+			<Setter Property="BorderThickness" Value="1.5"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+			<Setter Property="Background"      Value="{DynamicResource CardBackgroundBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource SecondaryTextBrush}"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.15"/>
+					<BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+				</Transitions>
+			</Setter>
+		</Style>
+
+		<!-- Высокий — выбран: красный -->
+		<Style Selector="ToggleButton.priority-pill.high:checked">
+			<Setter Property="Background"  Value="#EF4444"/>
+			<Setter Property="BorderBrush" Value="#EF4444"/>
+			<Setter Property="Foreground"  Value="White"/>
+		</Style>
+		<Style Selector="ToggleButton.priority-pill.high:checked /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background"  Value="#EF4444"/>
+		</Style>
+		<!-- Средний — выбран: оранжевый -->
+		<Style Selector="ToggleButton.priority-pill.medium:checked">
+			<Setter Property="Background"  Value="#F59E0B"/>
+			<Setter Property="BorderBrush" Value="#F59E0B"/>
+			<Setter Property="Foreground"  Value="White"/>
+		</Style>
+		<Style Selector="ToggleButton.priority-pill.medium:checked /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background"  Value="#F59E0B"/>
+		</Style>
+		<!-- Низкий — выбран: зелёный -->
+		<Style Selector="ToggleButton.priority-pill.low:checked">
+			<Setter Property="Background"  Value="#10B981"/>
+			<Setter Property="BorderBrush" Value="#10B981"/>
+			<Setter Property="Foreground"  Value="White"/>
+		</Style>
+		<Style Selector="ToggleButton.priority-pill.low:checked /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background"  Value="#10B981"/>
+		</Style>
+
+		<!-- ── Кнопки внизу: Отмена / Сохранить / Удалить ──────────── -->
+		<Style Selector="Button.secondary-action">
+			<Setter Property="Background"      Value="{DynamicResource SecondaryActionBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource SecondaryActionFgBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Height"          Value="40"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.primary-action">
+			<Setter Property="Background"      Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Height"          Value="40"/>
+			<Setter Property="FontWeight"      Value="Bold"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.primary-action:pointerover">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
+		</Style>
+		<Style Selector="Button.danger-action">
+			<Setter Property="Background"      Value="#EF4444"/>
+			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Height"          Value="40"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+
+		<!-- ── Строка подзадачи ───────────────────────────────────────── -->
+		<Style Selector="Button.subtask-remove">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Width"           Value="26"/>
+			<Setter Property="Height"          Value="26"/>
+			<Setter Property="CornerRadius"    Value="5"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="Foreground"      Value="{DynamicResource SecondaryTextBrush}"/>
+			<Setter Property="FontSize"        Value="14"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment"   Value="Center"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.subtask-remove:pointerover">
 			<Setter Property="Background" Value="#EF4444"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
-
-		<Style Selector="ToggleButton.priority-btn.medium:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.medium:checked /template/ ContentPresenter,
-                       ToggleButton.priority-btn.medium:checked:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.medium:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="#FBBF24"/>
-			<Setter Property="Foreground" Value="White"/>
+		<Style Selector="Button.add-subtask-btn">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground"      Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="FontSize"        Value="13"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="Padding"         Value="0,4"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
 		</Style>
 
-		<Style Selector="ToggleButton.priority-btn.low:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.low:checked /template/ ContentPresenter,
-                       ToggleButton.priority-btn.low:checked:pointerover /template/ ContentPresenter,
-                       ToggleButton.priority-btn.low:pressed /template/ ContentPresenter">
-			<Setter Property="Background" Value="#10B981"/>
-			<Setter Property="Foreground" Value="White"/>
+		<!-- ── Кнопка "шестерёнка" управления проектами ────────────── -->
+		<Style Selector="Button.gear-btn">
+			<Setter Property="Background"      Value="{DynamicResource AccentLightBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource AccentTextBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="Width"           Value="40"/>
+			<Setter Property="Height"          Value="40"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment"   Value="Center"/>
+			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 	</Window.Styles>
 
 	<ScrollViewer>
-		<StackPanel Margin="15" Spacing="10">
+		<StackPanel Margin="20" Spacing="0">
+
 			<!-- Заголовок и крестик -->
-			<Grid ColumnDefinitions="*, Auto">
-				<TextBlock Grid.Column="0" Text="{Binding Loc[TaskTitle]}" FontSize="18" FontWeight="Bold"
+			<Grid ColumnDefinitions="*, Auto" Margin="0,0,0,16">
+				<TextBlock Grid.Column="0"
+                           Text="{Binding Loc[TaskTitle]}"
+                           FontSize="18" FontWeight="Bold"
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<Button Grid.Column="1" Content="✕" Command="{Binding CancelCommand}"
-                        Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryTextBrush}"/>
+				<Button Grid.Column="1" Content="✕"
+                        Command="{Binding CancelCommand}"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        FontSize="16" Padding="6" Cursor="Hand"/>
 			</Grid>
 
-			<!-- Название задачи -->
-			<TextBlock Text="{Binding Loc[TaskNameLbl]}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
-			<TextBox Text="{Binding Title}" Watermark="{Binding Loc[TaskNameWatermark]}"
-                     Background="{DynamicResource CardBackgroundBrush}"
-                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<!-- Название -->
+			<TextBlock Classes="field-label" Text="{Binding Loc[TaskNameLbl]}"/>
+			<TextBox Text="{Binding Title}" Watermark="{Binding Loc[TaskNameWatermark]}"/>
 
 			<!-- Описание -->
-			<TextBlock Text="{Binding Loc[TaskDesc]}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
-			<TextBox Text="{Binding Description}" Watermark="{Binding Loc[TaskDescWatermark]}" Height="60" TextWrapping="Wrap"
-                     Background="{DynamicResource CardBackgroundBrush}"
-                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<TextBlock Classes="field-label" Text="{Binding Loc[TaskDesc]}"/>
+			<TextBox Text="{Binding Description}"
+                     Watermark="{Binding Loc[TaskDescWatermark]}"
+                     Height="70" TextWrapping="Wrap" AcceptsReturn="True"/>
 
 			<!-- Шаблон -->
-			<TextBlock Text="Загрузить из шаблона:" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,8,0,4"/>
-			<ComboBox ItemsSource="{Binding TaskTemplates}" SelectedItem="{Binding SelectedTaskTemplate}"
-                      Background="{DynamicResource CardBackgroundBrush}"
-                      Foreground="{DynamicResource PrimaryTextBrush}"
-                      HorizontalAlignment="Stretch" Margin="0,0,0,12">
+			<TextBlock Classes="field-label" Text="{Binding Loc[LoadTemplateHint]}"/>
+			<ComboBox ItemsSource="{Binding TaskTemplates}"
+                      SelectedItem="{Binding SelectedTaskTemplate}"
+                      PlaceholderText="{Binding Loc[ChooseTemplate]}"
+                      HorizontalAlignment="Stretch">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
@@ -81,101 +205,148 @@
 			</ComboBox>
 
 			<!-- Дата -->
-			<CheckBox Content="{Binding Loc[HasDateOpt]}" IsChecked="{Binding HasDate}"
-                      Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<DatePicker SelectedDate="{Binding DueDate}" HorizontalAlignment="Stretch" IsEnabled="{Binding HasDate}"
-                        Background="{DynamicResource CardBackgroundBrush}"
-                        Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<CheckBox Content="{Binding Loc[HasDateOpt]}" IsChecked="{Binding HasDate}"/>
+			<DatePicker SelectedDate="{Binding DueDate}" IsEnabled="{Binding HasDate}"/>
 
 			<!-- Время -->
-			<CheckBox Content="{Binding Loc[IsTimeBoundOpt]}" IsChecked="{Binding IsTimeBound}"
-                      Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<Grid ColumnDefinitions="Auto, Auto, Auto, Auto" Margin="0,0,0,5" IsEnabled="{Binding IsTimeBound}">
-				<TextBlock Grid.Column="0" Text="{Binding Loc[HourLabel]}" VerticalAlignment="Center" Margin="0,0,5,0"
-                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBox Grid.Column="1" Text="{Binding StartHour}" Width="50"
-                         Background="{DynamicResource CardBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBlock Grid.Column="2" Text="{Binding Loc[MinLabel]}" VerticalAlignment="Center" Margin="10,0,5,0"
-                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBox Grid.Column="3" Text="{Binding StartMinute}" Width="50"
-                         Background="{DynamicResource CardBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"/>
-			</Grid>
+			<CheckBox Content="{Binding Loc[IsTimeBoundOpt]}" IsChecked="{Binding IsTimeBound}"/>
+
+			<!-- Время начала -->
+			<StackPanel IsEnabled="{Binding IsTimeBound}" Margin="0,0,0,4">
+				<TextBlock Classes="field-label" Text="{Binding Loc[StartTimeLbl]}" Margin="0,0,0,4"/>
+				<Grid ColumnDefinitions="Auto,Auto,Auto,Auto">
+					<TextBlock Grid.Column="0" Text="{Binding Loc[HourLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,6,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="1" Text="{Binding StartHour}" Width="60" Margin="0,0,12,0"/>
+					<TextBlock Grid.Column="2" Text="{Binding Loc[MinLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,6,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="3" Text="{Binding StartMinute}" Width="60"/>
+				</Grid>
+			</StackPanel>
+
+			<!-- Время окончания -->
+			<StackPanel IsEnabled="{Binding IsTimeBound}" Margin="0,0,0,12">
+				<TextBlock Classes="field-label" Text="{Binding Loc[EndTimeLbl]}" Margin="0,0,0,4"/>
+				<Grid ColumnDefinitions="Auto,Auto,Auto,Auto">
+					<TextBlock Grid.Column="0" Text="{Binding Loc[HourLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,6,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="1" Text="{Binding EndHour}" Width="60" Margin="0,0,12,0"/>
+					<TextBlock Grid.Column="2" Text="{Binding Loc[MinLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,6,0"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+					<TextBox Grid.Column="3" Text="{Binding EndMinute}" Width="60"/>
+				</Grid>
+			</StackPanel>
 
 			<!-- Длительность -->
-			<CheckBox Content="{Binding Loc[IsDurationOpt]}" IsChecked="{Binding IsDurationSet}"
-                      Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding IsDurationSet}">
+			<CheckBox Content="{Binding Loc[IsDurationOpt]}" IsChecked="{Binding IsDurationSet}"/>
+			<StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,12" IsEnabled="{Binding IsDurationSet}">
 				<TextBlock Text="{Binding Loc[DurationLabel]}" VerticalAlignment="Center" FontSize="12"
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBox Text="{Binding DurationMinutes}" Width="80"
-                         Background="{DynamicResource CardBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBox Text="{Binding DurationMinutes}" Width="90" Margin="0"/>
 			</StackPanel>
 
 			<!-- Приоритет -->
-			<TextBlock Text="{Binding Loc[PriorityLabel]}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
-			<Grid ColumnDefinitions="*, *, *">
+			<TextBlock Classes="field-label" Text="{Binding Loc[PriorityLabel]}" Margin="0,4,0,8"/>
+			<Grid ColumnDefinitions="*,*,*" Margin="0,0,0,16">
 				<ToggleButton Grid.Column="0" Content="{Binding Loc[FilterHigh]}"
-                              IsChecked="{Binding IsHighSelected}"
+                              IsChecked="{Binding IsHighSelected, Mode=OneWay}"
                               Command="{Binding SetPriorityCommand}" CommandParameter="0"
-                              Classes="priority-btn high"/>
+                              Classes="priority-pill high"/>
 				<ToggleButton Grid.Column="1" Content="{Binding Loc[FilterMedium]}"
-                              IsChecked="{Binding IsMediumSelected}"
+                              IsChecked="{Binding IsMediumSelected, Mode=OneWay}"
                               Command="{Binding SetPriorityCommand}" CommandParameter="1"
-                              Classes="priority-btn medium"/>
+                              Classes="priority-pill medium"/>
 				<ToggleButton Grid.Column="2" Content="{Binding Loc[FilterLow]}"
-                              IsChecked="{Binding IsLowSelected}"
+                              IsChecked="{Binding IsLowSelected, Mode=OneWay}"
                               Command="{Binding SetPriorityCommand}" CommandParameter="2"
-                              Classes="priority-btn low"/>
+                              Classes="priority-pill low"/>
 			</Grid>
 
 			<!-- Проект -->
-			<TextBlock Text="{Binding Loc[ProjectLabel]}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
-			<Grid ColumnDefinitions="*, Auto">
-				<ComboBox Grid.Column="0" ItemsSource="{Binding ProjectsList}" SelectedItem="{Binding SelectedProject}"
-                          Background="{DynamicResource CardBackgroundBrush}"
-                          Foreground="{DynamicResource PrimaryTextBrush}"
-                          HorizontalAlignment="Stretch" Margin="0,0,6,0">
+			<TextBlock Classes="field-label" Text="{Binding Loc[ProjectLabel]}"/>
+			<Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+				<ComboBox Grid.Column="0"
+                          ItemsSource="{Binding ProjectsList}"
+                          SelectedItem="{Binding SelectedProject}"
+                          HorizontalAlignment="Stretch" Margin="0,0,8,0">
 					<ComboBox.ItemTemplate>
 						<DataTemplate DataType="models:ProjectItem">
 							<StackPanel Orientation="Horizontal" Spacing="8">
-								<Border Width="10" Height="10" CornerRadius="5" Background="{Binding Color}" VerticalAlignment="Center"/>
-								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+								<Border Width="10" Height="10" CornerRadius="5"
+                                        Background="{Binding Color}" VerticalAlignment="Center"/>
+								<TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
 							</StackPanel>
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
-				<Button Grid.Column="1" Content="⚙" Command="{Binding OpenProjectsManagementCommand}"
-                        Width="34" Height="32" Background="#EFF6FF" Foreground="#2563EB" CornerRadius="6"/>
+				<Button Grid.Column="1" Classes="gear-btn"
+                        Command="{Binding OpenProjectsManagementCommand}">
+					<PathIcon Width="16" Height="16"
+                              Data="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+				</Button>
 			</Grid>
 
-			<Separator Margin="0,10,0,10"/>
+			<Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,16"/>
+
+			<!-- Подзадачи -->
+			<TextBlock Classes="field-label" Text="{Binding Loc[SubtasksLabel]}" Margin="0,0,0,8"/>
+			<ItemsControl ItemsSource="{Binding Subtasks}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vm:SubtaskEditItem">
+						<Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+							<CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted}"
+							          VerticalAlignment="Center" Margin="0,0,6,0"/>
+							<TextBox Grid.Column="1" Text="{Binding Title}"
+							         PlaceholderText="Название подзадачи"
+							         Margin="0" Height="34"/>
+							<Button Grid.Column="2" Classes="subtask-remove"
+							        Content="✕" Margin="6,0,0,0"
+							        Command="{Binding RemoveCommand}"/>
+						</Grid>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+			<Button Classes="add-subtask-btn"
+			        Content="{Binding Loc[AddSubtaskBtn]}"
+			        Command="{Binding AddSubtaskCommand}"
+			        Margin="0,2,0,16"/>
+
+			<Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,16"/>
 
 			<!-- Сохранить как шаблон -->
-			<CheckBox Content="Сохранить как шаблон" IsChecked="{Binding SaveAsTemplate}" Margin="0,5,0,0"
-                      Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<StackPanel IsEnabled="{Binding SaveAsTemplate}" Spacing="6" Margin="0,6,0,0">
-				<TextBox Watermark="Название шаблона" Text="{Binding TemplateName}"
-                         Background="{DynamicResource CardBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBlock Text="Шаблон появится в менеджере шаблонов" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+			<CheckBox Content="{Binding Loc[SaveAsTemplateLbl]}" IsChecked="{Binding SaveAsTemplate}"/>
+			<StackPanel IsEnabled="{Binding SaveAsTemplate}" Spacing="6" Margin="0,6,0,16">
+				<TextBox Watermark="{Binding Loc[TemplateNameWatermark]}" Text="{Binding TemplateName}" Margin="0"/>
+				<TextBlock Text="{Binding Loc[TemplateHint]}" FontSize="10"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
 			</StackPanel>
 
-			<!-- Кнопки: Удалить / Отмена / Сохранить -->
-			<Grid ColumnDefinitions="*, *, *" Margin="0,24,0,0">
-				<Button Grid.Column="0" Content="Удалить" Command="{Binding DeleteCommand}"
+			<!-- Кнопки -->
+			<Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+				<Button Grid.Column="0" Classes="danger-action"
+                        Content="{Binding Loc[DeleteBtn]}"
+                        Command="{Binding DeleteCommand}"
                         IsVisible="{Binding IsEditMode}"
-                        Background="#EF4444" Foreground="White" Margin="5"
-                        HorizontalAlignment="Stretch" Height="36" CornerRadius="6"/>
-				<Button Grid.Column="1" Content="Отмена" Command="{Binding CancelCommand}" Margin="5"
-                        Background="{DynamicResource ButtonBackgroundBrush}"
-                        Foreground="{DynamicResource ButtonForegroundBrush}"
-                        HorizontalAlignment="Stretch" Height="36" CornerRadius="6"/>
-				<Button Grid.Column="2" Content="Сохранить" Command="{Binding SaveCommand}" Margin="5"
-                        Background="#2563EB" Foreground="White" Height="36" CornerRadius="6" FontWeight="Bold"/>
+                        Width="90" Margin="0,0,8,0"/>
+				<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+					<Button Classes="secondary-action"
+                            Content="{Binding Loc[CancelBtn]}"
+                            Command="{Binding CancelCommand}"
+                            Width="100"
+                            HorizontalContentAlignment="Center"/>
+					<Button Classes="primary-action"
+                            Content="{Binding Loc[SaveBtn]}"
+                            Command="{Binding SaveCommand}"
+                            Width="120"
+                            HorizontalContentAlignment="Center"/>
+				</StackPanel>
 			</Grid>
+
 		</StackPanel>
 	</ScrollViewer>
 </Window>

@@ -1,4 +1,4 @@
-﻿
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -32,6 +32,9 @@ public partial class AnalyticsViewModel : ObservableObject
     private readonly IDatabaseService _db;
     private readonly LocalizationService _localization = LocalizationService.Instance;
 
+    // Физический максимум — 168 часов в неделю
+    private const int MaxWeekMinutes = 168 * 60;
+
     [ObservableProperty]
     private DateTime _weekStart;
 
@@ -54,16 +57,21 @@ public partial class AnalyticsViewModel : ObservableObject
     private string _completedTasksRatio = "0 / 0";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TasksProgressLabel))]
     private double _tasksProgressPercentage;
 
+    public string TasksProgressLabel =>
+        $"{LocalizationService.Instance["Done"]}: {(int)Math.Round(TasksProgressPercentage)}%";
+
+    // Карточка "Отклонение" (заменяет "Продуктивность")
     [ObservableProperty]
-    private double _productivityPercentage;
+    private string _deviationStr = "—";
 
     [ObservableProperty]
-    private string _productivityLevel = string.Empty;
+    private string _deviationColor = "#9CA3AF";
 
     [ObservableProperty]
-    private string _productivityColor = "#EF4444";
+    private string _deviationSubLabel = "—";
 
     [ObservableProperty]
     private double _totalHours;
@@ -87,10 +95,6 @@ public partial class AnalyticsViewModel : ObservableObject
     public string WeekTitle =>
         $"{_localization["Week"]} {WeekStart:dd.MM.yyyy}";
 
-    public string CurrentWeekText =>
-        $"{_localization["Week"]} {WeekStart:dd.MM.yyyy}";
-
-
     [RelayCommand]
     private void PreviousWeek()
     {
@@ -111,118 +115,103 @@ public partial class AnalyticsViewModel : ObservableObject
 
     private void LoadData()
     {
-        var end = WeekStart.AddDays(7);
+        var weekEnd  = WeekStart.AddDays(7);
+        var sessions = _db.GetSessionsForPeriod(WeekStart, weekEnd).ToList();
+        var tasks    = _db.GetTasksForPeriod(WeekStart, weekEnd).ToList();
 
-        var currentWeekSessions = _db
-            .GetSessionsForPeriod(WeekStart, end)
-            .ToList();
-
-        var currentWeekTasks = _db
-            .GetTasksForPeriod(WeekStart, end)
-            .ToList();
-
-        LoadFocusStatistics(currentWeekSessions);
-        LoadTasksStatistics(currentWeekTasks);
-        LoadProductivityStatistics(currentWeekSessions, currentWeekTasks);
-        LoadWeekChart(currentWeekSessions);
-        LoadProjectSegments(currentWeekSessions);
+        LoadFocusStatistics(sessions);
+        LoadTasksStatistics(tasks);
+        LoadDeviationStatistics(tasks, sessions);
+        LoadWeekChart(sessions);
+        LoadProjectSegments(sessions);
     }
 
     private void LoadFocusStatistics(List<FocusSession> sessions)
     {
-        int totalMinutes = sessions.Sum(s =>
-            s.ActualMinutes > 0
-                ? s.ActualMinutes
-                : s.PlannedMinutes);
+        // Только завершённые сессии, только фактические минуты; ограничиваем физическим максимумом
+        int totalMinutes = sessions
+            .Where(s => s.IsCompleted)
+            .Sum(s => s.ActualMinutes);
 
+        totalMinutes = Math.Min(totalMinutes, MaxWeekMinutes);
         TotalHours = totalMinutes / 60.0;
 
         TotalFocusedTimeStr =
             $"{totalMinutes / 60} {_localization["HoursShort"]} " +
             $"{totalMinutes % 60:D2} {_localization["MinutesShort"]}";
 
-        var prevWeekStart = WeekStart.AddDays(-7);
+        // Сравнение с предыдущей неделей
+        var prevStart    = WeekStart.AddDays(-7);
+        int prevMinutes  = _db.GetSessionsForPeriod(prevStart, WeekStart)
+            .Where(s => s.IsCompleted)
+            .Sum(s => s.ActualMinutes);
+        prevMinutes = Math.Min(prevMinutes, MaxWeekMinutes);
 
-        var prevWeekSessions = _db
-            .GetSessionsForPeriod(prevWeekStart, WeekStart)
-            .ToList();
-
-        int prevTotalMinutes = prevWeekSessions.Sum(s =>
-            s.ActualMinutes > 0
-                ? s.ActualMinutes
-                : s.PlannedMinutes);
-
-        if (prevTotalMinutes <= 0)
+        if (prevMinutes <= 0)
         {
-            WeekComparisonStr = $"0% {_localization["PerWeek"]}";
+            WeekComparisonStr   = $"0% {_localization["PerWeek"]}";
             WeekComparisonColor = "#9CA3AF";
             return;
         }
 
-        double diffPct =
-            ((double)(totalMinutes - prevTotalMinutes) / prevTotalMinutes) * 100;
+        double diffPct = ((double)(totalMinutes - prevMinutes) / prevMinutes) * 100;
 
         if (diffPct >= 0)
         {
-            WeekComparisonStr =
-                $"↑ {Math.Round(diffPct)}% {_localization["PerWeek"]}";
-
+            WeekComparisonStr   = $"↑ {Math.Round(diffPct)}% {_localization["PerWeek"]}";
             WeekComparisonColor = "#10B981";
         }
         else
         {
-            WeekComparisonStr =
-                $"↓ {Math.Abs(Math.Round(diffPct))}% {_localization["PerWeek"]}";
-
+            WeekComparisonStr   = $"↓ {Math.Abs(Math.Round(diffPct))}% {_localization["PerWeek"]}";
             WeekComparisonColor = "#EF4444";
         }
     }
 
     private void LoadTasksStatistics(List<TaskItem> tasks)
     {
-        int totalTasksCount = tasks.Count;
-        int completedTasksCount = tasks.Count(t => t.IsCompleted);
+        int total     = tasks.Count;
+        int completed = tasks.Count(t => t.IsCompleted);
 
-        CompletedTasksRatio = $"{completedTasksCount} / {totalTasksCount}";
-
-        TasksProgressPercentage =
-            totalTasksCount > 0
-                ? ((double)completedTasksCount / totalTasksCount) * 100
-                : 0;
+        CompletedTasksRatio     = $"{completed} / {total}";
+        TasksProgressPercentage = total > 0
+            ? ((double)completed / total) * 100
+            : 0;
     }
 
-    private void LoadProductivityStatistics(
-        List<FocusSession> sessions,
-        List<TaskItem> tasks)
+    private void LoadDeviationStatistics(List<TaskItem> tasks, List<FocusSession> sessions)
     {
-        int totalMinutes = sessions.Sum(s =>
-            s.ActualMinutes > 0
-                ? s.ActualMinutes
-                : s.PlannedMinutes);
+        // План vs Факт — только за сегодня (независимо от выбранной недели в навигации)
+        var today = DateTime.Today;
+        int planMinutes = _db.GetTasksByDate(today).Sum(t => t.PlannedDurationMinutes);
+        int factMinutes = _db.GetSessionsForDate(today)
+            .Where(s => s.IsCompleted)
+            .Sum(s => s.ActualMinutes);
+        factMinutes = Math.Min(factMinutes, MaxWeekMinutes);
 
-        ProductivityPercentage =
-            tasks.Count > 0
-                ? (TasksProgressPercentage * 0.6) +
-                  (Math.Min(100, (totalMinutes / 1200.0) * 100) * 0.4)
-                : 0;
-
-        ProductivityPercentage =
-            Math.Min(100, Math.Round(ProductivityPercentage));
-
-        if (ProductivityPercentage >= 75)
+        if (planMinutes == 0)
         {
-            ProductivityLevel = _localization["HighLevel"];
-            ProductivityColor = "#10B981";
+            DeviationStr      = "—";
+            DeviationColor    = "#9CA3AF";
+            DeviationSubLabel = _localization["DeviationSubNoPlan"];
+            return;
         }
-        else if (ProductivityPercentage >= 40)
+
+        double pct = ((double)(factMinutes - planMinutes) / planMinutes) * 100;
+        // Ограничиваем диапазон отображения ±999%
+        pct = Math.Max(-999, Math.Min(999, pct));
+
+        if (pct >= 0)
         {
-            ProductivityLevel = _localization["MediumLevel"];
-            ProductivityColor = "#F59E0B";
+            DeviationStr      = $"+{Math.Round(pct)}%";
+            DeviationColor    = "#10B981";
+            DeviationSubLabel = _localization["DeviationSubOnTrack"];
         }
         else
         {
-            ProductivityLevel = _localization["LowLevel"];
-            ProductivityColor = "#EF4444";
+            DeviationStr      = $"{Math.Round(pct)}%";
+            DeviationColor    = "#EF4444";
+            DeviationSubLabel = _localization["DeviationSubUnder"];
         }
     }
 
@@ -242,38 +231,31 @@ public partial class AnalyticsViewModel : ObservableObject
         };
 
         int[] minutesByDay = new int[7];
-
         for (int i = 0; i < 7; i++)
         {
             var dayDate = WeekStart.AddDays(i).Date;
-
             minutesByDay[i] = sessions
-                .Where(s => s.StartTime.Date == dayDate)
-                .Sum(s =>
-                    s.ActualMinutes > 0
-                        ? s.ActualMinutes
-                        : s.PlannedMinutes);
+                .Where(s => s.IsCompleted && s.StartTime.Date == dayDate)
+                .Sum(s => s.ActualMinutes);
         }
 
         double maxMinutes = minutesByDay.Max();
 
         for (int i = 0; i < 7; i++)
         {
-            double hours = minutesByDay[i] / 60.0;
-
+            double hours  = minutesByDay[i] / 60.0;
             double height = maxMinutes > 0
                 ? (minutesByDay[i] / maxMinutes) * 140.0
                 : 10.0;
 
-            bool isToday =
-                WeekStart.AddDays(i).Date == DateTime.Today;
+            bool isToday = WeekStart.AddDays(i).Date == DateTime.Today;
 
             WeekDaysChart.Add(new DayChartItem
             {
-                DayName = dayNames[i],
-                Hours = Math.Round(hours, 1),
+                DayName     = dayNames[i],
+                Hours       = Math.Round(hours, 1),
                 HeightRatio = Math.Max(10, height),
-                Color = isToday ? "#2563EB" : "#93C5FD"
+                Color       = isToday ? "#2563EB" : "#93C5FD"
             });
         }
     }
@@ -284,67 +266,46 @@ public partial class AnalyticsViewModel : ObservableObject
 
         var projectGroups = new Dictionary<string, double>();
 
-        foreach (var session in sessions.Where(s => s.TaskId.HasValue))
+        foreach (var session in sessions.Where(s => s.IsCompleted && s.TaskId.HasValue))
         {
-            var task = _db.GetTask(session.TaskId.Value);
+            var task = _db.GetTask(session.TaskId!.Value);
 
-            string projectName =
-                task == null || string.IsNullOrWhiteSpace(task.Project)
-                    ? _localization["NoProject"]
-                    : task.Project;
-
-            int actualMinutes =
-                session.ActualMinutes > 0
-                    ? session.ActualMinutes
-                    : session.PlannedMinutes;
-
-            if (projectGroups.ContainsKey(projectName))
+            string projectName;
+            if (task == null || !task.ProjectId.HasValue || task.ProjectId.Value <= 0)
             {
-                projectGroups[projectName] += actualMinutes;
+                projectName = _localization["NoProject"];
             }
             else
             {
-                projectGroups[projectName] = actualMinutes;
+                var proj = _db.GetAllProjects().FirstOrDefault(p => p.Id == task.ProjectId.Value);
+                projectName = proj?.Name ?? _localization["NoProject"];
             }
+
+            if (projectGroups.ContainsKey(projectName))
+                projectGroups[projectName] += session.ActualMinutes;
+            else
+                projectGroups[projectName] = session.ActualMinutes;
         }
 
-        double totalHoursSum =
-            projectGroups.Sum(x => x.Value) / 60.0;
+        double totalHoursSum = projectGroups.Sum(x => x.Value) / 60.0;
 
-        var colors = new[]
-        {
-            "#2563EB",
-            "#F59E0B",
-            "#10B981",
-            "#8B5CF6",
-            "#EC4899"
-        };
-
+        var colors = new[] { "#2563EB", "#F59E0B", "#10B981", "#8B5CF6", "#EC4899" };
         int colorIndex = 0;
 
         foreach (var group in projectGroups.OrderByDescending(g => g.Value))
         {
             double hours = group.Value / 60.0;
-
             int h = (int)hours;
             int m = (int)((hours - h) * 60);
 
             Segments.Add(new AnalyticsSegment
             {
-                Label = group.Key,
-                Value = Math.Round(hours, 1),
-                TimeFormatted =
-                    $"{h} {_localization["HoursShort"]} " +
-                    $"{m:D2} {_localization["MinutesShort"]}",
-
-                Percentage = totalHoursSum > 0
-                    ? (hours / totalHoursSum) * 100.0
-                    : 0,
-
-                Color = colors[colorIndex % colors.Length]
+                Label         = group.Key,
+                Value         = Math.Round(hours, 1),
+                TimeFormatted = $"{h} {_localization["HoursShort"]} {m:D2} {_localization["MinutesShort"]}",
+                Percentage    = totalHoursSum > 0 ? (hours / totalHoursSum) * 100.0 : 0,
+                Color         = colors[colorIndex++ % colors.Length]
             });
-
-            colorIndex++;
         }
     }
 }

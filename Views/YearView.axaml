@@ -3,96 +3,170 @@
              xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
              x:Class="FocusFlowFinal.Views.YearView"
              x:DataType="vm:YearViewModel"
-             x:Name="Root"
-             Padding="10">
+             x:Name="Root">
+
+	<UserControl.Styles>
+		<!-- Карточка месяца: обычная -->
+		<Style Selector="Border.month-card">
+			<Setter Property="Background"      Value="{DynamicResource CardSecondaryBackgroundBrush}"/>
+			<Setter Property="CornerRadius"    Value="12"/>
+			<Setter Property="Margin"          Value="8"/>
+			<Setter Property="Padding"         Value="12"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+		</Style>
+		<!-- Карточка текущего месяца: акцентная подсветка -->
+		<Style Selector="Border.month-card.current">
+			<Setter Property="Background"      Value="{DynamicResource CardBackgroundBrush}"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="BorderThickness" Value="1.5"/>
+		</Style>
+
+		<!-- Заголовок месяца -->
+		<Style Selector="TextBlock.month-title">
+			<Setter Property="FontSize"   Value="13"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="Margin"     Value="2,0,0,8"/>
+		</Style>
+		<Style Selector="Border.month-card.current TextBlock.month-title">
+			<Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+		</Style>
+
+		<!-- Кнопка дня -->
+		<Style Selector="Button.year-day">
+			<Setter Property="Margin"          Value="1"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Height"          Value="26"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.year-day:pointerover">
+			<Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+		</Style>
+	</UserControl.Styles>
 
 	<Grid RowDefinitions="Auto, *" Background="{DynamicResource WindowBackgroundBrush}">
-		<Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="10,5,10,15">
-			<Button Grid.Column="0" Content="&lt;" Command="{Binding PreviousYearCommand}" Padding="8,4"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}" CornerRadius="6"/>
-			<TextBlock Grid.Column="1" Text="{Binding YearTitle}" FontSize="20" FontWeight="Bold"
+
+		<!-- Навигация по годам -->
+		<Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="14,12,14,8">
+			<Button Grid.Column="0" Content="‹" FontSize="18"
+                    Command="{Binding PreviousYearCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
+			<TextBlock Grid.Column="1" Text="{Binding YearTitle}"
+                       FontSize="16" FontWeight="Bold"
                        Foreground="{DynamicResource PrimaryTextBrush}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-			<Button Grid.Column="2" Content="&gt;" Command="{Binding NextYearCommand}" Padding="8,4"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}" CornerRadius="6"/>
+			<Button Grid.Column="2" Content="›" FontSize="18"
+                    Command="{Binding NextYearCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
 		</Grid>
 
 		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-			<ItemsControl ItemsSource="{Binding Months}">
+			<ItemsControl ItemsSource="{Binding Months}" Margin="6">
 				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<UniformGrid Columns="3"/>
-					</ItemsPanelTemplate>
+					<ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate>
 				</ItemsControl.ItemsPanel>
 
 				<ItemsControl.ItemTemplate>
 					<DataTemplate x:DataType="vm:YearMonthItem">
-						<!-- Увеличен отступ между карточками -->
-						<Border Background="{DynamicResource CardBackgroundBrush}"
-                                CornerRadius="12"
-                                Margin="12"
-                                Padding="12"
-                                BoxShadow="0 2 6 0 #20000000"
-                                BorderBrush="{DynamicResource BorderBrush}"
-                                BorderThickness="1">
-							<Grid RowDefinitions="Auto, Auto, *">
-								<TextBlock Grid.Row="0" Text="{Binding MonthName}"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"
-                                           FontSize="14" FontWeight="Bold"
-                                           Margin="4,0,0,10"/>
+						<Border Classes="month-card"
+                                Classes.current="{Binding IsCurrentMonth}">
+							<Grid RowDefinitions="Auto, Auto, Auto, Auto">
 
-								<Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,0,0,6">
+								<!-- Название месяца -->
+								<TextBlock Grid.Row="0" Classes="month-title" Text="{Binding MonthName}"/>
+
+								<!-- Заголовки дней недели -->
+								<Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,0,0,4">
 									<TextBlock Grid.Column="0" Text="{Binding DataContext.MonShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="1" Text="{Binding DataContext.TueShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="2" Text="{Binding DataContext.WedShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="3" Text="{Binding DataContext.ThuShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="4" Text="{Binding DataContext.FriShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="5" Text="{Binding DataContext.SatShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 									<TextBlock Grid.Column="6" Text="{Binding DataContext.SunShort, ElementName=Root}"
-                                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
                                                HorizontalAlignment="Center" FontWeight="Medium"/>
 								</Grid>
 
+								<!-- Сетка дней -->
 								<ItemsControl Grid.Row="2" ItemsSource="{Binding Days}">
 									<ItemsControl.ItemsPanel>
-										<ItemsPanelTemplate>
-											<UniformGrid Columns="7" Rows="6"/>
-										</ItemsPanelTemplate>
+										<ItemsPanelTemplate><UniformGrid Columns="7" Rows="6"/></ItemsPanelTemplate>
 									</ItemsControl.ItemsPanel>
 									<ItemsControl.ItemTemplate>
 										<DataTemplate x:DataType="vm:YearDayItem">
-											<Button Margin="1" Padding="0" Background="Transparent" BorderThickness="0"
-                                                    Height="30" CornerRadius="4"
+											<Button Classes="year-day"
                                                     Command="{Binding DataContext.SelectDayCommand, ElementName=Root}"
                                                     CommandParameter="{Binding}">
-												<Grid RowDefinitions="*, Auto" Margin="0,2">
+												<Grid>
+													<!-- Синий кружок для "сегодня" -->
+													<Ellipse Width="22" Height="22"
+                                                             Fill="{DynamicResource AccentBackground}"
+                                                             IsVisible="{Binding IsToday}"/>
 													<TextBlock Text="{Binding DayNumber}"
                                                                FontSize="11"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"
-                                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-													<Ellipse Grid.Row="1" Width="4" Height="4" Fill="#3B82F6"
+                                                               IsVisible="{Binding IsCurrentMonth}">
+														<TextBlock.Styles>
+															<Style Selector="TextBlock">
+																<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+															</Style>
+														</TextBlock.Styles>
+													</TextBlock>
+													<!-- Дни вне месяца — приглушены -->
+													<TextBlock Text="{Binding DayNumber}"
+                                                               FontSize="11"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Opacity="0.25"
+                                                               IsVisible="{Binding !IsCurrentMonth}"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+													<!-- Точка-индикатор активности -->
+													<Ellipse Width="3" Height="3" Fill="#3B82F6"
                                                              IsVisible="{Binding HasTasks}"
-                                                             HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Bottom"
+                                                             Margin="0,0,0,2"/>
 												</Grid>
 											</Button>
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>
 								</ItemsControl>
+
+								<!-- Прогресс выполнения задач (только если есть задачи) -->
+								<StackPanel Grid.Row="3" Spacing="4" Margin="2,8,2,0"
+                                            IsVisible="{Binding HasProgress}">
+									<TextBlock Text="{Binding ProgressText}"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource AccentTextBrush}"/>
+									<ProgressBar Value="{Binding ProgressPercent}"
+                                                 Minimum="0" Maximum="100"
+                                                 Height="4" CornerRadius="2"
+                                                 Background="{DynamicResource ProgressBackgroundBrush}"
+                                                 Foreground="{DynamicResource AccentBackground}"/>
+								</StackPanel>
+
 							</Grid>
 						</Border>
 					</DataTemplate>

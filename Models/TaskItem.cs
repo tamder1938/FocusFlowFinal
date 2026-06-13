@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using LiteDB;
 using FocusFlowFinal.Services;
@@ -13,6 +14,7 @@ public class TaskItem : ISyncableEntity
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }
     public TimeSpan? StartTime { get; set; }
+    public TimeSpan? EndTime { get; set; }
     public int PlannedDurationMinutes { get; set; }
     public bool IsCompleted { get; set; }
     public int Priority { get; set; } = 1;   // 0 – высокий, 1 – средний, 2 – низкий
@@ -43,16 +45,24 @@ public class TaskItem : ISyncableEntity
     [BsonIgnore]
     public bool HasSubtasks => Subtasks.Count > 0;
 
-    // ИСПРАВЛЕНО (Проблема 10): локализованный текст длительности.
-    // RU: "30 мин", "1 ч 15 мин", "2 ч"
-    // EN: "30 min", "1 h 15 min", "2 h"
+    // Отображаемые подзадачи — observable-обёртки, создаются TaskListViewModel
+    [BsonIgnore]
+    public ObservableCollection<SubtaskViewItem>? SubtaskViewItems { get; private set; }
+
+    /// <summary>
+    /// Инициализирует observable-обёртки подзадач для отображения в списке задач.
+    /// Вызывается из TaskListViewModel после загрузки задач из БД.
+    /// </summary>
+    public void InitSubtaskViewItems(Action onSubtaskToggled)
+    {
+        SubtaskViewItems = new ObservableCollection<SubtaskViewItem>(
+            Subtasks.Select(s => new SubtaskViewItem(s) { OnToggled = onSubtaskToggled })
+        );
+    }
+
     [BsonIgnore]
     public string DurationText => FormatDuration(PlannedDurationMinutes);
 
-    /// <summary>
-    /// Форматирует длительность в минутах в локализованную строку
-    /// в зависимости от текущего языка приложения.
-    /// </summary>
     public static string FormatDuration(int minutes)
     {
         if (minutes <= 0) return string.Empty;
@@ -72,11 +82,9 @@ public class TaskItem : ISyncableEntity
             : $"{hours} {hourWord}";
     }
 
-    // Свойство для триггера has-duration
     [BsonIgnore]
     public bool HasDuration => PlannedDurationMinutes > 0;
 
-    // Кнопка Play видима только для незавершённых задач с указанной длительностью
     [BsonIgnore]
     public bool CanStartTimer => HasDuration && !IsCompleted;
 }

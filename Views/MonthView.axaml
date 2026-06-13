@@ -1,79 +1,151 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:FocusFlowFinal.ViewModels"
              xmlns:models="using:FocusFlowFinal.Models"
              xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
              x:Class="FocusFlowFinal.Views.MonthView"
              x:DataType="vm:MonthViewModel">
-	<DockPanel>
-		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,8" Spacing="10">
-			<Button Content="&lt;" Command="{Binding PreviousMonthCommand}"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-			<TextBlock Text="{Binding MonthYearTitle}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
-                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<Button Content="&gt;" Command="{Binding NextMonthCommand}"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-		</StackPanel>
 
-		<ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding DayNamesHeaders}" Height="30" Margin="6,0,6,6">
+	<UserControl.Styles>
+		<!-- Кнопка-обёртка ячейки дня (клик → DayView) -->
+		<Style Selector="Button.day-cell">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding"         Value="8,6"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="VerticalAlignment"   Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+			<Setter Property="VerticalContentAlignment"   Value="Top"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.day-cell:pointerover">
+			<Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+		</Style>
+
+		<!-- Бейдж события: цветная капсула с текстом -->
+		<Style Selector="Button.event-pill">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="Margin"          Value="0,2,0,0"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.event-pill:pointerover">
+			<Setter Property="Opacity" Value="0.8"/>
+		</Style>
+	</UserControl.Styles>
+
+	<DockPanel>
+
+		<!-- Навигация по месяцам -->
+		<Grid DockPanel.Dock="Top"
+              ColumnDefinitions="Auto,*,Auto"
+              Margin="14,10,14,4">
+			<Button Grid.Column="0" Content="‹" FontSize="18"
+                    Command="{Binding PreviousMonthCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
+			<TextBlock Grid.Column="1" Text="{Binding MonthYearTitle}"
+                       FontSize="15" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<Button Grid.Column="2" Content="›" FontSize="18"
+                    Command="{Binding NextMonthCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    VerticalAlignment="Center" Cursor="Hand"/>
+		</Grid>
+
+		<!-- Заголовки дней недели -->
+		<ItemsControl DockPanel.Dock="Top"
+                      ItemsSource="{Binding DayNamesHeaders}"
+                      Height="28" Margin="14,0,14,4">
 			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<UniformGrid Columns="7" />
-				</ItemsPanelTemplate>
+				<ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate>
 			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"
+					<TextBlock Text="{Binding}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="11" FontWeight="SemiBold"
                                Foreground="{DynamicResource SecondaryTextBrush}"/>
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
 
-		<ScrollViewer Margin="6">
-			<ItemsControl ItemsSource="{Binding MonthDays}">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<UniformGrid Columns="7" />
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Border BorderBrush="{DynamicResource BorderBrush}"
-                                BorderThickness="1"
-                                Margin="1"
-                                Background="{DynamicResource CardBackgroundBrush}"
-                                CornerRadius="2">
-							<Button Command="{Binding $parent[UserControl].DataContext.SelectDayCommand}"
-                                    CommandParameter="{Binding Date}"
-                                    Background="Transparent"
-                                    Padding="4,2"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch">
-								<DockPanel>
-									<TextBlock DockPanel.Dock="Top" Text="{Binding DayNumber}"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"
-                                               HorizontalAlignment="Left"/>
-									<ItemsControl ItemsSource="{Binding Events}">
-										<ItemsControl.ItemsPanel>
-											<ItemsPanelTemplate>
-												<WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
-											</ItemsPanelTemplate>
-										</ItemsControl.ItemsPanel>
-										<ItemsControl.ItemTemplate>
-											<DataTemplate>
-												<Ellipse Width="6" Height="6" Fill="{Binding Color}" Margin="1,0"/>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
-								</DockPanel>
-							</Button>
-						</Border>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-		</ScrollViewer>
+		<!-- Сетка дней -->
+		<Border Margin="10,0,10,10"
+                Background="{DynamicResource CardSecondaryBackgroundBrush}"
+                CornerRadius="12"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding MonthDays}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="models:MonthDayItem">
+							<Border BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="0,0,1,1"
+                                    MinHeight="76">
+								<Button Classes="day-cell"
+                                        Command="{Binding $parent[UserControl].DataContext.SelectDayCommand}"
+                                        CommandParameter="{Binding Date}"
+                                        ToolTip.Tip="Открыть день">
+									<StackPanel Spacing="3"
+                                Opacity="{Binding IsCurrentMonth, Converter={x:Static conv:BoolToOpacityConverter.Instance}}">
+
+										<!-- Число дня: синий кружок если IsToday -->
+										<Grid HorizontalAlignment="Left">
+											<Border Width="24" Height="24" CornerRadius="12"
+                                                    Background="{DynamicResource AccentBackground}"
+                                                    IsVisible="{Binding IsToday}"/>
+											<TextBlock Text="{Binding DayNumber}"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center">
+												<TextBlock.Styles>
+													<Style Selector="TextBlock">
+														<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+													</Style>
+												</TextBlock.Styles>
+											</TextBlock>
+										</Grid>
+
+										<!-- Список событий: цветные капсулы -->
+										<ItemsControl ItemsSource="{Binding Events}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate x:DataType="models:CalendarEvent">
+													<Button Classes="event-pill"
+                                                            Command="{Binding $parent[UserControl].DataContext.EditEventCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="{Binding Title}">
+														<Border Background="{Binding Color}"
+                                                                CornerRadius="5"
+                                                                Padding="6,2">
+															<TextBlock Text="{Binding Title}"
+                                                                       FontSize="10" FontWeight="SemiBold"
+                                                                       Foreground="White"
+                                                                       TextTrimming="CharacterEllipsis"/>
+														</Border>
+													</Button>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+
+									</StackPanel>
+								</Button>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Border>
+
 	</DockPanel>
 </UserControl>

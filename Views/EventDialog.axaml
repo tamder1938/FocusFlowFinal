@@ -1,37 +1,62 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
         x:Class="FocusFlowFinal.Views.EventDialog"
-        x:DataType="vm:EventDialogViewModel"
-        Title="{Binding Loc[EventTitle]}" Width="380" Height="640"
+        x:CompileBindings="False"
+        Title="{Binding Loc[EventTitle]}" Width="400" Height="760"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
+
+	<Window.Resources>
+		<conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+		<conv:ColorEqualityConverter x:Key="ColorEqualityConverter"/>
+		<conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+	</Window.Resources>
 
 	<Window.Styles>
 		<Style Selector="TextBox, ComboBox, NumericUpDown, DatePicker">
 			<Setter Property="Margin" Value="0,0,0,8"/>
 			<Setter Property="HorizontalAlignment" Value="Stretch"/>
-			<Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
 			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Padding" Value="10,8"/>
 		</Style>
 		<Style Selector="CheckBox">
 			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
 		</Style>
-		<Style Selector="Button">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
-			<Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+		<!-- Стиль для кружков выбора цвета -->
+		<Style Selector="Button.color-swatch">
+			<Setter Property="Width" Value="28"/>
+			<Setter Property="Height" Value="28"/>
+			<Setter Property="CornerRadius" Value="14"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Margin" Value="3,0"/>
+			<Setter Property="BorderThickness" Value="2"/>
+			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style Selector="Button.color-swatch.selected">
+			<Setter Property="BorderBrush" Value="{DynamicResource PrimaryTextBrush}"/>
 		</Style>
 	</Window.Styles>
 
 	<ScrollViewer>
 		<StackPanel Margin="15">
 
-			<TextBlock Text="Загрузить из шаблона:" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+			<!-- Загрузить шаблон -->
+			<TextBlock Text="{Binding Loc[LoadTemplateHint]}"
+                       FontSize="12"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Margin="0,0,0,4"/>
 			<ComboBox ItemsSource="{Binding EventTemplates}"
                       SelectedItem="{Binding SelectedEventTemplate}"
                       Height="36"
                       HorizontalAlignment="Stretch"
-                      PlaceholderText="Выберите шаблон..."
+                      PlaceholderText="{Binding Loc[ChooseTemplate]}"
                       Background="{DynamicResource CardBackgroundBrush}"
                       Foreground="{DynamicResource PrimaryTextBrush}">
 				<ComboBox.ItemTemplate>
@@ -43,69 +68,176 @@
 
 			<Separator Height="1" Background="{DynamicResource BorderBrush}" Margin="0,4,0,12"/>
 
-			<TextBlock Text="Название:" Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<TextBox Text="{Binding Title}" Background="{DynamicResource CardBackgroundBrush}"
+			<!-- Название -->
+			<TextBlock Text="{Binding Loc[EventNameLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<TextBox Text="{Binding Title}"
+                     Watermark="{Binding Loc[EventNameWatermark]}"
+                     Background="{DynamicResource CardBackgroundBrush}"
                      Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+			<!-- ИСПРАВЛЕНО (Часть 1, п.2): мини-календарь выбора даты события -->
+			<TextBlock Text="{Binding Loc[DueDateLabel]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<DatePicker SelectedDate="{Binding EventDate}"
+                        HorizontalAlignment="Stretch"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        IsEnabled="{Binding HasRecurrence, Converter={StaticResource InverseBoolConverter}}"
+                        ToolTip.Tip="{Binding Loc[DueDateLabel]}"/>
 
 			<CheckBox IsChecked="{Binding IsAllDay}" Content="{Binding Loc[AllDayLbl]}" Margin="0,0,0,10"/>
 
-			<StackPanel IsVisible="{Binding !IsAllDay}">
+			<!-- Время (скрыто когда "весь день") -->
+			<StackPanel IsVisible="{Binding IsAllDay, Converter={StaticResource InverseBoolConverter}}">
 				<TextBlock Text="{Binding Loc[StartTimeLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<Grid ColumnDefinitions="Auto, *, Auto, *" Margin="0,0,0,8">
-					<TextBlock Grid.Column="0" Text="Час:" VerticalAlignment="Center" Margin="0,0,5,0"
+					<TextBlock Grid.Column="0" Text="{Binding Loc[HourLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,5,0"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBox Grid.Column="1" Text="{Binding StartHour}" Background="{DynamicResource CardBackgroundBrush}"
+					<TextBox Grid.Column="1" Text="{Binding StartHour}"
+                             Background="{DynamicResource CardBackgroundBrush}"
                              Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBlock Grid.Column="2" Text="Мин:" VerticalAlignment="Center" Margin="10,0,5,0"
+					<TextBlock Grid.Column="2" Text="{Binding Loc[MinLabel]}"
+                               VerticalAlignment="Center" Margin="10,0,5,0"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBox Grid.Column="3" Text="{Binding StartMinute}" Background="{DynamicResource CardBackgroundBrush}"
+					<TextBox Grid.Column="3" Text="{Binding StartMinute}"
+                             Background="{DynamicResource CardBackgroundBrush}"
                              Foreground="{DynamicResource PrimaryTextBrush}"/>
 				</Grid>
 
 				<TextBlock Text="{Binding Loc[EndTimeLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<Grid ColumnDefinitions="Auto, *, Auto, *" Margin="0,0,0,8">
-					<TextBlock Grid.Column="0" Text="Час:" VerticalAlignment="Center" Margin="0,0,5,0"
+					<TextBlock Grid.Column="0" Text="{Binding Loc[HourLabel]}"
+                               VerticalAlignment="Center" Margin="0,0,5,0"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBox Grid.Column="1" Text="{Binding EndHour}" Background="{DynamicResource CardBackgroundBrush}"
+					<TextBox Grid.Column="1" Text="{Binding EndHour}"
+                             Background="{DynamicResource CardBackgroundBrush}"
                              Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBlock Grid.Column="2" Text="Мин:" VerticalAlignment="Center" Margin="10,0,5,0"
+					<TextBlock Grid.Column="2" Text="{Binding Loc[MinLabel]}"
+                               VerticalAlignment="Center" Margin="10,0,5,0"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-					<TextBox Grid.Column="3" Text="{Binding EndMinute}" Background="{DynamicResource CardBackgroundBrush}"
+					<TextBox Grid.Column="3" Text="{Binding EndMinute}"
+                             Background="{DynamicResource CardBackgroundBrush}"
                              Foreground="{DynamicResource PrimaryTextBrush}"/>
 				</Grid>
 			</StackPanel>
 
-			<TextBlock Text="Цвет:" Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<TextBox Text="{Binding Color}" Background="{DynamicResource CardBackgroundBrush}"
-                     Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<!-- === ВЫБОР ЦВЕТА: кружки + HEX === -->
+			<TextBlock Text="{Binding Loc[ColorLabel]}"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       Margin="0,4,0,6"/>
+			<!-- Строка с цветовыми кружками -->
+			<WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+				<!-- Красный -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#EF4444'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#EF4444"
+                        Background="#EF4444" ToolTip.Tip="Красный / Red"/>
+				<!-- Оранжевый -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#F97316'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#F97316"
+                        Background="#F97316" ToolTip.Tip="Оранжевый / Orange"/>
+				<!-- Жёлтый -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#EAB308'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#EAB308"
+                        Background="#EAB308" ToolTip.Tip="Жёлтый / Yellow"/>
+				<!-- Зелёный -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#22C55E'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#22C55E"
+                        Background="#22C55E" ToolTip.Tip="Зелёный / Green"/>
+				<!-- Синий -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#3B82F6'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#3B82F6"
+                        Background="#3B82F6" ToolTip.Tip="Синий / Blue"/>
+				<!-- Фиолетовый -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#8B5CF6'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#8B5CF6"
+                        Background="#8B5CF6" ToolTip.Tip="Фиолетовый / Purple"/>
+				<!-- Розовый -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#EC4899'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#EC4899"
+                        Background="#EC4899" ToolTip.Tip="Розовый / Pink"/>
+				<!-- Серый -->
+				<Button Classes="color-swatch"
+                        Classes.selected="{Binding Color, Converter={StaticResource ColorEqualityConverter}, ConverterParameter='#6B7280'}"
+                        Command="{Binding SelectColorCommand}" CommandParameter="#6B7280"
+                        Background="#6B7280" ToolTip.Tip="Серый / Gray"/>
+			</WrapPanel>
+			<!-- Поле ручного ввода HEX -->
+			<Grid ColumnDefinitions="Auto,*" Margin="0,0,0,4">
+				<TextBlock Grid.Column="0" Text="{Binding Loc[HexColorLabel]}"
+                           VerticalAlignment="Center" Margin="0,0,8,0"
+                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+				<TextBox Grid.Column="1" Text="{Binding Color}"
+                         Watermark="{Binding Loc[HexColorWatermark]}"
+                         Background="{DynamicResource CardBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Margin="0"/>
+			</Grid>
+			<!-- Превью выбранного цвета -->
+			<Border Height="6" CornerRadius="3" Margin="0,0,0,10"
+                    Background="{Binding Color, Converter={StaticResource StringToBrushConverter}}"/>
 
-			<TextBlock Text="{Binding Loc[Settings]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<!-- ComboBox типов повторения -->
+			<TextBlock Text="{Binding Loc[RecurrenceLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 			<ComboBox SelectedIndex="{Binding RecurrenceIndex}"
+                      ItemsSource="{Binding RecurrenceItems}"
                       Background="{DynamicResource CardBackgroundBrush}"
-                      Foreground="{DynamicResource PrimaryTextBrush}">
-				<ComboBoxItem Content="None"/>
-				<ComboBoxItem Content="Daily"/>
-				<ComboBoxItem Content="Weekdays"/>
-				<ComboBoxItem Content="Weekly"/>
-				<ComboBoxItem Content="Monthly"/>
-				<ComboBoxItem Content="Yearly"/>
-				<ComboBoxItem Content="Shift work"/>
-				<ComboBoxItem Content="Custom Interval"/>
-			</ComboBox>
+                      Foreground="{DynamicResource PrimaryTextBrush}"/>
 
+			<!-- Поля для "По дням недели" (Weekly) -->
 			<StackPanel IsVisible="{Binding IsWeeklyFieldsVisible}" Margin="5,0,0,8">
-				<TextBlock Text="Days:" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+				<TextBlock Text="{Binding Loc[DaysLbl]}"
+                           Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
 				<WrapPanel Orientation="Horizontal">
-					<CheckBox IsChecked="{Binding DayMon}" Content="Mon" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DayTue}" Content="Tue" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DayWed}" Content="Wed" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DayThu}" Content="Thu" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DayFri}" Content="Fri" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DaySat}" Content="Sat" Margin="0,0,8,0"/>
-					<CheckBox IsChecked="{Binding DaySun}" Content="Sun"/>
+					<CheckBox IsChecked="{Binding DayMon}" Content="{Binding Loc[Day_Mon]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayTue}" Content="{Binding Loc[Day_Tue]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayWed}" Content="{Binding Loc[Day_Wed]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayThu}" Content="{Binding Loc[Day_Thu]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DayFri}" Content="{Binding Loc[Day_Fri]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DaySat}" Content="{Binding Loc[Day_Sat]}" Margin="0,0,8,0"/>
+					<CheckBox IsChecked="{Binding DaySun}" Content="{Binding Loc[Day_Sun]}"/>
 				</WrapPanel>
 			</StackPanel>
 
+			<!-- Поля для ежемесячного повторения (Monthly) — выбор дня месяца -->
+			<StackPanel IsVisible="{Binding IsMonthlyFieldsVisible}" Margin="0,0,0,8">
+				<TextBlock Text="{Binding Loc[MonthlyDayLbl]}"
+                           Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+				<NumericUpDown Value="{Binding MonthlyDay}" Minimum="1" Maximum="31"
+                               ParsingNumberStyle="Integer"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</StackPanel>
+
+			<!-- Поля для ежегодного повторения (Yearly) — выбор дня и месяца -->
+			<StackPanel IsVisible="{Binding IsYearlyFieldsVisible}" Margin="0,0,0,8">
+				<Grid ColumnDefinitions="*, 10, *">
+					<StackPanel Grid.Column="0">
+						<TextBlock Text="{Binding Loc[YearlyDayLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+						<NumericUpDown Value="{Binding YearlyDay}" Minimum="1" Maximum="31"
+                                       ParsingNumberStyle="Integer"
+                                       Background="{DynamicResource CardBackgroundBrush}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+					</StackPanel>
+					<StackPanel Grid.Column="2">
+						<TextBlock Text="{Binding Loc[YearlyMonthLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+						<NumericUpDown Value="{Binding YearlyMonth}" Minimum="1" Maximum="12"
+                                       ParsingNumberStyle="Integer"
+                                       Background="{DynamicResource CardBackgroundBrush}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+					</StackPanel>
+				</Grid>
+			</StackPanel>
+
+			<!-- Поля для графика сменности (Shift) -->
 			<StackPanel IsVisible="{Binding IsShiftFieldsVisible}">
 				<TextBlock Text="{Binding Loc[WorkingDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<NumericUpDown Value="{Binding WorkingDays}" Minimum="1" ParsingNumberStyle="Integer"
@@ -116,10 +248,12 @@
                                Background="{DynamicResource CardBackgroundBrush}"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<TextBlock Text="{Binding Loc[CycleStartLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<DatePicker SelectedDate="{Binding CycleStartDate}" Background="{DynamicResource CardBackgroundBrush}"
+				<DatePicker SelectedDate="{Binding CycleStartDate}"
+                            Background="{DynamicResource CardBackgroundBrush}"
                             Foreground="{DynamicResource PrimaryTextBrush}"/>
 			</StackPanel>
 
+			<!-- Поля для пользовательского интервала (Custom) -->
 			<StackPanel IsVisible="{Binding IsCustomFieldsVisible}">
 				<TextBlock Text="{Binding Loc[IntervalLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<NumericUpDown Value="{Binding IntervalValue}" Minimum="1" ParsingNumberStyle="Integer"
@@ -127,43 +261,66 @@
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<TextBlock Text="{Binding Loc[IntervalUnitLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<ComboBox SelectedIndex="{Binding IntervalUnitIndex}"
+                          ItemsSource="{Binding IntervalUnitItems}"
                           Background="{DynamicResource CardBackgroundBrush}"
-                          Foreground="{DynamicResource PrimaryTextBrush}">
-					<ComboBoxItem Content="Days"/>
-					<ComboBoxItem Content="Weeks"/>
-					<ComboBoxItem Content="Months"/>
-				</ComboBox>
+                          Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</StackPanel>
+
+			<!-- DatePicker для даты окончания повторений -->
+			<StackPanel IsVisible="{Binding HasRecurrence}" Margin="0,4,0,0">
+				<TextBlock Text="{Binding Loc[RepeatUntilLbl]}"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<DatePicker SelectedDate="{Binding RecurrenceEndDate}"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            Foreground="{DynamicResource PrimaryTextBrush}"/>
 			</StackPanel>
 
 			<Separator Height="1" Background="{DynamicResource BorderBrush}" Margin="0,12,0,8"/>
 
-			<CheckBox IsChecked="{Binding SaveAsTemplate}" Content="Сохранить как шаблон" Margin="0,0,0,6"
+			<!-- Сохранить как шаблон -->
+			<CheckBox IsChecked="{Binding SaveAsTemplate}"
+                      Content="{Binding Loc[SaveAsTemplateLbl]}"
+                      Margin="0,0,0,6"
                       Foreground="{DynamicResource PrimaryTextBrush}"/>
 			<StackPanel>
 				<TextBox Text="{Binding TemplateName}"
-                         Watermark="Название шаблона"
+                         Watermark="{Binding Loc[TemplateNameWatermark]}"
                          IsEnabled="{Binding SaveAsTemplate}"
                          Margin="0,0,0,4"
                          Background="{DynamicResource CardBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBlock Text="Шаблон появится в менеджере шаблонов"
+				<TextBlock Text="{Binding Loc[TemplateHint]}"
                            FontSize="10"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            IsEnabled="{Binding SaveAsTemplate}"
                            Margin="0,0,0,8"/>
 			</StackPanel>
 
+			<!-- Кнопки -->
 			<Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,15,0,10">
-				<Button Grid.Column="0" Content="Delete" Command="{Binding DeleteCommand}"
-                        IsVisible="{Binding IsEditMode}" Background="#D32F2F" Foreground="White"/>
-				<StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10">
-					<Button Content="Отмена" Command="{Binding CancelCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource ButtonForegroundBrush}"/>
-					<Button Content="Сохранить" Command="{Binding SaveCommand}"
-                            Background="#1A73E8" Foreground="White"/>
+				<Button Grid.Column="0"
+                        Content="{Binding Loc[DeleteBtn]}"
+                        Command="{Binding DeleteCommand}"
+                        IsVisible="{Binding IsEditMode}"
+                        Background="#EF4444" Foreground="White"
+                        CornerRadius="8" Height="40" FontWeight="SemiBold"/>
+				<StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+					<Button Content="{Binding Loc[CancelBtn]}"
+                            Command="{Binding CancelCommand}"
+                            Background="{DynamicResource SecondaryActionBrush}"
+                            Foreground="{DynamicResource SecondaryActionFgBrush}"
+                            BorderThickness="0"
+                            CornerRadius="8" Height="40" Width="100"
+                            FontWeight="SemiBold" HorizontalContentAlignment="Center"/>
+					<Button Content="{Binding Loc[SaveBtn]}"
+                            Command="{Binding SaveCommand}"
+                            Background="{DynamicResource PrimaryActionBrush}"
+                            Foreground="White" BorderThickness="0"
+                            CornerRadius="8" Height="40" Width="120"
+                            FontWeight="Bold" HorizontalContentAlignment="Center"/>
 				</StackPanel>
 			</Grid>
+
 		</StackPanel>
 	</ScrollViewer>
 </Window>

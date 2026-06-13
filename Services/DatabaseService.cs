@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,6 +33,20 @@ namespace FocusFlowFinal.Services
 
             var templates = db.GetCollection<TimerTemplate>(TemplatesCollection);
             templates.EnsureIndex(t => t.Name);
+
+            // ИСПРАВЛЕНО (4.5): если шаблонов нет — создаём встроенный "Помодоро 25/5".
+            // Имя берём из текущей локализации; флаг IsBuiltIn защищает от удаления.
+            if (templates.Count() == 0)
+            {
+                templates.Insert(new TimerTemplate
+                {
+                    Name         = LocalizationService.Instance["PomodoroDefault"],
+                    WorkMinutes  = 25,
+                    BreakMinutes = 5,
+                    Cycles       = 4,
+                    IsBuiltIn    = true
+                });
+            }
         }
 
         public IEnumerable<CalendarEvent> GetEvents(DateTime date)
@@ -54,6 +68,7 @@ namespace FocusFlowFinal.Services
 
                 foreach (var ev in rawEvents)
                 {
+                    // Проверяем исключения
                     if (ev.ExceptionDates != null && ev.ExceptionDates.Any(d => d.Date == startOfDay))
                         continue;
 
@@ -68,13 +83,33 @@ namespace FocusFlowFinal.Services
 
                     if (ev.Start.Date > checkDate) continue;
 
+                    // ИСПРАВЛЕНИЕ #4: Проверяем дату окончания повторений
+                    if (ev.RecurrenceEndDate.HasValue && checkDate > ev.RecurrenceEndDate.Value.Date)
+                        continue;
+
                     switch (ev.Recurrence)
                     {
-                        case RecurrenceType.Daily: isMatch = true; break;
-                        case RecurrenceType.Weekdays: isMatch = checkDate.DayOfWeek != DayOfWeek.Saturday && checkDate.DayOfWeek != DayOfWeek.Sunday; break;
-                        case RecurrenceType.Weekly: isMatch = ev.DaysOfWeek != null && ev.DaysOfWeek.Contains(checkDate.DayOfWeek); break;
-                        case RecurrenceType.Monthly: isMatch = checkDate.Day == ev.Start.Day; break;
-                        case RecurrenceType.Yearly: isMatch = checkDate.Day == ev.Start.Day && checkDate.Month == ev.Start.Month; break;
+                        case RecurrenceType.Daily:
+                            isMatch = true;
+                            break;
+
+                        case RecurrenceType.Weekdays:
+                            isMatch = checkDate.DayOfWeek != DayOfWeek.Saturday
+                                   && checkDate.DayOfWeek != DayOfWeek.Sunday;
+                            break;
+
+                        case RecurrenceType.Weekly:
+                            isMatch = ev.DaysOfWeek != null && ev.DaysOfWeek.Contains(checkDate.DayOfWeek);
+                            break;
+
+                        case RecurrenceType.Monthly:
+                            isMatch = checkDate.Day == ev.Start.Day;
+                            break;
+
+                        case RecurrenceType.Yearly:
+                            isMatch = checkDate.Day == ev.Start.Day && checkDate.Month == ev.Start.Month;
+                            break;
+
                         case RecurrenceType.Shift:
                             if (ev.CycleStartDate.HasValue && checkDate >= ev.CycleStartDate.Value.Date)
                             {
@@ -86,6 +121,7 @@ namespace FocusFlowFinal.Services
                                 isMatch = positionInCycle < working;
                             }
                             break;
+
                         case RecurrenceType.Custom:
                             if (ev.IntervalValue.HasValue && ev.IntervalValue > 0)
                             {
@@ -93,10 +129,11 @@ namespace FocusFlowFinal.Services
                                 if (ev.IntervalUnit == IntervalUnit.Days)
                                     isMatch = (checkDate - ev.Start.Date).Days % val == 0;
                                 else if (ev.IntervalUnit == IntervalUnit.Weeks)
-                                    isMatch = ((checkDate - ev.Start.Date).Days % (val * 7) == 0);
+                                    isMatch = (checkDate - ev.Start.Date).Days % (val * 7) == 0;
                                 else if (ev.IntervalUnit == IntervalUnit.Months)
                                 {
-                                    int monthsDiff = (checkDate.Year - ev.Start.Year) * 12 + checkDate.Month - ev.Start.Month;
+                                    int monthsDiff = (checkDate.Year - ev.Start.Year) * 12
+                                                   + checkDate.Month - ev.Start.Month;
                                     isMatch = (monthsDiff % val == 0) && (checkDate.Day == ev.Start.Day);
                                 }
                             }
@@ -113,18 +150,25 @@ namespace FocusFlowFinal.Services
                             TaskId = ev.TaskId,
                             IsAllDay = ev.IsAllDay,
                             Recurrence = ev.Recurrence,
-                            Start = ev.IsAllDay ? checkDate : checkDate.Add(ev.Start.TimeOfDay),
-                            End = ev.IsAllDay ? checkDate.AddDays(1).AddSeconds(-1) : checkDate.Add(ev.End.TimeOfDay),
+                            RecurrenceEndDate = ev.RecurrenceEndDate,
+                            Start = ev.IsAllDay
+                                ? checkDate
+                                : checkDate.Add(ev.Start.TimeOfDay),
+                            End = ev.IsAllDay
+                                ? checkDate.AddDays(1).AddSeconds(-1)
+                                : checkDate.Add(ev.End.TimeOfDay),
                             ExceptionDates = ev.ExceptionDates
                         };
                         computedEvents.Add(virtualEvent);
                     }
                 }
+
                 return computedEvents.OrderBy(e => e.Start).ToList();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"DatabaseService.GetEvents error for {date:yyyy-MM-dd}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(
+                    $"DatabaseService.GetEvents error for {date:yyyy-MM-dd}: {ex.Message}");
                 return new List<CalendarEvent>();
             }
         }
@@ -210,8 +254,9 @@ namespace FocusFlowFinal.Services
         public void DeleteTask(int id)
         {
             using var db = new LiteDatabase(_dbPath);
-            var col = db.GetCollection<TaskItem>(TasksCollection);
-            col.Delete(id);
+            db.GetCollection<TaskItem>(TasksCollection).Delete(id);
+            // Удаляем связанные календарные события
+            db.GetCollection<CalendarEvent>(EventsCollection).DeleteMany(e => e.TaskId == id);
         }
 
         public IEnumerable<TaskItem> GetTasksByDate(DateTime date)
@@ -228,7 +273,45 @@ namespace FocusFlowFinal.Services
             return col.Find(t => t.DueDate >= start.Date && t.DueDate < end.Date).ToList();
         }
 
-        public IEnumerable<CalendarEvent> GetEventsForDisplay(DateTime date) => GetEvents(date);
+        public IEnumerable<CalendarEvent> GetEventsForDisplay(DateTime date)
+        {
+            var events = GetEvents(date).ToList();
+
+            // Добавляем виртуальные события из задач с назначенным временем начала
+            var tasks = GetTasksByDate(date)
+                .Where(t => t.StartTime.HasValue && !t.IsCompleted)
+                .ToList();
+
+            foreach (var task in tasks)
+            {
+                var startDt = date.Date.Add(task.StartTime!.Value);
+                DateTime endDt;
+
+                if (task.EndTime.HasValue)
+                    endDt = date.Date.Add(task.EndTime.Value);
+                else if (task.PlannedDurationMinutes > 0)
+                    endDt = startDt.AddMinutes(task.PlannedDurationMinutes);
+                else
+                    endDt = startDt.AddMinutes(30);
+
+                if (endDt <= startDt) endDt = startDt.AddMinutes(30);
+
+                // Id=0 означает виртуальное событие (не хранится в БД)
+                events.Add(new CalendarEvent
+                {
+                    Id         = 0,
+                    TaskId     = task.Id,
+                    Title      = task.Title,
+                    Color      = task.Color ?? "#6366F1",
+                    Start      = startDt,
+                    End        = endDt,
+                    IsAllDay   = false,
+                    Recurrence = RecurrenceType.None
+                });
+            }
+
+            return events.OrderBy(e => e.Start).ToList();
+        }
 
         public void DeleteEventForTask(int taskId)
         {
@@ -306,6 +389,11 @@ namespace FocusFlowFinal.Services
         {
             using var db = new LiteDatabase(_dbPath);
             var col = db.GetCollection<TimerTemplate>(TemplatesCollection);
+
+            // ИСПРАВЛЕНО (4.5): встроенный шаблон "Помодоро 25/5" нельзя удалить
+            var existing = col.FindById(id);
+            if (existing != null && existing.IsBuiltIn) return;
+
             col.Delete(id);
         }
 
@@ -328,6 +416,24 @@ namespace FocusFlowFinal.Services
             using var db = new LiteDatabase(_dbPath);
             var col = db.GetCollection<ProjectItem>("projects");
             col.Delete(id);
+        }
+
+        public void ClearAllData()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.DropCollection(EventsCollection);
+            db.DropCollection(TasksCollection);
+            db.DropCollection(SessionsCollection);
+            db.DropCollection(TemplatesCollection);
+            db.DropCollection("projects");
+
+            // Пересоздаём индексы чтобы коллекции были готовы к работе
+            var events   = db.GetCollection<CalendarEvent>(EventsCollection);
+            events.EnsureIndex(e => e.Start);
+            var tasks    = db.GetCollection<TaskItem>(TasksCollection);
+            tasks.EnsureIndex(t => t.DueDate);
+            var sessions = db.GetCollection<FocusSession>(SessionsCollection);
+            sessions.EnsureIndex(s => s.StartTime);
         }
     }
 }

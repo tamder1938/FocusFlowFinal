@@ -1,87 +1,191 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
-             xmlns:services="clr-namespace:FocusFlowFinal.Services"
              xmlns:models="clr-namespace:FocusFlowFinal.Models"
              x:Class="FocusFlowFinal.Views.TimerView"
              x:DataType="vm:TimerViewModel">
-    <StackPanel Margin="15" Spacing="12">
-		<TextBlock Text="{Binding Loc[Timer]}" FontSize="16" FontWeight="Bold"/>
 
-		<TextBlock Text="{Binding CurrentTask.Title}"
-				   FontSize="15"
-				   FontWeight="SemiBold"
-				   HorizontalAlignment="Center"
-				   TextAlignment="Center"
-				   TextWrapping="Wrap"/>
+	<UserControl.Styles>
+		<!-- Кнопка управления таймером (Play/Stop) -->
+		<Style Selector="Button.timer-ctrl">
+			<Setter Property="Width"         Value="38"/>
+			<Setter Property="Height"        Value="38"/>
+			<Setter Property="CornerRadius"  Value="19"/>
+			<Setter Property="Background"    Value="{DynamicResource AccentBackground}"/>
+			<Setter Property="Foreground"    Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding"       Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment"   Value="Center"/>
+			<Setter Property="Cursor"        Value="Hand"/>
+		</Style>
+		<Style Selector="Button.timer-ctrl:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+		</Style>
+		<Style Selector="Button.timer-ctrl.secondary">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+		</Style>
+		<Style Selector="Button.timer-ctrl.secondary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ProgressBackgroundBrush}"/>
+		</Style>
+	</UserControl.Styles>
 
-        <ComboBox ItemsSource="{Binding Templates}"
-                  SelectedItem="{Binding SelectedTemplate}"
-                  HorizontalAlignment="Stretch"
-                  Background="{DynamicResource CardBackgroundBrush}"
-                  Foreground="{DynamicResource PrimaryTextBrush}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="models:TimerTemplate">
-                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+	<StackPanel Margin="16,14" Spacing="0">
 
-        <CheckBox IsChecked="{Binding IsCustomMode}" Content="{Binding Loc[CustomSettings]}"
-                  Foreground="{DynamicResource PrimaryTextBrush}"/>
+		<!-- Заголовок -->
+		<Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+			<TextBlock Grid.Column="0"
+                       Text="{Binding Loc[Timer]}"
+                       FontSize="15" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<TextBlock Grid.Column="1"
+                       Text="{Binding TimerSubtitle}"
+                       FontSize="11"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       VerticalAlignment="Center"/>
+		</Grid>
 
-        <StackPanel Spacing="8" IsVisible="{Binding IsCustomMode}">
-            <Grid ColumnDefinitions="*, *" Margin="0,4">
-                <TextBlock Grid.Column="0" Text="{Binding Loc[WorkTime]}" VerticalAlignment="Center"
+		<!-- Шаблон / задача -->
+		<Grid ColumnDefinitions="*, Auto" Margin="0,6,0,0">
+			<ComboBox Grid.Column="0"
+                      ItemsSource="{Binding Templates}"
+                      SelectedItem="{Binding SelectedTemplate}"
+                      HorizontalAlignment="Stretch"
+                      Height="34"
+                      Background="{DynamicResource CardBackgroundBrush}"
+                      Foreground="{DynamicResource PrimaryTextBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate x:DataType="models:TimerTemplate">
+						<TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+			<!-- ИСПРАВЛЕНО (4.5): кнопка удаления — только для пользовательских шаблонов (не "Помодоро 25/5") -->
+			<Button Grid.Column="1"
+                    Command="{Binding DeleteTimerTemplateCommand}"
+                    CommandParameter="{Binding SelectedTemplate}"
+                    IsVisible="{Binding CanDeleteSelectedTemplate}"
+                    Width="34" Height="34" Margin="6,0,0,0"
+                    CornerRadius="6" Padding="0"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="{Binding Loc[DeleteBtn]}"
+                    Cursor="Hand">
+				<PathIcon Width="14" Height="14"
+                          Foreground="#EF4444"
+                          Data="M9 3v1H4v2h1v13a2 2 0 002 2h10a2 2 0 002-2V6h1V4h-5V3H9zm2 5h2v9h-2V8zm-4 0h2v9H7V8zm8 0h2v9h-2V8z"/>
+			</Button>
+		</Grid>
+
+		<!-- Пользовательский режим -->
+		<CheckBox IsChecked="{Binding IsCustomMode}"
+                  Content="{Binding Loc[CustomSettings]}"
+                  Foreground="{DynamicResource SecondaryTextBrush}"
+                  FontSize="11" Margin="0,6,0,0"/>
+
+		<StackPanel Spacing="6" IsVisible="{Binding IsCustomMode}" Margin="0,4,0,0">
+			<Grid ColumnDefinitions="*, *">
+				<TextBlock Grid.Column="0" Text="{Binding Loc[WorkTime]}"
+                           VerticalAlignment="Center" FontSize="12"
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
-                <NumericUpDown Grid.Column="1" Value="{Binding WorkMinutes}" Minimum="1" Maximum="180"
+				<NumericUpDown Grid.Column="1" Value="{Binding WorkMinutes}"
+                               Minimum="1" Maximum="180" Height="32"
                                Background="{DynamicResource CardBackgroundBrush}"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-            </Grid>
-
-            <Grid ColumnDefinitions="*, *" Margin="0,4">
-                <TextBlock Grid.Column="0" Text="{Binding Loc[BreakTime]}" VerticalAlignment="Center"
+			</Grid>
+			<Grid ColumnDefinitions="*, *">
+				<TextBlock Grid.Column="0" Text="{Binding Loc[BreakTime]}"
+                           VerticalAlignment="Center" FontSize="12"
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
-                <NumericUpDown Grid.Column="1" Value="{Binding BreakMinutes}" Minimum="1" Maximum="60"
+				<NumericUpDown Grid.Column="1" Value="{Binding BreakMinutes}"
+                               Minimum="1" Maximum="60" Height="32"
                                Background="{DynamicResource CardBackgroundBrush}"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
-            </Grid>
-
-            <Grid ColumnDefinitions="*, *" Margin="0,4">
-                <TextBlock Grid.Column="0" Text="Cycles:" VerticalAlignment="Center"
-                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                <NumericUpDown Grid.Column="1" Value="{Binding Cycles}" Minimum="1" Maximum="20"
-                               Background="{DynamicResource CardBackgroundBrush}"
-                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-            </Grid>
-
-            <Grid ColumnDefinitions="*, Auto" Margin="0,5,0,0">
-                <TextBox Grid.Column="0" Text="{Binding NewTemplateName}" Watermark="{Binding Loc[TemplateName]}"
-                         Margin="0,0,8,0" Height="32"
+			</Grid>
+			<Grid ColumnDefinitions="*, Auto" Margin="0,4,0,0">
+				<TextBox Grid.Column="0" Text="{Binding NewTemplateName}"
+                         Watermark="{Binding Loc[TemplateName]}"
+                         Height="32" Margin="0,0,6,0"
                          Background="{DynamicResource CardBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"/>
-                <Button Grid.Column="1" Content="{Binding Loc[SaveAsTemplate]}" Command="{Binding CreateTemplateCommand}"
-                        Background="{DynamicResource AccentBackground}" Foreground="White" Height="32"/>
-            </Grid>
-        </StackPanel>
+				<Button Grid.Column="1" Content="{Binding Loc[SaveAsTemplate]}"
+                        Command="{Binding CreateTemplateCommand}"
+                        Height="32" Padding="10,0"
+                        Background="{DynamicResource AccentBackground}"
+                        Foreground="White" CornerRadius="6"/>
+			</Grid>
+		</StackPanel>
 
-        <Panel Height="200" Width="200" Margin="0,10">
-            <Ellipse Stroke="LightGray" StrokeThickness="6"/>
-            <TextBlock Text="{Binding TimeDisplay}" FontSize="32" FontWeight="Bold"
-                       Foreground="{DynamicResource PrimaryTextBrush}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Panel>
+		<!-- Текущая задача + проект -->
+		<StackPanel Spacing="2" Margin="0,10,0,0"
+		            IsVisible="{Binding CurrentTask, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<TextBlock Text="{Binding CurrentTaskProjectName}"
+			           FontSize="10"
+			           Foreground="{DynamicResource AccentBackground}"
+			           HorizontalAlignment="Center"
+			           IsVisible="{Binding CurrentTaskProjectName, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+			<TextBlock Text="{Binding CurrentTask.Title}"
+			           FontSize="11"
+			           Foreground="{DynamicResource SecondaryTextBrush}"
+			           HorizontalAlignment="Center"
+			           TextWrapping="Wrap"/>
+		</StackPanel>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
-            <Button Content="▶" Command="{Binding StartTimerCommand}" Width="40"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-            <Button Content="⏸" Command="{Binding PauseTimerCommand}" Width="40"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-            <Button Content="⏹" Command="{Binding StopTimerCommand}" Width="40"
-                    Background="{DynamicResource ButtonBackgroundBrush}"
-                    Foreground="{DynamicResource ButtonForegroundBrush}"/>
-        </StackPanel>
-    </StackPanel>
+		<!-- Большое время -->
+		<TextBlock Text="{Binding TimeDisplay}"
+                   FontSize="38" FontWeight="Bold"
+                   Foreground="{DynamicResource AccentBackground}"
+                   HorizontalAlignment="Center"
+                   Margin="0,4,0,0"/>
+
+		<!-- Круговой прогресс -->
+		<Panel Width="110" Height="110"
+               HorizontalAlignment="Center" Margin="0,12,0,12">
+			<!-- Фоновый круг -->
+			<Ellipse Stroke="{DynamicResource ProgressBackgroundBrush}"
+                     StrokeThickness="7"
+                     Width="110" Height="110"/>
+			<!-- Прогресс (упрощённый отрезок дуги через ProgressBar-кольцо) -->
+			<Ellipse Stroke="{DynamicResource AccentBackground}"
+                     StrokeThickness="7"
+                     Width="110" Height="110"
+                     Opacity="{Binding Progress}"/>
+			<!-- Процент -->
+			<TextBlock Text="{Binding ProgressDisplay}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+		</Panel>
+
+		<!-- Кнопки управления -->
+		<StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Spacing="10">
+			<Button Classes="timer-ctrl"
+                    Command="{Binding StartTimerCommand}"
+                    ToolTip.Tip="Старт">
+				<PathIcon Width="14" Height="14" Data="M8 5v14l11-7z"/>
+			</Button>
+			<Button Classes="timer-ctrl secondary"
+                    Command="{Binding PauseTimerCommand}"
+                    ToolTip.Tip="Пауза">
+				<PathIcon Width="14" Height="14"
+                          Data="M6 19h4V5H6v14zm8-14v14h4V5h-4z"
+                          Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</Button>
+			<Button Classes="timer-ctrl secondary"
+                    Command="{Binding StopTimerCommand}"
+                    ToolTip.Tip="Стоп">
+				<PathIcon Width="12" Height="12"
+                          Data="M6 6h12v12H6z"
+                          Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</Button>
+		</StackPanel>
+
+	</StackPanel>
 </UserControl>

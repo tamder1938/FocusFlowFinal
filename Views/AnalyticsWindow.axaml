@@ -5,7 +5,7 @@
         x:Class="FocusFlowFinal.Views.AnalyticsWindow"
         x:DataType="vm:AnalyticsViewModel"
         Title="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsTitle]}"
-        Width="520" Height="680"
+        Width="540" Height="700"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
@@ -16,7 +16,6 @@
 			<Setter Property="Padding" Value="14,12"/>
 			<Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
 			<Setter Property="BorderThickness" Value="1"/>
-			<Setter Property="BoxShadow" Value="0 2 4 0 #03000000"/>
 			<Setter Property="MinWidth" Value="100"/>
 		</Style>
 		<Style Selector="TextBlock.CardHeader">
@@ -26,37 +25,82 @@
 			<Setter Property="Margin" Value="0,0,0,4"/>
 		</Style>
 		<Style Selector="TextBlock.CardValue">
-			<Setter Property="FontSize" Value="18"/>
+			<Setter Property="FontSize" Value="20"/>
 			<Setter Property="FontWeight" Value="Bold"/>
 			<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
 		</Style>
+		<Style Selector="Border.SectionCard">
+			<Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+			<Setter Property="CornerRadius" Value="12"/>
+			<Setter Property="Padding" Value="16,14"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+		</Style>
+		<Style Selector="Button.done-btn">
+			<Setter Property="Background"      Value="{DynamicResource PrimaryActionBrush}"/>
+			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="8"/>
+			<Setter Property="FontWeight"      Value="Bold"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.done-btn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
+		</Style>
+		<Style Selector="Button.week-nav">
+			<Setter Property="Background"      Value="#3B82F6"/>
+			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="10,4"/>
+			<Setter Property="MinWidth"        Value="32"/>
+			<Setter Property="FontWeight"      Value="Bold"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.week-nav:pointerover">
+			<Setter Property="Background" Value="#2563EB"/>
+		</Style>
 	</Window.Styles>
 
-	<Grid RowDefinitions="55, *, 65">
+	<Grid RowDefinitions="60, *, 65">
 
-		<Border Grid.Row="0" Background="#2563EB" Padding="16,0">
+		<!-- Шапка: градиент синий → индиго -->
+		<Border Grid.Row="0" Padding="18,0">
+			<Border.Background>
+				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+					<GradientStop Color="#3B5BDB" Offset="0"/>
+					<GradientStop Color="#4F6EF5" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.Background>
 			<Grid ColumnDefinitions="Auto, *, Auto">
 				<StackPanel Grid.Column="0" VerticalAlignment="Center">
-					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsTitle]}" FontSize="15" FontWeight="Bold" Foreground="White"/>
-					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsSubtitle]}" FontSize="10" Foreground="#93C5FD"/>
+					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsTitle]}"
+                               FontSize="16" FontWeight="Bold" Foreground="White"/>
+					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsSubtitle]}"
+                               FontSize="11" Foreground="#C7D2FE"/>
 				</StackPanel>
 				<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-					<Button Content="&lt;" Command="{Binding PreviousWeekCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource ButtonForegroundBrush}" Padding="10,4" CornerRadius="4"/>
-					<TextBlock Text="{Binding WeekTitle}" Foreground="White" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="6,0"/>
-					<Button Content="&gt;" Command="{Binding NextWeekCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource ButtonForegroundBrush}" Padding="10,4" CornerRadius="4"/>
+					<Button Classes="week-nav" Content="‹"
+                            Background="#3B82F6" Foreground="White"
+                            Command="{Binding PreviousWeekCommand}"
+                            ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PrevWeekTip]}"/>
+					<TextBlock Text="{Binding WeekTitle}" Foreground="White" FontSize="12" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Margin="6,0"/>
+					<Button Classes="week-nav" Content="›"
+                            Background="#3B82F6" Foreground="White"
+                            Command="{Binding NextWeekCommand}"
+                            ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[NextWeekTip]}"/>
 				</StackPanel>
 			</Grid>
 		</Border>
 
 		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-			<StackPanel Spacing="16" Margin="16">
+			<StackPanel Spacing="16" Margin="18">
 
+				<!-- Карточки статистики -->
 				<UniformGrid Columns="3" Rows="1">
-					<Border Classes="StatCard" Margin="0,0,4,0" ClipToBounds="True">
+					<Border Classes="StatCard" Margin="0,0,5,0">
 						<StackPanel>
 							<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FocusedTotal]}" Classes="CardHeader"/>
 							<TextBlock Text="{Binding TotalFocusedTimeStr}" Classes="CardValue" Margin="0,0,0,6"/>
@@ -64,33 +108,29 @@
 						</StackPanel>
 					</Border>
 
-					<Border Classes="StatCard" Margin="4,0,4,0" ClipToBounds="True">
+					<Border Classes="StatCard" Margin="5,0,5,0">
 						<StackPanel>
 							<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[TasksCompleted]}" Classes="CardHeader"/>
-							<TextBlock Text="{Binding CompletedTasksRatio}" Classes="CardValue" Margin="0,0,0,8"/>
-							<Grid Margin="12,4,12,0">
-								<ProgressBar Value="{Binding TasksProgressPercentage}" Height="5" Minimum="0" Maximum="100"
-                                             HorizontalAlignment="Stretch"
-                                             Background="{DynamicResource ProgressBackgroundBrush}"
-                                             Foreground="#3B82F6" CornerRadius="2"/>
-							</Grid>
+							<TextBlock Text="{Binding CompletedTasksRatio}" Classes="CardValue" Margin="0,0,0,6"/>
+							<TextBlock Text="{Binding TasksProgressLabel}" Foreground="{DynamicResource AccentTextBrush}" FontSize="11" FontWeight="SemiBold"/>
 						</StackPanel>
 					</Border>
 
-					<Border Classes="StatCard" Margin="4,0,0,0" ClipToBounds="True">
+					<Border Classes="StatCard" Margin="5,0,0,0">
 						<StackPanel>
-							<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[Productivity]}" Classes="CardHeader"/>
-							<TextBlock Text="{Binding ProductivityPercentage, StringFormat='{}{0}%'}" Classes="CardValue"
-                                       Foreground="{Binding ProductivityColor}" Margin="0,0,0,4"/>
-							<TextBlock Text="{Binding ProductivityLevel}" Foreground="{Binding ProductivityColor}" FontSize="11" FontWeight="SemiBold"/>
+							<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[DeviationLabel]}" Classes="CardHeader"/>
+							<TextBlock Text="{Binding DeviationStr}" Classes="CardValue"
+                                       Foreground="{Binding DeviationColor}" Margin="0,0,0,6"/>
+							<TextBlock Text="{Binding DeviationSubLabel}" Foreground="{Binding DeviationColor}" FontSize="11" FontWeight="SemiBold"/>
 						</StackPanel>
 					</Border>
 				</UniformGrid>
 
-				<Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16,14"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" BoxShadow="0 2 4 0 #03000000">
+				<!-- Распределение фокуса по дням недели -->
+				<Border Classes="SectionCard">
 					<StackPanel>
-						<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FocusDistributionWeek]}" FontSize="13" FontWeight="Bold"
+						<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FocusDistributionWeek]}"
+                                   FontSize="13" FontWeight="Bold"
                                    Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,20"/>
 						<ItemsControl ItemsSource="{Binding WeekDaysChart}">
 							<ItemsControl.ItemsPanel>
@@ -101,7 +141,8 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid RowDefinitions="*, Auto, Auto" Margin="4,0">
-										<Border Grid.Row="0" Width="24" Height="{Binding HeightRatio}" Background="{Binding Color}" CornerRadius="4" VerticalAlignment="Bottom"/>
+										<Border Grid.Row="0" Width="24" Height="{Binding HeightRatio}"
+                                                Background="{Binding Color}" CornerRadius="4" VerticalAlignment="Bottom"/>
 										<TextBlock Grid.Row="1" Text="{Binding Hours, StringFormat='{}{0}ч'}" FontSize="10"
                                                    Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,2"/>
 										<TextBlock Grid.Row="2" Text="{Binding DayName}" FontSize="11" FontWeight="SemiBold"
@@ -113,10 +154,11 @@
 					</StackPanel>
 				</Border>
 
-				<Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16,14"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" BoxShadow="0 2 4 0 #03000000">
+				<!-- Фокус по категориям проектов -->
+				<Border Classes="SectionCard">
 					<StackPanel>
-						<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ProjectFocusCategories]}" FontSize="13" FontWeight="Bold"
+						<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ProjectFocusCategories]}"
+                                   FontSize="13" FontWeight="Bold"
                                    Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,14"/>
 						<ItemsControl ItemsSource="{Binding Segments}">
 							<ItemsControl.ItemTemplate>
@@ -138,12 +180,14 @@
 			</StackPanel>
 		</ScrollViewer>
 
+		<!-- Нижняя панель -->
 		<Border Grid.Row="2" Background="{DynamicResource CardSecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16,0">
-			<Button Content="Готово" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}"
-                    Width="120" Height="36" HorizontalAlignment="Right" VerticalAlignment="Center"
-                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                    Background="#2563EB" Foreground="White" FontWeight="Bold" CornerRadius="6"/>
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="18,0">
+			<Button Classes="done-btn"
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[DoneBtn]}"
+                    Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}"
+                    Width="120" Height="38" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 		</Border>
 	</Grid>
 </Window>
