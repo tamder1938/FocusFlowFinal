@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using LiteDB;
 using FocusFlowFinal.Models;
+using FocusFlowFinal.Models.Finance;
 
 namespace FocusFlowFinal.Services
 {
@@ -107,8 +108,23 @@ namespace FocusFlowFinal.Services
                             break;
 
                         case RecurrenceType.Yearly:
-                            isMatch = checkDate.Day == ev.Start.Day && checkDate.Month == ev.Start.Month;
+                        {
+                            // Проверяем год окончания
+                            if (ev.RecurrenceEndYear.HasValue && checkDate.Year > ev.RecurrenceEndYear.Value)
+                                break;
+
+                            int targetMonth = ev.RecurrenceStartMonth ?? ev.Start.Month;
+                            int targetDay   = ev.RecurrenceStartDay   ?? ev.Start.Day;
+                            if (checkDate.Month == targetMonth)
+                            {
+                                // Для 29 февраля в невисокосный год показываем 28 февраля
+                                int effectiveDay = (targetDay == 29 && targetMonth == 2 && !DateTime.IsLeapYear(checkDate.Year))
+                                    ? 28
+                                    : Math.Min(targetDay, DateTime.DaysInMonth(checkDate.Year, targetMonth));
+                                isMatch = checkDate.Day == effectiveDay;
+                            }
                             break;
+                        }
 
                         case RecurrenceType.Shift:
                             if (ev.CycleStartDate.HasValue && checkDate >= ev.CycleStartDate.Value.Date)
@@ -151,6 +167,8 @@ namespace FocusFlowFinal.Services
                             IsAllDay = ev.IsAllDay,
                             Recurrence = ev.Recurrence,
                             RecurrenceEndDate = ev.RecurrenceEndDate,
+                            RecurrenceEndYear = ev.RecurrenceEndYear,
+                            NotificationOffsetMinutes = ev.NotificationOffsetMinutes,
                             Start = ev.IsAllDay
                                 ? checkDate
                                 : checkDate.Add(ev.Start.TimeOfDay),
@@ -313,11 +331,221 @@ namespace FocusFlowFinal.Services
             return events.OrderBy(e => e.Start).ToList();
         }
 
+        public void InsertEvents(IEnumerable<CalendarEvent> events)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<CalendarEvent>(EventsCollection);
+            foreach (var ev in events)
+            {
+                ev.Id = 0; // сброс Id для автогенерации
+                col.Insert(ev);
+            }
+        }
+
         public void DeleteEventForTask(int taskId)
         {
             using var db = new LiteDatabase(_dbPath);
             var col = db.GetCollection<CalendarEvent>(EventsCollection);
             col.DeleteMany(e => e.TaskId == taskId);
+        }
+
+        // ── Финансы ─────────────────────────────────────────────────
+        private const string IncomeCollection       = "finance_income";
+        private const string ExpenseCollection      = "finance_expense";
+        private const string FinSubCollection       = "finance_subscription";
+        private const string LoanCollection         = "finance_loan";
+
+        public IEnumerable<FinanceIncome> GetAllIncomes()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<FinanceIncome>(IncomeCollection).FindAll()
+                     .OrderByDescending(x => x.Date).ToList();
+        }
+
+        public void UpsertIncome(FinanceIncome item)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<FinanceIncome>(IncomeCollection);
+            if (item.Id == 0) col.Insert(item); else col.Update(item);
+        }
+
+        public void DeleteIncome(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<FinanceIncome>(IncomeCollection).Delete(id);
+        }
+
+        public IEnumerable<FinanceExpense> GetAllExpenses()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<FinanceExpense>(ExpenseCollection).FindAll()
+                     .OrderByDescending(x => x.Date).ToList();
+        }
+
+        public void UpsertExpense(FinanceExpense item)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<FinanceExpense>(ExpenseCollection);
+            if (item.Id == 0) col.Insert(item); else col.Update(item);
+        }
+
+        public void DeleteExpense(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<FinanceExpense>(ExpenseCollection).Delete(id);
+        }
+
+        public IEnumerable<FinanceSubscriptionItem> GetAllFinanceSubscriptions()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<FinanceSubscriptionItem>(FinSubCollection).FindAll()
+                     .OrderBy(x => x.Name).ToList();
+        }
+
+        public void UpsertFinanceSubscription(FinanceSubscriptionItem item)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<FinanceSubscriptionItem>(FinSubCollection);
+            if (item.Id == 0) col.Insert(item); else col.Update(item);
+        }
+
+        public void DeleteFinanceSubscription(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<FinanceSubscriptionItem>(FinSubCollection).Delete(id);
+        }
+
+        public IEnumerable<FinanceLoan> GetAllLoans()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<FinanceLoan>(LoanCollection).FindAll()
+                     .OrderBy(x => x.Name).ToList();
+        }
+
+        public void UpsertLoan(FinanceLoan item)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<FinanceLoan>(LoanCollection);
+            if (item.Id == 0) col.Insert(item); else col.Update(item);
+        }
+
+        public void DeleteLoan(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<FinanceLoan>(LoanCollection).Delete(id);
+        }
+
+        // ── Категории ────────────────────────────────────────────────
+        private const string CategoryCollection = "finance_category";
+
+        public IEnumerable<FinanceCategory> GetCategoriesByType(string type)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<FinanceCategory>(CategoryCollection)
+                     .Find(x => x.Type == type)
+                     .OrderBy(x => x.Name).ToList();
+        }
+
+        public void UpsertCategory(FinanceCategory category)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<FinanceCategory>(CategoryCollection);
+            if (category.Id == 0) col.Insert(category); else col.Update(category);
+        }
+
+        public void DeleteCategory(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<FinanceCategory>(CategoryCollection).Delete(id);
+        }
+
+        // ── Досрочные погашения ───────────────────────────────────────
+        private const string EarlyRepaymentCollection = "finance_early_repayment";
+
+        public IEnumerable<LoanEarlyRepayment> GetEarlyRepayments(int loanId)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<LoanEarlyRepayment>(EarlyRepaymentCollection)
+                     .Find(x => x.LoanId == loanId)
+                     .OrderByDescending(x => x.Date).ToList();
+        }
+
+        public void UpsertEarlyRepayment(LoanEarlyRepayment repayment)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<LoanEarlyRepayment>(EarlyRepaymentCollection);
+            if (repayment.Id == 0) col.Insert(repayment); else col.Update(repayment);
+        }
+
+        public void DeleteEarlyRepayment(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<LoanEarlyRepayment>(EarlyRepaymentCollection).Delete(id);
+        }
+
+        // ── Копилки / сберегательные счета ───────────────────────────
+        private const string SavingsCollection    = "savings_account";
+        private const string SavingsTxCollection  = "savings_tx";
+
+        public IEnumerable<SavingsAccount> GetAllSavingsAccounts()
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<SavingsAccount>(SavingsCollection).FindAll()
+                     .OrderBy(x => x.Name).ToList();
+        }
+
+        public void UpsertSavingsAccount(SavingsAccount account)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var col = db.GetCollection<SavingsAccount>(SavingsCollection);
+            if (account.Id == 0) col.Insert(account); else col.Update(account);
+        }
+
+        public void DeleteSavingsAccount(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<SavingsAccount>(SavingsCollection).Delete(id);
+            // Удаляем связанные транзакции
+            db.GetCollection<SavingsTransaction>(SavingsTxCollection).DeleteMany(x => x.AccountId == id);
+        }
+
+        public IEnumerable<SavingsTransaction> GetSavingsTransactions(int accountId)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            return db.GetCollection<SavingsTransaction>(SavingsTxCollection)
+                     .Find(x => x.AccountId == accountId)
+                     .OrderByDescending(x => x.Date).ToList();
+        }
+
+        public void AddSavingsTransaction(SavingsTransaction tx)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            db.GetCollection<SavingsTransaction>(SavingsTxCollection).Insert(tx);
+            // Пересчитываем баланс счёта
+            var accounts = db.GetCollection<SavingsAccount>(SavingsCollection);
+            var account = accounts.FindById(tx.AccountId);
+            if (account != null)
+            {
+                account.CurrentBalance += tx.Amount;
+                accounts.Update(account);
+            }
+        }
+
+        public void DeleteSavingsTransaction(int id)
+        {
+            using var db = new LiteDatabase(_dbPath);
+            var txCol = db.GetCollection<SavingsTransaction>(SavingsTxCollection);
+            var tx = txCol.FindById(id);
+            if (tx == null) return;
+            txCol.Delete(id);
+            // Откатываем изменение баланса
+            var accounts = db.GetCollection<SavingsAccount>(SavingsCollection);
+            var account = accounts.FindById(tx.AccountId);
+            if (account != null)
+            {
+                account.CurrentBalance -= tx.Amount;
+                accounts.Update(account);
+            }
         }
 
         public void AddFocusSession(FocusSession session)

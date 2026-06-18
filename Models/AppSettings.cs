@@ -51,6 +51,12 @@ public class AppSettings
     /// <summary>Автоматически отмечать задачу выполненной при завершении всех циклов таймера.</summary>
     public bool MarkTaskCompletedOnTimerFinish { get; set; } = false;
 
+    /// <summary>Дата окончания оплаченной подписки (UTC). Null — подписка не куплена.</summary>
+    public DateTime? SubscriptionExpiryDate { get; set; }
+
+    /// <summary>Включён ли финансовый модуль.</summary>
+    public bool FinanceModuleEnabled { get; set; } = false;
+
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FocusFlow", "settings.json");

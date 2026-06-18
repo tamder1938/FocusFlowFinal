@@ -163,6 +163,25 @@ public partial class MainViewModel : ObservableObject
         else win.Show();
     }
 
+    public bool IsFinanceModuleEnabled
+    {
+        get => AppSettings.Load().FinanceModuleEnabled;
+    }
+
+    public void RefreshFinanceModuleState() =>
+        OnPropertyChanged(nameof(IsFinanceModuleEnabled));
+
+    [RelayCommand]
+    private async void OpenFinance()
+    {
+        var ns  = _services.GetRequiredService<INotificationService>();
+        var vm  = new FinanceViewModel(_db, ns);
+        var win = new Views.FinanceWindow { DataContext = vm };
+        var owner = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
     private Window? GetMainWindow() =>
         (App.Current?.ApplicationLifetime as
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;

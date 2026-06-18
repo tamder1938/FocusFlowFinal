@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 
 namespace FocusFlowFinal.Services;
 
@@ -312,7 +314,182 @@ public class LocalizationService : ObservableObject
                 ["TimerExtendError"]               = "Введите целое число ≥ 1",
                 ["TimerExtendBtn"]                 = "Продлить таймер",
                 ["TimerDeferBtn"]        = "Отложить задачу",
-                ["TimerDeleteTaskBtn"]   = "Удалить задачу"
+                ["TimerDeleteTaskBtn"]   = "Удалить задачу",
+
+                // Уведомления событий с отступом
+                ["NotifTimeLbl"]         = "Уведомить заранее:",
+                ["Notif_None"]           = "Не уведомлять",
+                ["Notif_10min"]          = "За 10 минут",
+                ["Notif_30min"]          = "За 30 минут",
+                ["Notif_1hour"]          = "За 1 час",
+                ["Notif_1day"]           = "За 1 день",
+                ["NotifOffset_soon"]     = "скоро начинается",
+                ["NotifOffset_30min"]    = "через 30 мин",
+                ["NotifOffset_1hour"]    = "через 1 час",
+                ["NotifOffset_1day"]     = "завтра",
+                ["StartsNow"]            = "начинается сейчас",
+
+                // Копирование событий
+                ["CopyEventBtn"]         = "Создать копии на дни",
+                ["CopyEventTitle"]       = "Выберите дни для копий",
+                ["CopyApplyBtn"]         = "Создать копии",
+                ["CopySelectedCount"]    = "Выбрано дней:",
+                ["CopySuccess"]          = "Копии событий созданы",
+                ["CopyPrevMonth"]        = "< Назад",
+                ["CopyNextMonth"]        = "Далее >",
+
+                // Финансовый модуль
+                ["Finance"]              = "Финансы",
+                ["FinanceModuleLbl"]     = "Финансовый модуль",
+                ["FinanceModuleSub"]     = "Учёт доходов, расходов, подписок и кредитов",
+                ["FinanceTab_Income"]    = "Доходы",
+                ["FinanceTab_Expense"]   = "Расходы",
+                ["FinanceTab_Sub"]       = "Подписки",
+                ["FinanceTab_Loans"]     = "Кредиты",
+                ["FinanceTab_Summary"]   = "Сводка",
+                ["Finance_AddIncome"]    = "+ Доход",
+                ["Finance_AddExpense"]   = "+ Расход",
+                ["Finance_AddSub"]       = "+ Подписка",
+                ["Finance_AddLoan"]      = "+ Кредит",
+                ["Finance_DateLbl"]      = "Дата:",
+                ["Finance_CategoryLbl"]  = "Категория:",
+                ["Finance_AmountLbl"]    = "Сумма (₽):",
+                ["Finance_NoteLbl"]      = "Примечание:",
+                ["Finance_NameLbl"]      = "Название:",
+                ["Finance_CycleLbl"]     = "Периодичность:",
+                ["Finance_NextDateLbl"]  = "Следующая дата списания:",
+                ["Finance_PaidLbl"]      = "Оплачено",
+                ["Finance_TotalLbl"]     = "Сумма кредита:",
+                ["Finance_RateLbl"]      = "Процентная ставка (% год):",
+                ["Finance_TermLbl"]      = "Срок (мес):",
+                ["Finance_MonthlyLbl"]   = "Ежемесячный платёж:",
+                ["Finance_RemainLbl"]    = "Остаток долга:",
+                ["Finance_StartDateLbl"] = "Дата выдачи:",
+                ["Finance_Balance"]      = "Баланс",
+                ["Finance_TotalIncome"]  = "Доходы за месяц",
+                ["Finance_TotalExpense"] = "Расходы за месяц",
+                ["Finance_Monthly"]      = "Ежемесячно",
+                ["Finance_Yearly"]       = "Ежегодно",
+                ["Finance_ExportExcel"]  = "📊 Экспорт в Excel",
+                ["Finance_CalcPayment"]  = "Рассчитать",
+                ["Finance_EditBtn"]      = "✏",
+                ["Finance_DeleteBtn"]    = "✕",
+                ["Finance_SaveBtn"]      = "Сохранить",
+                ["Finance_CancelBtn"]    = "Отмена",
+                ["Finance_CatSalary"]    = "Зарплата",
+                ["Finance_CatFreelance"] = "Фриланс",
+                ["Finance_CatOther"]     = "Прочее",
+                ["Finance_CatFood"]      = "Еда",
+                ["Finance_CatTransport"] = "Транспорт",
+                ["Finance_CatEntertain"] = "Развлечения",
+                ["Finance_CatHealth"]    = "Здоровье",
+                ["Finance_CatHousing"]   = "Жильё",
+                ["Finance_CatStreaming"]  = "Стриминг",
+                ["Finance_CatSoftware"]  = "ПО / Сервисы",
+                ["Finance_CatMortgage"]        = "Ипотека",
+                ["Finance_CatCar"]             = "Автокредит",
+                ["Finance_CatConsumer"]        = "Потребительский",
+                ["Finance_AmountRequired"]     = "Введите сумму больше 0",
+                ["Finance_AddCategory"]        = "+ Категория",
+                ["Finance_NewCategoryLbl"]     = "Новая категория:",
+                ["Finance_DownPaymentLbl"]     = "Первоначальный взнос:",
+                ["Finance_TermYearsLbl"]       = "Срок (лет):",
+                ["Finance_NextPaymentLbl"]     = "Следующий платёж:",
+                ["Finance_EndDateLbl"]         = "Дата окончания:",
+                ["Finance_NotifDaysLbl"]       = "Уведомить за (дн):",
+                ["Finance_EarlyRepayments"]    = "Досрочные погашения",
+                ["Finance_AddRepayment"]       = "+ Погашение",
+                ["Finance_PaymentDue"]         = "платёж через",
+                ["Finance_EnabledInSettings"]  = "Включить в Настройки → Функции",
+
+                // Подсказки "список пуст"
+                ["Finance_IncomesEmptyHint"]   = "Нет доходов. Нажмите «+ Доход» чтобы добавить.",
+                ["Finance_ExpensesEmptyHint"]  = "Нет расходов. Нажмите «+ Расход» чтобы добавить.",
+                ["Finance_SubsEmptyHint"]      = "Нет подписок. Нажмите «+ Подписка» чтобы добавить.",
+                ["Finance_LoansEmptyHint"]     = "Нет кредитов. Нажмите «+ Кредит» чтобы добавить.",
+
+                // История счёта (toggle)
+                ["Savings_ShowHistory"]        = "▼ История",
+                ["Savings_HideHistory"]        = "▲ Скрыть историю",
+
+                // Сводка — детали по секциям
+                ["Summary_IncomeCount"]        = "Записей:",
+                ["Summary_ExpenseCount"]       = "Записей:",
+                ["Summary_SubCount"]           = "Подписок:",
+                ["Summary_SubMonthly"]         = "В месяц:",
+                ["Summary_LoanCount"]          = "Кредитов:",
+                ["Summary_LoanDebt"]           = "Общий долг:",
+                ["Summary_LoanMonthly"]        = "Платёж/мес:",
+
+                // Копилки / Сберегательные счета
+                ["FinanceTab_Savings"]         = "Счета/Копилки",
+                ["Savings_AddAccount"]         = "+ Счёт",
+                ["Savings_AddGoal"]            = "+ Копилка",
+                ["Savings_NewAccount"]         = "Новый счёт",
+                ["Savings_NewGoal"]            = "Новая копилка",
+                ["Savings_GoalBadge"]          = "🎯 Копилка",
+                ["Savings_GoalRequiredHint"]   = "* Целевая сумма обязательна для копилки",
+                ["Categories_DeleteConfirm"]   = "Удалить «{0}»? Записи с этой категорией получат пустую категорию.",
+                ["Savings_NameLbl"]            = "Название:",
+                ["Savings_BalanceLbl"]         = "Начальный баланс:",
+                ["Savings_TargetLbl"]          = "Целевая сумма:",
+                ["Savings_RateLbl"]            = "Ставка (% год):",
+                ["Savings_ContribLbl"]         = "Взнос в месяц:",
+                ["Savings_StartDateLbl"]       = "Дата открытия:",
+                ["Savings_NotesLbl"]           = "Описание:",
+                ["Savings_CanWithdraw"]        = "Можно снимать",
+                ["Savings_SaveBtn"]            = "Сохранить",
+                ["Savings_CancelBtn"]          = "Отмена",
+                ["Savings_Deposit"]            = "Пополнить",
+                ["Savings_Withdraw"]           = "Снять",
+                ["Savings_Accrue"]             = "Начислить %",
+                ["Savings_Archive"]            = "Архив",
+                ["Savings_Delete"]             = "Удалить",
+                ["Savings_History"]            = "История",
+                ["Savings_ProjectedLbl"]       = "Прогноз через мес.:",
+                ["Savings_ProgressLbl"]        = "Прогресс к цели:",
+                ["Savings_TypeDeposit"]        = "Пополнение",
+                ["Savings_TypeWithdraw"]       = "Снятие",
+                ["Savings_TypeInterest"]       = "Проценты",
+                ["Savings_AmountLbl"]          = "Сумма:",
+                ["Savings_NoteLbl"]            = "Примечание:",
+                ["Savings_DateLbl"]            = "Дата:",
+                ["Savings_EmptyHint"]          = "Нет счетов. Нажмите «+ Счёт» или «+ Копилка» чтобы создать.",
+                ["Savings_CurrentBalanceLbl"]  = "текущий баланс",
+                ["Savings_GoalLbl"]            = "Цель:",
+                ["Savings_GoalAchievedBadge"]  = "✅ Цель достигнута",
+                ["Savings_RecurringPeriodLbl"] = "Периодичность пополнения:",
+                ["Savings_RecurringAmountLbl"] = "Сумма пополнения:",
+                ["Savings_PeriodNone"]         = "Нет",
+                ["Savings_PeriodMonthly"]      = "Ежемесячно",
+                ["Savings_PeriodQuarterly"]    = "Ежеквартально",
+                ["Savings_PeriodYearly"]       = "Ежегодно",
+                ["Savings_AutoContribNote"]    = "авто",
+                ["Savings_GoalAchievedNotif"]  = "Поздравляем! Вы достигли цели «{0}» в размере {1:N0} ₽!",
+                ["Savings_GoalAchievedTitle"]  = "Цель копилки достигнута 🎉",
+
+                // Сводка — счета
+                ["Summary_SavingsHeader"]      = "Счета / Копилки",
+                ["Summary_SavingsTotal"]       = "Общий баланс:",
+                ["Summary_SavingsCount"]       = "Счетов:",
+                ["Summary_SavingsGoal"]        = "Прогресс к цели",
+
+                // Гибкие уведомления
+                ["NotifUnit_Minutes"]          = "мин",
+                ["NotifUnit_Hours"]            = "ч",
+                ["NotifUnit_Days"]             = "дн",
+                ["NotifUnit_Weeks"]            = "нед",
+
+                // Ежегодное повторение — год окончания
+                ["RepeatUntilYear"]            = "Повторять до года:",
+
+                // Вкладка Функции в настройках
+                ["Settings_Functions"]         = "Функции",
+
+                // Управление подпиской
+                ["SubExpiredLbl"]        = "Подписка истекла",
+                ["SubExpiresLbl"]        = "Активна до",
+                ["SubRenewBtn"]          = "Продлить подписку"
             },
             ["English"] = new Dictionary<string, string>
             {
@@ -610,9 +787,189 @@ public class LocalizationService : ObservableObject
                 ["TimerExtendError"]               = "Enter a whole number ≥ 1",
                 ["TimerExtendBtn"]                 = "Extend timer",
                 ["TimerDeferBtn"]        = "Defer task",
-                ["TimerDeleteTaskBtn"]   = "Delete task"
+                ["TimerDeleteTaskBtn"]   = "Delete task",
+
+                // Event notification offset
+                ["NotifTimeLbl"]         = "Remind me:",
+                ["Notif_None"]           = "No reminder",
+                ["Notif_10min"]          = "10 minutes before",
+                ["Notif_30min"]          = "30 minutes before",
+                ["Notif_1hour"]          = "1 hour before",
+                ["Notif_1day"]           = "1 day before",
+                ["NotifOffset_soon"]     = "starts soon",
+                ["NotifOffset_30min"]    = "in 30 min",
+                ["NotifOffset_1hour"]    = "in 1 hour",
+                ["NotifOffset_1day"]     = "tomorrow",
+                ["StartsNow"]            = "starts now",
+
+                // Event copy
+                ["CopyEventBtn"]         = "Copy to selected days",
+                ["CopyEventTitle"]       = "Select days to copy to",
+                ["CopyApplyBtn"]         = "Create copies",
+                ["CopySelectedCount"]    = "Selected days:",
+                ["CopySuccess"]          = "Event copies created",
+                ["CopyPrevMonth"]        = "< Back",
+                ["CopyNextMonth"]        = "Next >",
+
+                // Finance module
+                ["Finance"]              = "Finance",
+                ["FinanceModuleLbl"]     = "Finance Module",
+                ["FinanceModuleSub"]     = "Track income, expenses, subscriptions and loans",
+                ["FinanceTab_Income"]    = "Income",
+                ["FinanceTab_Expense"]   = "Expenses",
+                ["FinanceTab_Sub"]       = "Subscriptions",
+                ["FinanceTab_Loans"]     = "Loans",
+                ["FinanceTab_Summary"]   = "Summary",
+                ["Finance_AddIncome"]    = "+ Income",
+                ["Finance_AddExpense"]   = "+ Expense",
+                ["Finance_AddSub"]       = "+ Subscription",
+                ["Finance_AddLoan"]      = "+ Loan",
+                ["Finance_DateLbl"]      = "Date:",
+                ["Finance_CategoryLbl"]  = "Category:",
+                ["Finance_AmountLbl"]    = "Amount:",
+                ["Finance_NoteLbl"]      = "Note:",
+                ["Finance_NameLbl"]      = "Name:",
+                ["Finance_CycleLbl"]     = "Billing cycle:",
+                ["Finance_NextDateLbl"]  = "Next billing date:",
+                ["Finance_PaidLbl"]      = "Paid",
+                ["Finance_TotalLbl"]     = "Total amount:",
+                ["Finance_RateLbl"]      = "Interest rate (% per year):",
+                ["Finance_TermLbl"]      = "Term (months):",
+                ["Finance_MonthlyLbl"]   = "Monthly payment:",
+                ["Finance_RemainLbl"]    = "Remaining balance:",
+                ["Finance_StartDateLbl"] = "Start date:",
+                ["Finance_Balance"]      = "Balance",
+                ["Finance_TotalIncome"]  = "Income this month",
+                ["Finance_TotalExpense"] = "Expenses this month",
+                ["Finance_Monthly"]      = "Monthly",
+                ["Finance_Yearly"]       = "Yearly",
+                ["Finance_ExportExcel"]  = "📊 Export to Excel",
+                ["Finance_CalcPayment"]  = "Calculate",
+                ["Finance_EditBtn"]      = "✏",
+                ["Finance_DeleteBtn"]    = "✕",
+                ["Finance_SaveBtn"]      = "Save",
+                ["Finance_CancelBtn"]    = "Cancel",
+                ["Finance_CatSalary"]    = "Salary",
+                ["Finance_CatFreelance"] = "Freelance",
+                ["Finance_CatOther"]     = "Other",
+                ["Finance_CatFood"]      = "Food",
+                ["Finance_CatTransport"] = "Transport",
+                ["Finance_CatEntertain"] = "Entertainment",
+                ["Finance_CatHealth"]    = "Health",
+                ["Finance_CatHousing"]   = "Housing",
+                ["Finance_CatStreaming"]  = "Streaming",
+                ["Finance_CatSoftware"]  = "Software / Services",
+                ["Finance_CatMortgage"]  = "Mortgage",
+                ["Finance_CatCar"]       = "Car loan",
+                ["Finance_CatConsumer"]        = "Consumer loan",
+                ["Finance_AmountRequired"]     = "Please enter an amount greater than 0",
+                ["Finance_AddCategory"]        = "+ Category",
+                ["Finance_NewCategoryLbl"]     = "New category:",
+                ["Finance_DownPaymentLbl"]     = "Down payment:",
+                ["Finance_TermYearsLbl"]       = "Term (years):",
+                ["Finance_NextPaymentLbl"]     = "Next payment:",
+                ["Finance_EndDateLbl"]         = "End date:",
+                ["Finance_NotifDaysLbl"]       = "Notify N days before:",
+                ["Finance_EarlyRepayments"]    = "Early repayments",
+                ["Finance_AddRepayment"]       = "+ Repayment",
+                ["Finance_PaymentDue"]         = "payment in",
+                ["Finance_EnabledInSettings"]  = "Enable in Settings → Features",
+
+                // Empty-list hints
+                ["Finance_IncomesEmptyHint"]   = "No income records. Click «+ Income» to add one.",
+                ["Finance_ExpensesEmptyHint"]  = "No expenses. Click «+ Expense» to add one.",
+                ["Finance_SubsEmptyHint"]      = "No subscriptions. Click «+ Subscription» to add one.",
+                ["Finance_LoansEmptyHint"]     = "No loans. Click «+ Loan» to add one.",
+
+                // History toggle
+                ["Savings_ShowHistory"]        = "▼ History",
+                ["Savings_HideHistory"]        = "▲ Hide history",
+
+                // Summary — per-section stats
+                ["Summary_IncomeCount"]        = "Records:",
+                ["Summary_ExpenseCount"]       = "Records:",
+                ["Summary_SubCount"]           = "Subscriptions:",
+                ["Summary_SubMonthly"]         = "Monthly:",
+                ["Summary_LoanCount"]          = "Loans:",
+                ["Summary_LoanDebt"]           = "Total debt:",
+                ["Summary_LoanMonthly"]        = "Monthly payment:",
+
+                // Savings accounts
+                ["FinanceTab_Savings"]         = "Savings/Jars",
+                ["Savings_AddAccount"]         = "+ Account",
+                ["Savings_AddGoal"]            = "+ Jar",
+                ["Savings_NewAccount"]         = "New Account",
+                ["Savings_NewGoal"]            = "New Jar",
+                ["Savings_GoalBadge"]          = "🎯 Jar",
+                ["Savings_GoalRequiredHint"]   = "* Target amount required for Jar",
+                ["Categories_DeleteConfirm"]   = "Delete «{0}»? Records with this category will get an empty category.",
+                ["Savings_NameLbl"]            = "Name:",
+                ["Savings_BalanceLbl"]         = "Starting balance:",
+                ["Savings_TargetLbl"]          = "Target amount:",
+                ["Savings_RateLbl"]            = "Rate (% annual):",
+                ["Savings_ContribLbl"]         = "Monthly contribution:",
+                ["Savings_StartDateLbl"]       = "Open date:",
+                ["Savings_NotesLbl"]           = "Description:",
+                ["Savings_CanWithdraw"]        = "Allow withdrawals",
+                ["Savings_SaveBtn"]            = "Save",
+                ["Savings_CancelBtn"]          = "Cancel",
+                ["Savings_Deposit"]            = "Deposit",
+                ["Savings_Withdraw"]           = "Withdraw",
+                ["Savings_Accrue"]             = "Accrue %",
+                ["Savings_Archive"]            = "Archive",
+                ["Savings_Delete"]             = "Delete",
+                ["Savings_History"]            = "History",
+                ["Savings_ProjectedLbl"]       = "Projected (1 month):",
+                ["Savings_ProgressLbl"]        = "Progress to goal:",
+                ["Savings_TypeDeposit"]        = "Deposit",
+                ["Savings_TypeWithdraw"]       = "Withdrawal",
+                ["Savings_TypeInterest"]       = "Interest",
+                ["Savings_AmountLbl"]          = "Amount:",
+                ["Savings_NoteLbl"]            = "Note:",
+                ["Savings_DateLbl"]            = "Date:",
+                ["Savings_EmptyHint"]          = "No accounts yet. Click «+ Account» or «+ Jar» to create one.",
+                ["Savings_CurrentBalanceLbl"]  = "current balance",
+                ["Savings_GoalLbl"]            = "Goal:",
+                ["Savings_GoalAchievedBadge"]  = "✅ Goal achieved",
+                ["Savings_RecurringPeriodLbl"] = "Recurring contributions:",
+                ["Savings_RecurringAmountLbl"] = "Contribution amount:",
+                ["Savings_PeriodNone"]         = "None",
+                ["Savings_PeriodMonthly"]      = "Monthly",
+                ["Savings_PeriodQuarterly"]    = "Quarterly",
+                ["Savings_PeriodYearly"]       = "Yearly",
+                ["Savings_AutoContribNote"]    = "auto",
+                ["Savings_GoalAchievedNotif"]  = "Congratulations! You achieved your goal «{0}» with {1:N0} ₽!",
+                ["Savings_GoalAchievedTitle"]  = "Savings goal achieved 🎉",
+
+                // Summary — savings
+                ["Summary_SavingsHeader"]      = "Accounts / Jars",
+                ["Summary_SavingsTotal"]       = "Total balance:",
+                ["Summary_SavingsCount"]       = "Accounts:",
+                ["Summary_SavingsGoal"]        = "Progress to goal",
+
+                // Flexible notifications
+                ["NotifUnit_Minutes"]          = "min",
+                ["NotifUnit_Hours"]            = "hr",
+                ["NotifUnit_Days"]             = "days",
+                ["NotifUnit_Weeks"]            = "wks",
+
+                // Yearly recurrence end year
+                ["RepeatUntilYear"]            = "Repeat until year:",
+
+                // Features tab in settings
+                ["Settings_Functions"]         = "Features",
+
+                // Subscription management
+                ["SubExpiredLbl"]        = "Subscription expired",
+                ["SubExpiresLbl"]        = "Active until",
+                ["SubRenewBtn"]          = "Renew subscription"
             }
         };
+
+        // Применяем культуру при старте приложения
+        var startCulture = GetCulture();
+        CultureInfo.DefaultThreadCurrentCulture   = startCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = startCulture;
     }
 
     public string CurrentLanguage
@@ -623,10 +980,20 @@ public class LocalizationService : ObservableObject
             if (_translations.ContainsKey(value))
             {
                 _currentLanguage = value;
+                var ci = GetCulture();
+                CultureInfo.DefaultThreadCurrentCulture   = ci;
+                CultureInfo.DefaultThreadCurrentUICulture = ci;
+                Thread.CurrentThread.CurrentCulture   = ci;
+                Thread.CurrentThread.CurrentUICulture = ci;
                 OnPropertyChanged(string.Empty);
             }
         }
     }
+
+    public CultureInfo GetCulture() =>
+        _currentLanguage == "English"
+            ? new CultureInfo("en-GB")   // en-GB: день перед месяцем (18 June)
+            : new CultureInfo("ru-RU");
 
     public string this[string key]
     {

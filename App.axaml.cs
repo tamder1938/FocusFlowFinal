@@ -8,6 +8,7 @@ using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
 using FocusFlowFinal.ViewModels;
 using FocusFlowFinal.Views;
+using FocusFlowFinal.Models.Finance;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -165,5 +166,8 @@ public partial class App : Application
         s.AddSingleton<IPaymentService, PaymentServiceStub>();
         s.AddSingleton<ICloudDatabaseService, CloudDatabaseService>();
         s.AddSingleton<ISyncService, CloudSyncService>();
+
+        // Финансовый модуль
+        s.AddTransient<FinanceViewModel>();
     }
 }

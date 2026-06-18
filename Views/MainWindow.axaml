@@ -170,9 +170,20 @@
 					</Button>
 				</StackPanel>
 
-				<!-- Иконка настроек (кнопка переключения темы удалена — Проблема 1) -->
+				<!-- Кнопка Финансы + Иконка настроек -->
 				<StackPanel Grid.Column="4" Orientation="Horizontal"
                             VerticalAlignment="Center" Spacing="2" Margin="8,0,0,0">
+					<!-- Финансы (всегда видна, но неактивна когда модуль выключен) -->
+					<Button IsEnabled="{Binding IsFinanceModuleEnabled}"
+                            Command="{Binding OpenFinanceCommand}"
+                            Content="{Binding Loc[Finance]}"
+                            Background="{DynamicResource AccentLightBrush}"
+                            Foreground="{DynamicResource AccentTextBrush}"
+                            BorderBrush="{DynamicResource AccentBackground}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
 					<Button Classes="icon-btn" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Loc[Settings]}">
 						<PathIcon Width="16" Height="16"
                                   Foreground="{DynamicResource SecondaryTextBrush}"

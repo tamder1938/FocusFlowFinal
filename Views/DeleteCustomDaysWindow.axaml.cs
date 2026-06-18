@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -19,7 +19,7 @@ public class SelectableDateItem
 
 public class DeleteCustomDaysWindow : Window
 {
-    public List<DateTime>? SelectedDates { get; private set; } = new List<DateTime>();
+    public List<DateTime>? SelectedDates { get; private set; } = new();
     private readonly ListBox _listBox;
 
     public DeleteCustomDaysWindow()
@@ -34,7 +34,7 @@ public class DeleteCustomDaysWindow : Window
 
         _listBox = new ListBox
         {
-            SelectionMode = SelectionMode.Multiple,
+            SelectionMode = SelectionMode.Multiple | SelectionMode.Toggle,
             Background = Brushes.White,
             BorderBrush = Brush.Parse("#E5E7EB"),
             BorderThickness = new Avalonia.Thickness(1),
@@ -42,7 +42,6 @@ public class DeleteCustomDaysWindow : Window
             Padding = new Avalonia.Thickness(4)
         };
 
-        // НАДЕЖНОЕ РЕШЕНИЕ: Динамический шаблон с использованием стандартного Binding к IsSelected
         _listBox.ItemTemplate = new FuncDataTemplate<SelectableDateItem>((item, _) =>
         {
             var textBlock = new TextBlock
@@ -58,31 +57,33 @@ public class DeleteCustomDaysWindow : Window
                 Child = textBlock
             };
 
-            // Когда элемент добавляется в визуальное дерево, привязываем его цвета к состоянию ListBoxItem
+            // Подписываемся после того как элемент встроен в визуальное дерево
             border.AttachedToVisualTree += (s, e) =>
             {
-                if (border.Parent is ListBoxItem listItem)
-                {
-                    // 1. Привязка для фона Border (меняется на синий, если элемент выбран)
-                    var bgBinding = new Binding
-                    {
-                        Source = listItem,
-                        Path = "IsSelected",
-                        Converter = new FuncValueConverter<bool, IBrush>(isSelected =>
-                            isSelected ? Brush.Parse("#DBEAFE") : Brushes.Transparent)
-                    };
-                    border.Bind(Border.BackgroundProperty, bgBinding);
+                // Идём вверх по визуальному дереву до ListBoxItem
+                Control? ancestor = border.Parent as Control;
+                while (ancestor != null && ancestor is not ListBoxItem)
+                    ancestor = ancestor.Parent as Control;
 
-                    // 2. Привязка для цвета текста TextBlock (меняется на темно-синий при выборе)
-                    var fgBinding = new Binding
-                    {
-                        Source = listItem,
-                        Path = "IsSelected",
-                        Converter = new FuncValueConverter<bool, IBrush>(isSelected =>
-                            isSelected ? Brush.Parse("#1E40AF") : Brush.Parse("#111827"))
-                    };
-                    textBlock.Bind(TextBlock.ForegroundProperty, fgBinding);
-                }
+                if (ancestor is not ListBoxItem listItem) return;
+
+                var bgBinding = new Binding
+                {
+                    Source = listItem,
+                    Path = "IsSelected",
+                    Converter = new FuncValueConverter<bool, IBrush>(sel =>
+                        sel ? Brush.Parse("#DBEAFE") : Brushes.Transparent)
+                };
+                border.Bind(Border.BackgroundProperty, bgBinding);
+
+                var fgBinding = new Binding
+                {
+                    Source = listItem,
+                    Path = "IsSelected",
+                    Converter = new FuncValueConverter<bool, IBrush>(sel =>
+                        sel ? Brush.Parse("#1E40AF") : Brush.Parse("#111827"))
+                };
+                textBlock.Bind(TextBlock.ForegroundProperty, fgBinding);
             };
 
             return border;
@@ -99,23 +100,29 @@ public class DeleteCustomDaysWindow : Window
         };
         Grid.SetRow(buttonPanel, 1);
 
-        var btnCancel = new Button { Content = "Отмена", Padding = new Avalonia.Thickness(16, 6), Background = Brush.Parse("#E5E7EB") };
-        btnCancel.Click += (s, e) => { SelectedDates = null; Close(); };
-
-        var btnConfirm = new Button { Content = "Применить", Padding = new Avalonia.Thickness(16, 6), Background = Brush.Parse("#1A73E8"), Foreground = Brushes.White, FontWeight = FontWeight.Bold };
-        btnConfirm.Click += (s, e) =>
+        var btnCancel = new Button
         {
-            if (_listBox.SelectedItems != null)
-            {
-                SelectedDates = _listBox.SelectedItems
-                    .Cast<SelectableDateItem>()
-                    .Select(i => i.Date.Date)
-                    .ToList();
-            }
-            else
-            {
-                SelectedDates = new List<DateTime>();
-            }
+            Content = "Отмена",
+            Padding = new Avalonia.Thickness(16, 6),
+            Background = Brush.Parse("#E5E7EB")
+        };
+        btnCancel.Click += (_, _) => { SelectedDates = null; Close(); };
+
+        var btnConfirm = new Button
+        {
+            Content = "Применить",
+            Padding = new Avalonia.Thickness(16, 6),
+            Background = Brush.Parse("#1A73E8"),
+            Foreground = Brushes.White,
+            FontWeight = FontWeight.Bold
+        };
+        btnConfirm.Click += (_, _) =>
+        {
+            // OfType<> безопаснее Cast<> — не бросает исключение при несоответствии типа
+            SelectedDates = _listBox.SelectedItems?
+                .OfType<SelectableDateItem>()
+                .Select(i => i.Date.Date)
+                .ToList() ?? new List<DateTime>();
             Close();
         };
 
@@ -130,10 +137,7 @@ public class DeleteCustomDaysWindow : Window
 
     public DeleteCustomDaysWindow(List<DateTime> upcomingDates) : this()
     {
-        if (_listBox != null)
-        {
-            var items = upcomingDates.Select(d => new SelectableDateItem { Date = d.Date }).ToList();
-            _listBox.ItemsSource = items;
-        }
+        var items = upcomingDates.Select(d => new SelectableDateItem { Date = d.Date }).ToList();
+        _listBox.ItemsSource = items;
     }
 }

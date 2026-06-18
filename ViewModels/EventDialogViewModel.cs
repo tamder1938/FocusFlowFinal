@@ -57,7 +57,6 @@ public partial class EventDialogViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsShiftFieldsVisible))]
     [NotifyPropertyChangedFor(nameof(IsCustomFieldsVisible))]
     [NotifyPropertyChangedFor(nameof(IsMonthlyFieldsVisible))]
-    [NotifyPropertyChangedFor(nameof(IsYearlyFieldsVisible))]
     [NotifyPropertyChangedFor(nameof(HasRecurrence))]
     private int _recurrenceIndex;
 
@@ -65,7 +64,6 @@ public partial class EventDialogViewModel : ObservableObject
     public bool IsShiftFieldsVisible   => RecurrenceIndex == 6;
     public bool IsCustomFieldsVisible  => RecurrenceIndex == 7;
     public bool IsMonthlyFieldsVisible => RecurrenceIndex == 4;
-    public bool IsYearlyFieldsVisible  => RecurrenceIndex == 5;
 
     // Показываем поле даты окончания только если есть повторение
     public bool HasRecurrence => RecurrenceIndex != 0;
@@ -75,10 +73,6 @@ public partial class EventDialogViewModel : ObservableObject
 
     // === Выбор дня начала для Monthly ===
     [ObservableProperty] private int _monthlyDay = 1;
-
-    // === Выбор дня и месяца начала для Yearly ===
-    [ObservableProperty] private int _yearlyDay   = 1;
-    [ObservableProperty] private int _yearlyMonth = 1;
 
     [ObservableProperty] private bool _dayMon;
     [ObservableProperty] private bool _dayTue;
@@ -97,6 +91,29 @@ public partial class EventDialogViewModel : ObservableObject
 
     // Дата окончания серии повторений
     [ObservableProperty] private DateTimeOffset? _recurrenceEndDate = null;
+
+    // === Гибкое уведомление: количество + единица (минуты/часы/дни/недели) ===
+    [ObservableProperty] private int _notificationQuantity = 0;
+    [ObservableProperty] private int _notificationUnitIndex = 2; // 0=Мин,1=Часы,2=Дни,3=Недели
+
+    public IReadOnlyList<string> NotificationUnitItems => new[]
+    {
+        Loc["NotifUnit_Minutes"],
+        Loc["NotifUnit_Hours"],
+        Loc["NotifUnit_Days"],
+        Loc["NotifUnit_Weeks"]
+    };
+
+    private static readonly int[] UnitMultipliers = { 1, 60, 60 * 24, 60 * 24 * 7 };
+
+    private static (int qty, int unitIdx) MinutesToQtyUnit(int minutes)
+    {
+        if (minutes <= 0) return (0, 2);
+        if (minutes % (60 * 24 * 7) == 0) return (minutes / (60 * 24 * 7), 3);
+        if (minutes % (60 * 24) == 0)     return (minutes / (60 * 24), 2);
+        if (minutes % 60 == 0)             return (minutes / 60, 1);
+        return (minutes, 0);
+    }
 
     [ObservableProperty] private bool _saveAsTemplate;
     [ObservableProperty] private string _templateName = string.Empty;
@@ -171,10 +188,13 @@ public partial class EventDialogViewModel : ObservableObject
             ? new DateTimeOffset(evt.RecurrenceEndDate.Value)
             : null;
 
-        // Загружаем день начала повторения
-        _monthlyDay   = evt.RecurrenceStartDay ?? evt.Start.Day;
-        _yearlyDay    = evt.RecurrenceStartDay ?? evt.Start.Day;
-        _yearlyMonth  = evt.RecurrenceStartMonth ?? evt.Start.Month;
+        // Загружаем день начала повторения для Monthly
+        _monthlyDay = evt.RecurrenceStartDay ?? evt.Start.Day;
+
+        // Восстанавливаем гибкое уведомление
+        var (qty, unitIdx) = MinutesToQtyUnit(evt.NotificationOffsetMinutes);
+        _notificationQuantity   = qty;
+        _notificationUnitIndex  = unitIdx;
 
         LoadEventTemplates();
     }
@@ -252,7 +272,23 @@ public partial class EventDialogViewModel : ObservableObject
         }
         else if (modeWindow.DeleteResult == "Custom")
         {
-            var upcomingDates = BuildUpcomingDates(60);
+            int lookAheadDays = RecurrenceIndex switch
+            {
+                1 => 60,   // ежедневно
+                2 => 60,   // рабочие дни
+                3 => 180,  // еженедельно
+                4 => 730,  // ежемесячно (~24 мес.)
+                5 => 3650, // ежегодно (~10 лет)
+                6 => 180,  // сменный график
+                7 => 730,  // пользовательский интервал
+                _ => 60
+            };
+            if (RecurrenceEndDate.HasValue)
+            {
+                int daysToEnd = (int)(RecurrenceEndDate.Value.DateTime.Date - _selectedDate.Date).TotalDays + 1;
+                lookAheadDays = Math.Min(lookAheadDays, Math.Max(daysToEnd, 1));
+            }
+            var upcomingDates = BuildUpcomingDates(lookAheadDays);
             var customDaysWindow = new DeleteCustomDaysWindow(upcomingDates);
             await customDaysWindow.ShowDialog(currentWindow);
 
@@ -287,7 +323,7 @@ public partial class EventDialogViewModel : ObservableObject
                     (target.DayOfWeek == DayOfWeek.Saturday  && DaySat) ||
                     (target.DayOfWeek == DayOfWeek.Sunday    && DaySun),
                 4 => target.Day == MonthlyDay,
-                5 => target.Day == YearlyDay && target.Month == YearlyMonth,
+                5 => target.Day == EventDate.Day && target.Month == EventDate.Month,
                 6 => IsShiftWorkingDay(target),
                 7 => IsCustomIntervalDay(target),
                 _ => false
@@ -353,6 +389,10 @@ public partial class EventDialogViewModel : ObservableObject
             if (end <= start) return;
         }
 
+        int multiplier = (NotificationUnitIndex >= 0 && NotificationUnitIndex < UnitMultipliers.Length)
+            ? UnitMultipliers[NotificationUnitIndex] : 1;
+        int offsetMins = NotificationQuantity > 0 ? NotificationQuantity * multiplier : 0;
+
         ResultEvent = new CalendarEvent
         {
             Id          = _originalId,
@@ -364,7 +404,8 @@ public partial class EventDialogViewModel : ObservableObject
             IsAllDay    = IsAllDay,
             Recurrence  = (RecurrenceType)RecurrenceIndex,
             DaysOfWeek  = new List<DayOfWeek>(),
-            RecurrenceEndDate = RecurrenceEndDate?.DateTime.Date
+            RecurrenceEndDate = RecurrenceEndDate?.DateTime.Date,
+            NotificationOffsetMinutes = offsetMins
         };
 
         // Сохраняем день начала повторения для Monthly/Yearly
@@ -372,10 +413,11 @@ public partial class EventDialogViewModel : ObservableObject
         {
             ResultEvent.RecurrenceStartDay = MonthlyDay;
         }
-        else if (RecurrenceIndex == 5) // Yearly
+        else if (RecurrenceIndex == 5) // Yearly — день/месяц берём из даты события
         {
-            ResultEvent.RecurrenceStartDay   = YearlyDay;
-            ResultEvent.RecurrenceStartMonth = YearlyMonth;
+            ResultEvent.RecurrenceStartDay   = EventDate.Day;
+            ResultEvent.RecurrenceStartMonth = EventDate.Month;
+            ResultEvent.RecurrenceEndYear    = DateTime.Now.Year + 100;
         }
 
         if (DayMon) ResultEvent.DaysOfWeek.Add(DayOfWeek.Monday);
@@ -424,6 +466,52 @@ public partial class EventDialogViewModel : ObservableObject
         }
 
         CloseWindow(true);
+    }
+
+    [RelayCommand]
+    private async Task CopyToSelectedDays()
+    {
+        if (_originalId == 0) return; // только для существующих событий
+
+        var desktop = App.Current?.ApplicationLifetime as
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
+        var currentWindow = desktop?.Windows.FirstOrDefault(w => w.DataContext == this);
+        if (currentWindow == null) return;
+
+        var services = ((App)Avalonia.Application.Current!).Services!;
+        var db = services.GetRequiredService<IDatabaseService>();
+
+        // Получаем оригинальное событие из БД
+        var originalEvent = db.GetEventById(_originalId);
+        if (originalEvent == null) return;
+
+        var copyVm = new EventCopyViewModel(originalEvent);
+        var copyDialog = new EventCopyDialog { DataContext = copyVm };
+        await copyDialog.ShowDialog(currentWindow);
+
+        if (copyVm.SelectedDates.Count == 0) return;
+
+        // Создаём копии для каждой выбранной даты
+        var copies = copyVm.SelectedDates.Select(date => new CalendarEvent
+        {
+            Title                    = originalEvent.Title,
+            Start                    = date.Date.Add(originalEvent.Start.TimeOfDay),
+            End                      = date.Date.Add(originalEvent.End.TimeOfDay),
+            Color                    = originalEvent.Color,
+            IsAllDay                 = originalEvent.IsAllDay,
+            Recurrence               = RecurrenceType.None,
+            NotificationOffsetMinutes = originalEvent.NotificationOffsetMinutes,
+            SyncId                   = Guid.NewGuid(),
+            LastModified             = DateTime.UtcNow
+        }).ToList();
+
+        db.InsertEvents(copies);
+
+        var notif = services.GetRequiredService<INotificationService>();
+        notif.Show(
+            Loc["CopyEventTitle"],
+            $"{Loc["CopySelectedCount"]} {copies.Count}",
+            NotificationLevel.Success);
     }
 
     [RelayCommand]

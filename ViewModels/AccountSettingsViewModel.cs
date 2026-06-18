@@ -86,9 +86,18 @@ public partial class AccountSettingsViewModel : ObservableObject
         else if (HasFreeAccess)
             SubscriptionStatusText = Loc["FreeAccessLbl"];
         else if (user?.Subscription?.IsActive == true)
-            SubscriptionStatusText = $"{Loc["SubscriptionActiveLbl"]} {user.Subscription.ExpiresAtUtc:dd.MM.yyyy}";
+            SubscriptionStatusText = $"{Loc["SubExpiresLbl"]} {user.Subscription.ExpiresAtUtc.ToLocalTime():dd.MM.yyyy}";
         else
-            SubscriptionStatusText = string.Empty;
+        {
+            // Fallback: читаем из AppSettings (если купили без активной сессии)
+            var storedExpiry = AppSettings.Load().SubscriptionExpiryDate;
+            if (storedExpiry.HasValue && storedExpiry.Value > DateTime.UtcNow)
+                SubscriptionStatusText = $"{Loc["SubExpiresLbl"]} {storedExpiry.Value.ToLocalTime():dd.MM.yyyy}";
+            else if (storedExpiry.HasValue)
+                SubscriptionStatusText = Loc["SubExpiredLbl"];
+            else
+                SubscriptionStatusText = string.Empty;
+        }
 
         var settings = AppSettings.Load();
         SyncEnabled = settings.SyncEnabled;

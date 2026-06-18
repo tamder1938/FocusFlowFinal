@@ -63,4 +63,16 @@ public class CalendarEvent : ISyncableEntity
 
     // Сюда сохраняются даты, в которые серийное событие было отменено (исключения)
     public List<DateTime> ExceptionDates { get; set; } = new();
+
+    /// <summary>
+    /// Время (мин) до начала события, за которое показывать уведомление.
+    /// 0 = не уведомлять.
+    /// </summary>
+    public int NotificationOffsetMinutes { get; set; } = 0;
+
+    /// <summary>
+    /// Год окончания ежегодного повторения (включительно).
+    /// null = повторять бессрочно.
+    /// </summary>
+    public int? RecurrenceEndYear { get; set; }
 }

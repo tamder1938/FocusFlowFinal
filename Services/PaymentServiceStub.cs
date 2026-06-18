@@ -46,9 +46,12 @@ public class PaymentServiceStub : IPaymentService
                 : $"{SubscriptionPlans.YearlyPriceRub:0} ₽/{LocalizationService.Instance["PerYear"]}"
         };
 
-        // ИСПРАВЛЕНО: в реальной реализации подписка хранится на сервере;
-        // здесь — записываем в текущий профиль пользователя (in-memory) для прототипа.
+        // Записываем в профиль (in-memory) и в AppSettings (персистентно)
         _authService.CurrentUser.Subscription = subscription;
+
+        var settings = AppSettings.Load();
+        settings.SubscriptionExpiryDate = subscription.ExpiresAtUtc;
+        settings.Save();
 
         return Task.FromResult(PurchaseResult.Ok(subscription));
     }

@@ -16,12 +16,12 @@ public partial class SettingsViewModel : ObservableObject
     public AccountSettingsViewModel Account { get; }
 
     // ── Вкладки ──────────────────────────────────────────────────────
-    // ИСПРАВЛЕНО (Часть 2, п.5): "Аккаунт" — первая вкладка
     [ObservableProperty] private bool _isAccountTab = true;
     [ObservableProperty] private bool _isGeneralTab;
     [ObservableProperty] private bool _isNotificationsTab;
     [ObservableProperty] private bool _isHotkeysTab;
     [ObservableProperty] private bool _isDataTab;
+    [ObservableProperty] private bool _isFunctionsTab;
 
     [ObservableProperty] private string _selectedLanguage = "Русский";
     public ObservableCollection<string> Languages { get; } = new() { "Русский", "English" };
@@ -43,6 +43,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _systemNotificationsEnabled = true;
     [ObservableProperty] private bool _soundNotificationsEnabled = true;
     [ObservableProperty] private bool _markTaskCompletedOnTimerFinish;
+    [ObservableProperty] private bool _financeModuleEnabled;
 
     // Исходные значения — на случай отмены (кнопка «Закрыть»), хотя поскольку
     // мы больше не применяем изменения мгновенно, откатывать по факту нечего.
@@ -71,6 +72,7 @@ public partial class SettingsViewModel : ObservableObject
         SystemNotificationsEnabled       = settings.SystemNotifications;
         SoundNotificationsEnabled        = settings.SoundNotifications;
         MarkTaskCompletedOnTimerFinish   = settings.MarkTaskCompletedOnTimerFinish;
+        FinanceModuleEnabled             = settings.FinanceModuleEnabled;
 
         // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
         var services = ((App)App.Current!).Services!;
@@ -87,6 +89,7 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(NotificationsTabLabel));
             OnPropertyChanged(nameof(HotkeysTabLabel));
             OnPropertyChanged(nameof(DataTabLabel));
+            OnPropertyChanged(nameof(FunctionsTabLabel));
         };
     }
 
@@ -96,6 +99,7 @@ public partial class SettingsViewModel : ObservableObject
     public string NotificationsTabLabel => Loc["Notifications"];
     public string HotkeysTabLabel       => Loc["Hotkeys"];
     public string DataTabLabel          => Loc["Data"];
+    public string FunctionsTabLabel     => Loc["Settings_Functions"];
 
     [RelayCommand]
     private void SelectTab(string tabName)
@@ -105,6 +109,7 @@ public partial class SettingsViewModel : ObservableObject
         IsNotificationsTab = tabName == "Notifications";
         IsHotkeysTab       = tabName == "Hotkeys";
         IsDataTab          = tabName == "Data";
+        IsFunctionsTab     = tabName == "Functions";
     }
 
     // ИСПРАВЛЕНО (Проблема 1): SetTheme больше НЕ применяет тему мгновенно.
@@ -128,6 +133,7 @@ public partial class SettingsViewModel : ObservableObject
         settings.SystemNotifications             = SystemNotificationsEnabled;
         settings.SoundNotifications              = SoundNotificationsEnabled;
         settings.MarkTaskCompletedOnTimerFinish  = MarkTaskCompletedOnTimerFinish;
+        settings.FinanceModuleEnabled            = FinanceModuleEnabled;
         settings.Save();
 
         // Применяем тему здесь, а не при клике по карточке
@@ -253,6 +259,7 @@ public partial class SettingsViewModel : ObservableObject
             {
                 mainVm.CurrentTaskListViewModel?.RefreshTasks();
                 mainVm.RefreshTodayMiniStats();
+                mainVm.RefreshFinanceModuleState();
 
                 if (mainVm.CurrentCalendarView is DayViewModel dayVm) dayVm.LoadEvents();
                 else if (mainVm.CurrentCalendarView is WeekViewModel weekVm) weekVm.RefreshWeek();

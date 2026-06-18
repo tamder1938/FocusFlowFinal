@@ -1,0 +1,1026 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        xmlns:converters="using:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.FinanceWindow"
+        x:CompileBindings="False"
+        Title="{Binding Loc[Finance]}"
+        Width="900" Height="660"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.tab-btn">
+            <Setter Property="Background"       Value="Transparent"/>
+            <Setter Property="Foreground"       Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="BorderThickness"  Value="0,0,0,2"/>
+            <Setter Property="BorderBrush"      Value="Transparent"/>
+            <Setter Property="Padding"          Value="16,8"/>
+            <Setter Property="FontSize"         Value="13"/>
+            <Setter Property="Cursor"           Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-btn.active">
+            <Setter Property="Foreground"  Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="FontWeight"  Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background"      Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="12,6"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Button.small-btn">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="6,2"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Border.row-card">
+            <Setter Property="Background"      Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="CornerRadius"    Value="8"/>
+            <Setter Property="Padding"         Value="12,8"/>
+            <Setter Property="Margin"          Value="0,0,0,6"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.form-panel">
+            <Setter Property="Background"      Value="{DynamicResource CardSecondaryBackgroundBrush}"/>
+            <Setter Property="CornerRadius"    Value="10"/>
+            <Setter Property="Padding"         Value="16"/>
+            <Setter Property="Margin"          Value="0,0,0,12"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="TextBox, ComboBox, NumericUpDown, DatePicker">
+            <Setter Property="Background"  Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Foreground"  Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding"     Value="8,6"/>
+            <Setter Property="Margin"      Value="0,2,0,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="52, *">
+
+        <!-- Таб-бар -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                <Button Classes="tab-btn" Classes.active="{Binding IsIncomeTab}"
+                        Content="{Binding Loc[FinanceTab_Income]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Income"/>
+                <Button Classes="tab-btn" Classes.active="{Binding IsExpenseTab}"
+                        Content="{Binding Loc[FinanceTab_Expense]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Expense"/>
+                <Button Classes="tab-btn" Classes.active="{Binding IsSubTab}"
+                        Content="{Binding Loc[FinanceTab_Sub]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Sub"/>
+                <Button Classes="tab-btn" Classes.active="{Binding IsLoanTab}"
+                        Content="{Binding Loc[FinanceTab_Loans]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Loan"/>
+                <Button Classes="tab-btn" Classes.active="{Binding IsSavingsTab}"
+                        Content="{Binding Loc[FinanceTab_Savings]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Savings"/>
+                <Button Classes="tab-btn" Classes.active="{Binding IsSummaryTab}"
+                        Content="{Binding Loc[FinanceTab_Summary]}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Summary"/>
+
+                <!-- Кнопка экспорта в правом углу -->
+                <Button Classes="action-btn"
+                        Content="{Binding Loc[Finance_ExportExcel]}"
+                        Command="{Binding ExportToExcelCommand}"
+                        Margin="20,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Сообщение об ошибке -->
+        <Border Grid.Row="1" IsVisible="{Binding HasError}"
+                Background="#FEE2E2" CornerRadius="6" Padding="12,8" Margin="16,8,16,0"
+                ZIndex="10" VerticalAlignment="Top">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" FontSize="12" TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Контент вкладок -->
+        <Grid Grid.Row="1">
+
+            <!-- ══ ДОХОДЫ ══ -->
+            <Grid IsVisible="{Binding IsIncomeTab}" RowDefinitions="Auto, *" Margin="16">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Classes="action-btn" Content="{Binding Loc[Finance_AddIncome]}"
+                            Command="{Binding BeginAddIncomeCommand}"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <!-- Форма добавления/редактирования -->
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingIncome}">
+                            <Grid ColumnDefinitions="*,12,*,12,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Loc[Finance_DateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding NewIncomeDate}"/>
+                                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,0">
+                                        <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
+                                                Command="{Binding BeginAddCategoryCommand}" CommandParameter="income"
+                                                Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding IncomeCategoryList}" SelectedItem="{Binding NewIncomeCategory}"/>
+                                        <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
+                                                Command="{Binding BeginDeleteIncomeCategoryCommand}"
+                                                Foreground="#EF4444"
+                                                IsEnabled="{Binding NewIncomeCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    </Grid>
+                                    <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+                                        <TextBox Text="{Binding NewCategoryName}" Width="120"
+                                                 Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
+                                        <Button Content="✓" Classes="action-btn" Padding="8,4"
+                                                Command="{Binding SaveCategoryCommand}"/>
+                                        <Button Content="✕" Classes="small-btn" Padding="6,4"
+                                                Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                                    </StackPanel>
+                                    <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
+                                            Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,4,0,0">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
+                                                       Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Button Content="Удалить" Background="#EF4444" Foreground="White"
+                                                        Command="{Binding ConfirmDeleteCategoryCommand}"
+                                                        Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
+                                                <Button Content="Отмена" Classes="small-btn"
+                                                        Command="{Binding CancelConfirmDeleteCategoryCommand}"
+                                                        Padding="6,4" FontSize="11"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <NumericUpDown Value="{Binding NewIncomeAmount}" Minimum="0" FormatString="0.##"/>
+                                    <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <TextBox Text="{Binding NewIncomeNote}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" VerticalAlignment="Bottom" Spacing="8">
+                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                            Command="{Binding SaveIncomeCommand}" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"/>
+                                    <Button Content="{Binding Loc[Finance_CancelBtn]}"
+                                            Command="{Binding CancelIncomeCommand}"
+                                            Background="{DynamicResource SecondaryActionBrush}"
+                                            Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                            BorderThickness="0" CornerRadius="6" Height="34"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Список доходов -->
+                        <ItemsControl ItemsSource="{Binding Incomes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="Auto, *, *, Auto, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yy}'}"
+                                                       Width="65" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
+                                                <TextBlock Text="{Binding Category}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                <TextBlock Text="{Binding Note}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           IsVisible="{Binding Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='{}{0:N0} ₽'}"
+                                                       Foreground="#22C55E" FontWeight="Bold" VerticalAlignment="Center"
+                                                       HorizontalAlignment="Right" Margin="0,0,16,0"/>
+                                            <Button Grid.Column="3" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_EditBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.EditIncomeCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource AccentBackground}"/>
+                                            <Button Grid.Column="4" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_DeleteBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.DeleteIncomeCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="#EF4444"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock IsVisible="{Binding IsIncomesEmpty}"
+                                   Text="{Binding Loc[Finance_IncomesEmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="13"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ РАСХОДЫ ══ -->
+            <Grid IsVisible="{Binding IsExpenseTab}" RowDefinitions="Auto, *" Margin="16">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Classes="action-btn" Content="{Binding Loc[Finance_AddExpense]}"
+                            Command="{Binding BeginAddExpenseCommand}"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingExpense}">
+                            <Grid ColumnDefinitions="*,12,*,12,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Loc[Finance_DateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding NewExpenseDate}"/>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
+                                                Command="{Binding BeginAddCategoryCommand}" CommandParameter="expense"
+                                                Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding ExpenseCategoryList}" SelectedItem="{Binding NewExpenseCategory}"/>
+                                        <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
+                                                Command="{Binding BeginDeleteExpenseCategoryCommand}"
+                                                Foreground="#EF4444"
+                                                IsEnabled="{Binding NewExpenseCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    </Grid>
+                                    <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+                                        <TextBox Text="{Binding NewCategoryName}" Width="120"
+                                                 Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
+                                        <Button Content="✓" Classes="action-btn" Padding="8,4"
+                                                Command="{Binding SaveCategoryCommand}"/>
+                                        <Button Content="✕" Classes="small-btn" Padding="6,4"
+                                                Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                                    </StackPanel>
+                                    <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
+                                            Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,4,0,0">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
+                                                       Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Button Content="Удалить" Background="#EF4444" Foreground="White"
+                                                        Command="{Binding ConfirmDeleteCategoryCommand}"
+                                                        Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
+                                                <Button Content="Отмена" Classes="small-btn"
+                                                        Command="{Binding CancelConfirmDeleteCategoryCommand}"
+                                                        Padding="6,4" FontSize="11"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <NumericUpDown Value="{Binding NewExpenseAmount}" Minimum="0" FormatString="0.##"/>
+                                    <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <TextBox Text="{Binding NewExpenseNote}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" VerticalAlignment="Bottom" Spacing="8">
+                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                            Command="{Binding SaveExpenseCommand}" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"/>
+                                    <Button Content="{Binding Loc[Finance_CancelBtn]}"
+                                            Command="{Binding CancelExpenseCommand}"
+                                            Background="{DynamicResource SecondaryActionBrush}"
+                                            Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                            BorderThickness="0" CornerRadius="6" Height="34"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Expenses}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="Auto, *, *, Auto, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yy}'}"
+                                                       Width="65" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
+                                                <TextBlock Text="{Binding Category}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                <TextBlock Text="{Binding Note}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           IsVisible="{Binding Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='{}{0:N0} ₽'}"
+                                                       Foreground="#EF4444" FontWeight="Bold" VerticalAlignment="Center"
+                                                       HorizontalAlignment="Right" Margin="0,0,16,0"/>
+                                            <Button Grid.Column="3" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_EditBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.EditExpenseCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource AccentBackground}"/>
+                                            <Button Grid.Column="4" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_DeleteBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.DeleteExpenseCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="#EF4444"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock IsVisible="{Binding IsExpensesEmpty}"
+                                   Text="{Binding Loc[Finance_ExpensesEmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="13"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ ПОДПИСКИ ══ -->
+            <Grid IsVisible="{Binding IsSubTab}" RowDefinitions="Auto, *" Margin="16">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Classes="action-btn" Content="{Binding Loc[Finance_AddSub]}"
+                            Command="{Binding BeginAddSubCommand}"/>
+                </StackPanel>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingSub}">
+                            <Grid ColumnDefinitions="*,12,*,12,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Loc[Finance_NameLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <TextBox Text="{Binding NewSubName}"/>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
+                                                Command="{Binding BeginAddCategoryCommand}" CommandParameter="subscription"
+                                                Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <ComboBox Grid.Column="0" ItemsSource="{Binding SubCategoryList}" SelectedItem="{Binding NewSubCategory}"/>
+                                        <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
+                                                Command="{Binding BeginDeleteSubCategoryCommand}"
+                                                Foreground="#EF4444"
+                                                IsEnabled="{Binding NewSubCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    </Grid>
+                                    <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
+                                            Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,4,0,0">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
+                                                       Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Button Content="Удалить" Background="#EF4444" Foreground="White"
+                                                        Command="{Binding ConfirmDeleteCategoryCommand}"
+                                                        Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
+                                                <Button Content="Отмена" Classes="small-btn"
+                                                        Command="{Binding CancelConfirmDeleteCategoryCommand}"
+                                                        Padding="6,4" FontSize="11"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <NumericUpDown Value="{Binding NewSubAmount}" Minimum="0" FormatString="0.##"/>
+                                    <TextBlock Text="{Binding Loc[Finance_CycleLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <ComboBox ItemsSource="{Binding CycleItems}" SelectedIndex="{Binding NewSubCycleIndex}"/>
+                                    <TextBlock Text="{Binding Loc[Finance_NextDateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding NewSubNextDate}"/>
+                                    <TextBlock Text="{Binding Loc[Finance_NotifDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <NumericUpDown Value="{Binding NewSubNotifDays}" Minimum="0" Maximum="365" ParsingNumberStyle="Integer"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" VerticalAlignment="Bottom" Spacing="8">
+                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                            Command="{Binding SaveSubCommand}" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"/>
+                                    <Button Content="{Binding Loc[Finance_CancelBtn]}"
+                                            Command="{Binding CancelSubCommand}"
+                                            Background="{DynamicResource SecondaryActionBrush}"
+                                            Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                            BorderThickness="0" CornerRadius="6" Height="34"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                            FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Subscriptions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto, Auto">
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                <TextBlock Text="{Binding Category}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Amount, StringFormat='{}{0:N0} ₽'}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                       FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding NextBillingDate, StringFormat='{}{0:dd.MM.yy}'}"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <CheckBox Grid.Column="3"
+                                                      IsChecked="{Binding IsPaid, Mode=OneWay}"
+                                                      Command="{Binding $parent[Window].DataContext.ToggleSubPaidCommand}"
+                                                      CommandParameter="{Binding}"
+                                                      VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="4" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_EditBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.EditSubCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource AccentBackground}"/>
+                                            <Button Grid.Column="5" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_DeleteBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.DeleteSubCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="#EF4444"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock IsVisible="{Binding IsSubsEmpty}"
+                                   Text="{Binding Loc[Finance_SubsEmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="13"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ КРЕДИТЫ ══ -->
+            <Grid IsVisible="{Binding IsLoanTab}" RowDefinitions="Auto, *" Margin="16">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Classes="action-btn" Content="{Binding Loc[Finance_AddLoan]}"
+                            Command="{Binding BeginAddLoanCommand}"/>
+                </StackPanel>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingLoan}">
+                            <StackPanel Spacing="0">
+                                <!-- Два столбца: основные поля слева / расчётные поля справа -->
+                                <Grid ColumnDefinitions="*, 20, *">
+                                    <!-- ЛЕВЫЙ СТОЛБЕЦ -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Loc[Finance_NameLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <TextBox Text="{Binding NewLoanName}"/>
+                                        <TextBlock Text="{Binding Loc[Finance_TotalLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewLoanTotal}" Minimum="0" FormatString="0.##"/>
+                                        <TextBlock Text="{Binding Loc[Finance_DownPaymentLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewLoanDown}" Minimum="0" FormatString="0.##"/>
+                                        <TextBlock Text="{Binding Loc[Finance_StartDateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <DatePicker SelectedDate="{Binding NewLoanStartDate}"/>
+                                    </StackPanel>
+                                    <!-- ПРАВЫЙ СТОЛБЕЦ -->
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="{Binding Loc[Finance_RateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewLoanRate}" Minimum="0" Maximum="100" FormatString="0.##"/>
+                                        <!-- Срок: месяцы и годы рядом -->
+                                        <Grid ColumnDefinitions="*, 8, *">
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Loc[Finance_TermLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                                <NumericUpDown Value="{Binding NewLoanTermMonths}" Minimum="0" Maximum="360" ParsingNumberStyle="Integer"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{Binding Loc[Finance_TermYearsLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                                <NumericUpDown Value="{Binding NewLoanTermYears}" Minimum="0" Maximum="50" ParsingNumberStyle="Integer"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Button Classes="action-btn" Content="{Binding Loc[Finance_CalcPayment]}"
+                                                Command="{Binding CalcLoanPaymentCommand}" Margin="0,4,0,8"
+                                                HorizontalAlignment="Left"/>
+                                        <TextBlock Text="{Binding Loc[Finance_MonthlyLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewLoanMonthly}" Minimum="0" FormatString="0.##"/>
+                                        <TextBlock Text="{Binding Loc[Finance_NextPaymentLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <DatePicker SelectedDate="{Binding NewLoanNextPayment}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!-- НИЖНЯЯ СТРОКА: дата окончания, уведомления, кнопки -->
+                                <Grid ColumnDefinitions="*, 20, Auto, 20, Auto" Margin="0,8,0,0">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Loc[Finance_EndDateLbl]}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding NewLoanEndDateDisplay}"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="16" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="{Binding Loc[Finance_NotifDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewLoanNotifDays}" Minimum="0" Maximum="365"
+                                                       ParsingNumberStyle="Integer" Width="120"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4" Spacing="8" VerticalAlignment="Bottom">
+                                        <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                                Command="{Binding SaveLoanCommand}" Width="110"
+                                                HorizontalContentAlignment="Center"/>
+                                        <Button Content="{Binding Loc[Finance_CancelBtn]}"
+                                                Command="{Binding CancelLoanCommand}"
+                                                Background="{DynamicResource SecondaryActionBrush}"
+                                                Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                                BorderThickness="0" CornerRadius="6" Height="34"
+                                                Width="110" HorizontalContentAlignment="Center"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Loans}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding TotalAmount, StringFormat='{}{0:N0} ₽'}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                                <TextBlock Text="{Binding InterestRate, StringFormat='{}{0:0.##}%'}"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding MonthlyPayment, StringFormat='{}{0:N0} ₽/мес'}"
+                                                       Foreground="#F97316" FontWeight="Bold"
+                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding RemainingBalance, StringFormat='Остаток: {0:N0} ₽'}"
+                                                       Foreground="#EF4444" FontSize="12"
+                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="4"
+                                                       Text="{Binding TermMonths, StringFormat='{}{0} мес.'}"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <Button Grid.Column="5" Classes="small-btn" Content="📋"
+                                                    Command="{Binding $parent[Window].DataContext.SelectLoanCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                                    ToolTip.Tip="{Binding $parent[Window].DataContext.Loc[Finance_EarlyRepayments]}"/>
+                                            <Button Grid.Column="6" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_EditBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.EditLoanCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource AccentBackground}"/>
+                                            <Button Grid.Column="7" Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Finance_DeleteBtn]}"
+                                                    Command="{Binding $parent[Window].DataContext.DeleteLoanCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="#EF4444"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock IsVisible="{Binding IsLoansEmpty}"
+                                   Text="{Binding Loc[Finance_LoansEmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="13"/>
+
+                        <!-- Досрочные погашения для выбранного кредита -->
+                        <Border IsVisible="{Binding SelectedLoan, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Classes="form-panel" Margin="0,8,0,0">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="{Binding Loc[Finance_EarlyRepayments]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <Button Grid.Column="1" Classes="action-btn" Content="{Binding Loc[Finance_AddRepayment]}"
+                                            Command="{Binding BeginAddRepaymentCommand}" Padding="10,4" FontSize="12"/>
+                                </Grid>
+
+                                <!-- Форма нового погашения -->
+                                <Grid ColumnDefinitions="*,8,*,8,Auto" IsVisible="{Binding IsAddingRepayment}">
+                                    <DatePicker Grid.Column="0" SelectedDate="{Binding NewRepaymentDate}"/>
+                                    <NumericUpDown Grid.Column="2" Value="{Binding NewRepaymentAmount}"
+                                                   Minimum="0" FormatString="0.##"/>
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
+                                        <Button Classes="action-btn" Content="✓" Padding="8,4"
+                                                Command="{Binding SaveRepaymentCommand}"/>
+                                        <Button Content="✕" Classes="small-btn" Padding="6,4"
+                                                Command="{Binding CancelRepaymentCommand}" Foreground="#EF4444"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding EarlyRepayments}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,2">
+                                                <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yy}'}"
+                                                           Width="65" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Note}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='{}{0:N0} ₽'}"
+                                                           Foreground="#22C55E" FontWeight="Bold" FontSize="12"
+                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <Button Grid.Column="3" Classes="small-btn" Content="✕"
+                                                        Command="{Binding $parent[Window].DataContext.DeleteRepaymentCommand}"
+                                                        CommandParameter="{Binding}" Foreground="#EF4444"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ СЧЕТА / КОПИЛКИ ══ -->
+            <Grid IsVisible="{Binding IsSavingsTab}" RowDefinitions="Auto, *" Margin="16">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" Spacing="8">
+                    <Button Classes="action-btn" Content="{Binding Loc[Savings_AddAccount]}"
+                            Command="{Binding BeginAddSavingsAccountCommand}"/>
+                    <Button Classes="action-btn" Content="{Binding Loc[Savings_AddGoal]}"
+                            Command="{Binding BeginAddSavingsGoalCommand}"
+                            Background="#F59E0B" Foreground="White" BorderThickness="0"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <!-- Форма создания/редактирования счёта/копилки -->
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingSavingsAccount}">
+                            <StackPanel Spacing="0">
+                                <!-- Заголовок формы -->
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+                                    <TextBlock Text="{Binding SavingsFormTitle}" FontWeight="Bold" FontSize="16"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <Border IsVisible="{Binding IsCreatingGoal}" Background="#FEF3C7"
+                                            CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Loc[Savings_GoalBadge]}" FontSize="11"
+                                                   Foreground="#92400E" FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                                <Grid ColumnDefinitions="*, 20, *">
+                                    <!-- Левый столбец: основные данные -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Loc[Savings_NameLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <TextBox Text="{Binding NewSavingsName}"/>
+                                        <TextBlock Text="{Binding Loc[Savings_NotesLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <TextBox Text="{Binding NewSavingsNotes}" AcceptsReturn="True" Height="60"/>
+                                        <TextBlock Text="{Binding Loc[Savings_StartDateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <DatePicker SelectedDate="{Binding NewSavingsStartDate}"/>
+                                        <TextBlock Text="{Binding Loc[Savings_BalanceLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                        <NumericUpDown Value="{Binding NewSavingsBalance}" Minimum="0" FormatString="0.##"/>
+                                    </StackPanel>
+                                    <!-- Правый столбец: параметры и кнопки -->
+                                    <StackPanel Grid.Column="2">
+                                        <CheckBox IsChecked="{Binding NewSavingsCanWithdraw}"
+                                                  Content="{Binding Loc[Savings_CanWithdraw]}"
+                                                  Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,12,0,0"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+                                            <Button Classes="action-btn" Content="{Binding Loc[Savings_SaveBtn]}"
+                                                    Command="{Binding SaveSavingsAccountCommand}" Width="110"
+                                                    HorizontalContentAlignment="Center"/>
+                                            <Button Content="{Binding Loc[Savings_CancelBtn]}"
+                                                    Command="{Binding CancelSavingsAccountCommand}"
+                                                    Background="{DynamicResource SecondaryActionBrush}"
+                                                    Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                                    BorderThickness="0" CornerRadius="6" Height="34"
+                                                    Width="110" HorizontalContentAlignment="Center"
+                                                    FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Форма добавления транзакции (пополнение/снятие) -->
+                        <Border Classes="form-panel" IsVisible="{Binding IsAddingSavingsTx}" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="*, 16, *, 16, Auto">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Loc[Savings_DateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding NewSavingsTxDate}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{Binding Loc[Savings_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <NumericUpDown Value="{Binding NewSavingsTxAmount}" Minimum="0" FormatString="0.##"/>
+                                    <TextBlock Text="{Binding Loc[Savings_NoteLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                    <TextBox Text="{Binding NewSavingsTxNote}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" Spacing="8" VerticalAlignment="Bottom">
+                                    <Button Classes="action-btn" Content="✓" Padding="10,6"
+                                            Command="{Binding SaveSavingsTxCommand}"/>
+                                    <Button Content="✕" Classes="small-btn" Padding="8,6"
+                                            Command="{Binding CancelSavingsTxCommand}" Foreground="#EF4444"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Подсказка когда счетов нет -->
+                        <TextBlock IsVisible="{Binding IsSavingsEmpty}"
+                                   Text="{Binding Loc[Savings_EmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,24,0,0" FontSize="13"/>
+
+                        <!-- Список счетов -->
+                        <ItemsControl ItemsSource="{Binding SavingsAccounts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="row-card" Margin="0,0,0,8">
+                                        <StackPanel Spacing="6">
+                                            <!-- Верхняя строка: название + кнопки действий -->
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" FlowDirection="LeftToRight">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"
+                                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                        <Border IsVisible="{Binding IsGoal}" Background="#FEF3C7"
+                                                                CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding $parent[Window].DataContext.Loc[Savings_GoalBadge]}"
+                                                                       FontSize="10" Foreground="#92400E" FontWeight="SemiBold"/>
+                                                        </Border>
+                                                        <Border IsVisible="{Binding IsGoalAchieved}" Background="#DCFCE7"
+                                                                CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding $parent[Window].DataContext.Loc[Savings_GoalAchievedBadge]}"
+                                                                       FontSize="10" Foreground="#166534" FontWeight="SemiBold"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Notes}" FontSize="11"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               IsVisible="{Binding Notes, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                    <Button Classes="action-btn" Content="{Binding $parent[Window].DataContext.Loc[Savings_Deposit]}"
+                                                            Command="{Binding $parent[Window].DataContext.BeginDepositCommand}"
+                                                            CommandParameter="{Binding}" Padding="8,4" FontSize="12"/>
+                                                    <Button Classes="small-btn"
+                                                            Content="{Binding $parent[Window].DataContext.Loc[Savings_Withdraw]}"
+                                                            Command="{Binding $parent[Window].DataContext.BeginWithdrawCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            IsEnabled="{Binding CanWithdraw}"
+                                                            Foreground="{DynamicResource AccentBackground}" FontSize="12"/>
+                                                    <Button Classes="small-btn" Content="✏"
+                                                            Command="{Binding $parent[Window].DataContext.EditSavingsAccountCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Foreground="{DynamicResource AccentBackground}"/>
+                                                    <Button Classes="small-btn" Content="✕"
+                                                            Command="{Binding $parent[Window].DataContext.DeleteSavingsAccountCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Foreground="#EF4444"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Баланс и прогресс к цели -->
+                                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                                <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                                    <TextBlock Text="{Binding CurrentBalance, StringFormat='{}{0:N0} ₽'}"
+                                                               FontSize="20" FontWeight="Bold" Foreground="#22C55E"/>
+                                                    <TextBlock Text="{Binding $parent[Window].DataContext.Loc[Savings_CurrentBalanceLbl]}" FontSize="10"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2" IsVisible="{Binding HasTarget}" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+                                                        <TextBlock Text="{Binding $parent[Window].DataContext.Loc[Savings_GoalLbl]}"
+                                                                   FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                        <TextBlock Text="{Binding TargetAmount, StringFormat='{}{0:N0} ₽'}"
+                                                                   FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                    <ProgressBar Value="{Binding ProgressPercent}" Minimum="0" Maximum="100"
+                                                                 Height="8" CornerRadius="4" Width="140"
+                                                                 Background="{DynamicResource BorderBrush}"
+                                                                 Foreground="#22C55E"/>
+                                                    <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0}%'}"
+                                                               FontSize="10" HorizontalAlignment="Right" Width="140"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Кнопка toggle истории -->
+                                            <Button Classes="small-btn"
+                                                    Content="{Binding $parent[Window].DataContext.Loc[Savings_ShowHistory]}"
+                                                    Command="{Binding $parent[Window].DataContext.SelectSavingsAccountCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="{DynamicResource AccentBackground}"
+                                                    FontSize="12" Padding="0,2"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- История транзакций выбранного счёта -->
+                        <Border IsVisible="{Binding SelectedSavingsAccount, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Classes="form-panel" Margin="0,4,0,0">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="{Binding SelectedSavingsAccount.Name, StringFormat='История: {0}'}"
+                                               FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <Button Grid.Column="1" Classes="small-btn"
+                                            Content="{Binding Loc[Savings_HideHistory]}"
+                                            Command="{Binding SelectSavingsAccountCommand}"
+                                            CommandParameter="{Binding SelectedSavingsAccount}"
+                                            Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding SavingsTransactions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,2">
+                                                <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yy}'}"
+                                                           Width="65" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Note}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat='{}{0:+0.##;-0.##;0} ₽'}"
+                                                           FontWeight="Bold" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                <Button Grid.Column="3" Classes="small-btn" Content="✕"
+                                                        Command="{Binding $parent[Window].DataContext.DeleteSavingsTxCommand}"
+                                                        CommandParameter="{Binding}" Foreground="#EF4444"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ СВОДКА ══ -->
+            <ScrollViewer IsVisible="{Binding IsSummaryTab}" Margin="16">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding Loc[FinanceTab_Summary]}" FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                    <!-- Баланс за месяц -->
+                    <Grid ColumnDefinitions="*,12,*,12,*">
+                        <Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="10" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Loc[Finance_TotalIncome]}"
+                                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding MonthIncome, StringFormat='{}{0:N0} ₽'}"
+                                           FontSize="22" FontWeight="Bold" Foreground="#22C55E"/>
+                                <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11">
+                                    <Run Text="{Binding Loc[Summary_IncomeCount]}"/>
+                                    <Run Text="{Binding SummaryIncomeCount}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="10" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Loc[Finance_TotalExpense]}"
+                                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding MonthExpense, StringFormat='{}{0:N0} ₽'}"
+                                           FontSize="22" FontWeight="Bold" Foreground="#EF4444"/>
+                                <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11">
+                                    <Run Text="{Binding Loc[Summary_ExpenseCount]}"/>
+                                    <Run Text="{Binding SummaryExpenseCount}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="4" Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="10" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Loc[Finance_Balance]}"
+                                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding MonthBalance, StringFormat='{}{0:N0} ₽'}"
+                                           FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Ежемесячные подписки -->
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            CornerRadius="10" Padding="16"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="{Binding Loc[FinanceTab_Sub]}" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding Loc[Summary_SubCount]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SummarySubCount}"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"
+                                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{Binding Loc[Summary_SubMonthly]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SummarySubMonthly, StringFormat='{}{0:N0} ₽'}"
+                                               Foreground="#F97316" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Subscriptions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Amount, StringFormat='{}{0:N0} ₽'}"
+                                                       Foreground="#F97316" FontWeight="SemiBold" FontSize="13"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Кредиты / ипотеки -->
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            CornerRadius="10" Padding="16"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="{Binding Loc[FinanceTab_Loans]}" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding Loc[Summary_LoanCount]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SummaryLoanCount}"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"
+                                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{Binding Loc[Summary_LoanDebt]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SummaryLoanDebt, StringFormat='{}{0:N0} ₽'}"
+                                               Foreground="#EF4444" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{Binding Loc[Summary_LoanMonthly]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SummaryLoanMonthly, StringFormat='{}{0:N0} ₽'}"
+                                               Foreground="#F97316" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Loans}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto, Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding MonthlyPayment, StringFormat='{}{0:N0} ₽/мес'}"
+                                                       Foreground="#F97316" FontWeight="SemiBold"
+                                                       FontSize="13" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding RemainingBalance, StringFormat='({0:N0} ₽)'}"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Счета / Копилки -->
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            CornerRadius="10" Padding="16"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8">
+                            <!-- Заголовок + итоговый баланс -->
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="{Binding Loc[Summary_SavingsHeader]}" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding Loc[Summary_SavingsCount]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SavingsCount}"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"
+                                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{Binding Loc[Summary_SavingsTotal]}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SavingsTotalBalance, StringFormat='{}{0:N0} ₽'}"
+                                               Foreground="#22C55E" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Список счетов -->
+                            <ItemsControl ItemsSource="{Binding SavingsSummaryList}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto, Auto" Margin="0,4">
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Notes}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           IsVisible="{Binding Notes, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding CurrentBalance, StringFormat='{}{0:N0} ₽'}"
+                                                       Foreground="#22C55E" FontWeight="Bold" FontSize="13"
+                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <!-- Прогресс к цели, если задана -->
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                                                        IsVisible="{Binding HasTarget}">
+                                                <ProgressBar Value="{Binding ProgressPercent}" Minimum="0" Maximum="100"
+                                                             Height="6" Width="80" CornerRadius="3"
+                                                             Background="{DynamicResource BorderBrush}"
+                                                             Foreground="#22C55E"/>
+                                                <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0}%'}"
+                                                           FontSize="10" HorizontalAlignment="Right"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</Window>

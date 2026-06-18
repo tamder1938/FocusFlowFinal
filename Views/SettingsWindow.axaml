@@ -145,6 +145,9 @@
 						<Button Content="{Binding GeneralTabLabel}"
                                 Classes="SideNavButton" Classes.active="{Binding IsGeneralTab}"
                                 Command="{Binding SelectTabCommand}" CommandParameter="General"/>
+						<Button Content="{Binding FunctionsTabLabel}"
+                                Classes="SideNavButton" Classes.active="{Binding IsFunctionsTab}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="Functions"/>
 						<Button Content="{Binding NotificationsTabLabel}"
                                 Classes="SideNavButton" Classes.active="{Binding IsNotificationsTab}"
                                 Command="{Binding SelectTabCommand}" CommandParameter="Notifications"/>
@@ -210,6 +213,7 @@
                                       Foreground="{DynamicResource PrimaryText}"
                                       BorderBrush="{DynamicResource CardBorder}"/>
 						</StackPanel>
+
 					</StackPanel>
 
 					<!-- Вкладка: Уведомления -->
@@ -359,6 +363,25 @@
 							</StackPanel>
 						</Border>
 					</StackPanel>
+
+					<!-- Вкладка: Функции -->
+					<StackPanel Spacing="16" IsVisible="{Binding IsFunctionsTab}">
+						<TextBlock Classes="SectionHeader" Text="{Binding Loc[Settings_Functions]}"/>
+						<!-- Финансовый модуль -->
+						<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
+                                Padding="16" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="{Binding Loc[FinanceModuleLbl]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"/>
+									<TextBlock Text="{Binding Loc[FinanceModuleSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+								</StackPanel>
+								<ToggleSwitch Grid.Column="1" IsChecked="{Binding FinanceModuleEnabled}"/>
+							</Grid>
+						</Border>
+					</StackPanel>
+
 				</Grid>
 			</Border>
 		</Grid>

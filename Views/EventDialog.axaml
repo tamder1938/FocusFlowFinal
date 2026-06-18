@@ -4,7 +4,7 @@
         xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
         x:Class="FocusFlowFinal.Views.EventDialog"
         x:CompileBindings="False"
-        Title="{Binding Loc[EventTitle]}" Width="400" Height="760"
+        Title="{Binding Loc[EventTitle]}" Width="400" Height="840"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
@@ -121,6 +121,24 @@
 				</Grid>
 			</StackPanel>
 
+			<!-- === УВЕДОМЛЕНИЕ === -->
+			<TextBlock Text="{Binding Loc[NotifTimeLbl]}"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       Margin="0,4,0,4"/>
+			<Grid ColumnDefinitions="*, 8, *">
+				<NumericUpDown Grid.Column="0"
+                               Value="{Binding NotificationQuantity}"
+                               Minimum="0" Maximum="999"
+                               ParsingNumberStyle="Integer"
+                               Background="{DynamicResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<ComboBox Grid.Column="2"
+                          SelectedIndex="{Binding NotificationUnitIndex}"
+                          ItemsSource="{Binding NotificationUnitItems}"
+                          Background="{DynamicResource CardBackgroundBrush}"
+                          Foreground="{DynamicResource PrimaryTextBrush}"/>
+			</Grid>
+
 			<!-- === ВЫБОР ЦВЕТА: кружки + HEX === -->
 			<TextBlock Text="{Binding Loc[ColorLabel]}"
                        Foreground="{DynamicResource PrimaryTextBrush}"
@@ -215,28 +233,6 @@
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
 			</StackPanel>
 
-			<!-- Поля для ежегодного повторения (Yearly) — выбор дня и месяца -->
-			<StackPanel IsVisible="{Binding IsYearlyFieldsVisible}" Margin="0,0,0,8">
-				<Grid ColumnDefinitions="*, 10, *">
-					<StackPanel Grid.Column="0">
-						<TextBlock Text="{Binding Loc[YearlyDayLbl]}"
-                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
-						<NumericUpDown Value="{Binding YearlyDay}" Minimum="1" Maximum="31"
-                                       ParsingNumberStyle="Integer"
-                                       Background="{DynamicResource CardBackgroundBrush}"
-                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-					</StackPanel>
-					<StackPanel Grid.Column="2">
-						<TextBlock Text="{Binding Loc[YearlyMonthLbl]}"
-                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
-						<NumericUpDown Value="{Binding YearlyMonth}" Minimum="1" Maximum="12"
-                                       ParsingNumberStyle="Integer"
-                                       Background="{DynamicResource CardBackgroundBrush}"
-                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-					</StackPanel>
-				</Grid>
-			</StackPanel>
-
 			<!-- Поля для графика сменности (Shift) -->
 			<StackPanel IsVisible="{Binding IsShiftFieldsVisible}">
 				<TextBlock Text="{Binding Loc[WorkingDaysLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
@@ -295,6 +291,19 @@
                            IsEnabled="{Binding SaveAsTemplate}"
                            Margin="0,0,0,8"/>
 			</StackPanel>
+
+			<!-- Кнопка копирования событий (только в режиме редактирования) -->
+			<Button Content="{Binding Loc[CopyEventBtn]}"
+                    Command="{Binding CopyToSelectedDaysCommand}"
+                    IsVisible="{Binding IsEditMode}"
+                    Background="{DynamicResource AccentLightBrush}"
+                    Foreground="{DynamicResource AccentTextBrush}"
+                    BorderBrush="{DynamicResource AccentBackground}"
+                    BorderThickness="1"
+                    CornerRadius="8" Height="36"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,4,0,8"
+                    FontWeight="Medium"/>
 
 			<!-- Кнопки -->
 			<Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,15,0,10">

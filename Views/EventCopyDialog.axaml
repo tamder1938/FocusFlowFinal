@@ -1,0 +1,136 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.EventCopyDialog"
+        x:CompileBindings="False"
+        Title="{Binding Loc[CopyEventTitle]}"
+        Width="340" Height="420"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.day-cell">
+            <Setter Property="Width"          Value="38"/>
+            <Setter Property="Height"         Value="38"/>
+            <Setter Property="CornerRadius"   Value="19"/>
+            <Setter Property="Padding"        Value="0"/>
+            <Setter Property="Background"     Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment"   Value="Center"/>
+            <Setter Property="Cursor"         Value="Hand"/>
+            <Setter Property="FontSize"       Value="13"/>
+        </Style>
+        <Style Selector="Button.day-cell:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/>
+        </Style>
+        <Style Selector="Button.day-cell.selected">
+            <Setter Property="Background" Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.day-cell.today">
+            <Setter Property="BorderBrush"    Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+    </Window.Styles>
+
+    <StackPanel Margin="16" Spacing="10">
+
+        <!-- Навигация по месяцам -->
+        <Grid ColumnDefinitions="Auto, *, Auto">
+            <Button Grid.Column="0"
+                    Content="{Binding Loc[CopyPrevMonth]}"
+                    Command="{Binding PrevMonthCommand}"
+                    Background="Transparent"
+                    Foreground="{DynamicResource AccentBackground}"
+                    BorderThickness="0" Padding="4,2" Cursor="Hand"/>
+            <TextBlock Grid.Column="1"
+                       Text="{Binding MonthYearTitle}"
+                       FontSize="15" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+            <Button Grid.Column="2"
+                    Content="{Binding Loc[CopyNextMonth]}"
+                    Command="{Binding NextMonthCommand}"
+                    Background="Transparent"
+                    Foreground="{DynamicResource AccentBackground}"
+                    BorderThickness="0" Padding="4,2" Cursor="Hand"/>
+        </Grid>
+
+        <!-- Заголовок дней недели -->
+        <Grid ColumnDefinitions="*,*,*,*,*,*,*">
+            <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AccentBackground}"/>
+            <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="#EF4444"/>
+        </Grid>
+
+        <!-- Сетка дней -->
+        <ItemsControl ItemsSource="{Binding Days}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" ItemWidth="44"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Classes="day-cell"
+                            Classes.selected="{Binding IsSelected}"
+                            Classes.today="{Binding IsToday}"
+                            Command="{Binding $parent[Window].DataContext.ToggleDayCommand}"
+                            CommandParameter="{Binding}"
+                            Opacity="{Binding CellOpacity}"
+                            IsEnabled="{Binding CanSelect}"
+                            Margin="3,2">
+                        <TextBlock Text="{Binding DayNumber}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Счётчик выбранных дней -->
+        <TextBlock HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12">
+            <Run Text="{Binding Loc[CopySelectedCount]}"/>
+            <Run Text="{Binding SelectedCount}" FontWeight="Bold"
+                 Foreground="{DynamicResource PrimaryTextBrush}"/>
+        </TextBlock>
+
+        <!-- Кнопки Apply / Cancel -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,4,0,0">
+            <Button Content="{Binding Loc[Finance_CancelBtn]}"
+                    Command="{Binding CancelCommand}"
+                    Background="{DynamicResource SecondaryActionBrush}"
+                    Foreground="{DynamicResource SecondaryActionFgBrush}"
+                    BorderThickness="0" CornerRadius="8" Height="36" Width="90"
+                    FontWeight="SemiBold" HorizontalContentAlignment="Center"/>
+            <Button Content="{Binding Loc[CopyApplyBtn]}"
+                    Command="{Binding ApplyCommand}"
+                    Background="{DynamicResource AccentBackground}"
+                    Foreground="White" BorderThickness="0"
+                    CornerRadius="8" Height="36" Width="130"
+                    FontWeight="Bold" HorizontalContentAlignment="Center"/>
+        </StackPanel>
+
+    </StackPanel>
+</Window>

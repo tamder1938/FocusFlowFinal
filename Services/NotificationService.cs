@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Threading;
 using FocusFlowFinal.Models;
+using FocusFlowFinal.Models.Finance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,39 +131,86 @@ public class NotificationService : INotificationService
     {
         if (!CurrentSettings.SystemNotifications) return;
 
-        var now        = DateTime.Now;
-        var windowEnd  = now.AddMinutes(15);
+        var now = DateTime.Now;
+        var loc = LocalizationService.Instance;
 
-        IEnumerable<CalendarEvent> events;
+        // ── Календарные события ──────────────────────────────────────
         try
         {
-            events = _db.GetEventsForPeriod(now.Date, now.Date.AddDays(1));
-        }
-        catch
-        {
-            return;
-        }
-
-        foreach (var ev in events)
-        {
-            // Событие начинается в ближайшие 15 минут (но ещё не началось)
-            if (ev.Start > now && ev.Start <= windowEnd)
+            var events = _db.GetEventsForPeriod(now.Date, now.Date.AddHours(25 * 31));
+            foreach (var ev in events)
             {
-                string key = $"{ev.Id}_{ev.Start:yyyyMMddHHmm}";
-                if (_shownKeys.Contains(key)) continue;
+                if (ev.NotificationOffsetMinutes <= 0) continue;
 
+                var notifyAt = ev.Start.AddMinutes(-ev.NotificationOffsetMinutes);
+                if (now < notifyAt.AddMinutes(-1) || now >= notifyAt.AddMinutes(1)) continue;
+
+                string key = $"evt_{ev.Id}_{ev.Start:yyyyMMddHHmm}_off{ev.NotificationOffsetMinutes}";
+                if (_shownKeys.Contains(key)) continue;
                 _shownKeys.Add(key);
 
-                var loc     = LocalizationService.Instance;
-                string title = loc["NotifEventTitle"];
-                int minsLeft = (int)(ev.Start - now).TotalMinutes;
-                string body  = minsLeft <= 1
-                    ? $"{ev.Title} — {loc["StartsNow"] ?? "начинается сейчас"}"
-                    : $"{ev.Title} — через {minsLeft} мин. ({ev.Start:HH:mm})";
-
-                Show(title, body, NotificationLevel.Information);
+                string offsetStr = FormatOffset(ev.NotificationOffsetMinutes, loc);
+                Show(loc["NotifEventTitle"],
+                     $"{ev.Title} — {offsetStr} ({ev.Start:dd.MM HH:mm})",
+                     NotificationLevel.Information);
             }
         }
+        catch { /* ignored */ }
+
+        // ── Подписки ──────────────────────────────────────────────────
+        try
+        {
+            foreach (var sub in _db.GetAllFinanceSubscriptions())
+            {
+                if (sub.NotificationOffsetMinutes <= 0) continue;
+
+                var notifyAt = sub.NextBillingDate.AddMinutes(-sub.NotificationOffsetMinutes);
+                if (now < notifyAt.AddMinutes(-1) || now >= notifyAt.AddMinutes(1)) continue;
+
+                string key = $"sub_{sub.Id}_{sub.NextBillingDate:yyyyMMdd}_off{sub.NotificationOffsetMinutes}";
+                if (_shownKeys.Contains(key)) continue;
+                _shownKeys.Add(key);
+
+                string offsetStr = FormatOffset(sub.NotificationOffsetMinutes, loc);
+                Show(loc["Finance"],
+                     $"{sub.Name} — {loc["Finance_PaymentDue"]} {offsetStr} ({sub.NextBillingDate:dd.MM.yyyy})",
+                     NotificationLevel.Warning);
+            }
+        }
+        catch { /* ignored */ }
+
+        // ── Кредиты ───────────────────────────────────────────────────
+        try
+        {
+            foreach (var loan in _db.GetAllLoans())
+            {
+                if (loan.NotificationOffsetMinutes <= 0 || !loan.NextPaymentDate.HasValue) continue;
+
+                var notifyAt = loan.NextPaymentDate.Value.AddMinutes(-loan.NotificationOffsetMinutes);
+                if (now < notifyAt.AddMinutes(-1) || now >= notifyAt.AddMinutes(1)) continue;
+
+                string key = $"loan_{loan.Id}_{loan.NextPaymentDate.Value:yyyyMMdd}_off{loan.NotificationOffsetMinutes}";
+                if (_shownKeys.Contains(key)) continue;
+                _shownKeys.Add(key);
+
+                string offsetStr = FormatOffset(loan.NotificationOffsetMinutes, loc);
+                Show(loc["Finance"],
+                     $"{loan.Name} — {loc["Finance_PaymentDue"]} {offsetStr} ({loan.NextPaymentDate.Value:dd.MM.yyyy})",
+                     NotificationLevel.Warning);
+            }
+        }
+        catch { /* ignored */ }
+    }
+
+    private static string FormatOffset(int minutes, LocalizationService loc)
+    {
+        if (minutes >= 60 * 24 * 7 && minutes % (60 * 24 * 7) == 0)
+            return $"{minutes / (60 * 24 * 7)} {loc["NotifUnit_Weeks"]}";
+        if (minutes >= 60 * 24 && minutes % (60 * 24) == 0)
+            return $"{minutes / (60 * 24)} {loc["NotifUnit_Days"]}";
+        if (minutes >= 60 && minutes % 60 == 0)
+            return $"{minutes / 60} {loc["NotifUnit_Hours"]}";
+        return $"{minutes} {loc["NotifUnit_Minutes"]}";
     }
 
     // ---------------------------------------------------------------
