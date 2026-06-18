@@ -48,26 +48,28 @@ public partial class WeekViewModel : ObservableObject
         RefreshWeek();
     }
 
-    public void RefreshWeek()
+    public void RefreshWeek() => _ = RefreshWeekAsync();
+
+    public async Task RefreshWeekAsync()
     {
+        IsWeekReady   = false;
+        IsWeekLoading = true;
         try
         {
-            IsWeekReady   = false;
-            IsWeekLoading = true;
-
-            var newItems = new List<WeekDayItem>();
-
-            for (int i = 0; i < 7; i++)
+            var weekStart = WeekStart;
+            var newItems  = await Task.Run(() =>
             {
-                var targetDay = WeekStart.AddDays(i);
-                var dayItem   = new WeekDayItem(targetDay);
-
-                // GetEventsForDisplay включает обычные события и задачи с StartTime
-                foreach (var ev in _db.GetEventsForDisplay(targetDay))
-                    dayItem.Events.Add(ev);
-
-                newItems.Add(dayItem);
-            }
+                var list = new List<WeekDayItem>();
+                for (int i = 0; i < 7; i++)
+                {
+                    var targetDay = weekStart.AddDays(i);
+                    var dayItem   = new WeekDayItem(targetDay);
+                    foreach (var ev in _db.GetEventsForDisplay(targetDay))
+                        dayItem.Events.Add(ev);
+                    list.Add(dayItem);
+                }
+                return list;
+            });
 
             WeekDaysCustomCollection.Clear();
             foreach (var item in newItems)
@@ -129,19 +131,25 @@ public partial class WeekViewModel : ObservableObject
 
         if (result && dialogVm.IsDeleted)
         {
-            if (dialogVm.SelectedDeleteMode == "DeleteAll")
-                _db.DeleteEvent(original.Id);
-            else if (dialogVm.SelectedDeleteMode == "DeleteOnlyThis")
-                _db.ExcludeDateFromEvent(original.Id, contextDate);
-            else if (dialogVm.SelectedDeleteMode == "DeleteCustom")
-                foreach (var d in dialogVm.DatesToRemove)
-                    _db.ExcludeDateFromEvent(original.Id, d);
-            RefreshWeek();
+            var mode    = dialogVm.SelectedDeleteMode;
+            var dates   = dialogVm.DatesToRemove;
+            var eventId = original.Id;
+            await Task.Run(() =>
+            {
+                if (mode == "DeleteAll")
+                    _db.DeleteEvent(eventId);
+                else if (mode == "DeleteOnlyThis")
+                    _db.ExcludeDateFromEvent(eventId, contextDate);
+                else if (mode == "DeleteCustom" && dates.Count > 0)
+                    _db.ExcludeDatesFromEvent(eventId, dates);
+            });
+            await RefreshWeekAsync();
         }
         else if (result && dialogVm.ResultEvent != null)
         {
-            _db.UpsertEvent(dialogVm.ResultEvent);
-            RefreshWeek();
+            var updated = dialogVm.ResultEvent;
+            await Task.Run(() => _db.UpsertEvent(updated));
+            await RefreshWeekAsync();
         }
     }
 
@@ -155,8 +163,9 @@ public partial class WeekViewModel : ObservableObject
         var result = await dialog.ShowDialog<bool?>(desktop?.MainWindow);
         if (result == true)
         {
-            _db.UpsertTask(task);
-            RefreshWeek();
+            var t = task;
+            await Task.Run(() => _db.UpsertTask(t));
+            await RefreshWeekAsync();
         }
     }
 }

@@ -60,31 +60,37 @@ public partial class MonthViewModel : ObservableObject
         RefreshMonth();
     }
 
-    public void RefreshMonth()
+    public void RefreshMonth() => _ = RefreshMonthAsync();
+
+    public async Task RefreshMonthAsync()
     {
-        MonthDays.Clear();
-
         var firstDayOfMonth = new DateTime(CurrentMonthDate.Year, CurrentMonthDate.Month, 1);
+        int offset          = (int)(firstDayOfMonth.DayOfWeek - DayOfWeek.Monday + 7) % 7;
+        DateTime startDate  = firstDayOfMonth.AddDays(-offset);
+        int currentMonth    = CurrentMonthDate.Month;
+        int currentYear     = CurrentMonthDate.Year;
 
-        // ИСПРАВЛЕНО (Проблема 3): вычисляем смещение от Понедельника до первого дня месяца.
-        // Например, для июля 2026 (1 июля — среда) offset = 2, и сетка начнётся с 29 июня (Пн).
-        int offset = (int)(firstDayOfMonth.DayOfWeek - DayOfWeek.Monday + 7) % 7;
-        DateTime startDate = firstDayOfMonth.AddDays(-offset);
-
-        // Всегда генерируем 6 недель (42 ячейки), как в стандартной сетке месяца
-        for (int i = 0; i < 42; i++)
+        var items = await Task.Run(() =>
         {
-            DateTime currentDay = startDate.AddDays(i);
-            var displayEvents = _db.GetEventsForDisplay(currentDay).ToList();
-
-            MonthDays.Add(new MonthDayItem
+            var list = new List<MonthDayItem>();
+            for (int i = 0; i < 42; i++)
             {
-                Date           = currentDay,
-                IsCurrentMonth = currentDay.Month == CurrentMonthDate.Month && currentDay.Year == CurrentMonthDate.Year,
-                DayNumber      = currentDay.Day.ToString(),
-                Events         = new ObservableCollection<CalendarEvent>(displayEvents)
-            });
-        }
+                DateTime day = startDate.AddDays(i);
+                var displayEvents = _db.GetEventsForDisplay(day).ToList();
+                list.Add(new MonthDayItem
+                {
+                    Date           = day,
+                    IsCurrentMonth = day.Month == currentMonth && day.Year == currentYear,
+                    DayNumber      = day.Day.ToString(),
+                    Events         = new ObservableCollection<CalendarEvent>(displayEvents)
+                });
+            }
+            return list;
+        });
+
+        MonthDays.Clear();
+        foreach (var item in items)
+            MonthDays.Add(item);
     }
 
     // ── Навигация ───────────────────────────────────────────────────
@@ -117,19 +123,25 @@ public partial class MonthViewModel : ObservableObject
 
         if (result && dialogVm.IsDeleted)
         {
-            if (dialogVm.SelectedDeleteMode == "DeleteAll")
-                _db.DeleteEvent(original.Id);
-            else if (dialogVm.SelectedDeleteMode == "DeleteOnlyThis")
-                _db.ExcludeDateFromEvent(original.Id, contextDate);
-            else if (dialogVm.SelectedDeleteMode == "DeleteCustom")
-                foreach (var d in dialogVm.DatesToRemove)
-                    _db.ExcludeDateFromEvent(original.Id, d);
-            RefreshMonth();
+            var mode    = dialogVm.SelectedDeleteMode;
+            var dates   = dialogVm.DatesToRemove;
+            var eventId = original.Id;
+            await Task.Run(() =>
+            {
+                if (mode == "DeleteAll")
+                    _db.DeleteEvent(eventId);
+                else if (mode == "DeleteOnlyThis")
+                    _db.ExcludeDateFromEvent(eventId, contextDate);
+                else if (mode == "DeleteCustom" && dates.Count > 0)
+                    _db.ExcludeDatesFromEvent(eventId, dates);
+            });
+            await RefreshMonthAsync();
         }
         else if (result && dialogVm.ResultEvent != null)
         {
-            _db.UpsertEvent(dialogVm.ResultEvent);
-            RefreshMonth();
+            var updated = dialogVm.ResultEvent;
+            await Task.Run(() => _db.UpsertEvent(updated));
+            await RefreshMonthAsync();
         }
     }
 }

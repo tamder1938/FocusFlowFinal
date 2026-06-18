@@ -14,6 +14,7 @@ public interface IDatabaseService
     void DeleteEvent(int id);
     CalendarEvent? GetEventById(int id);
     void ExcludeDateFromEvent(int eventId, DateTime date);
+    void ExcludeDatesFromEvent(int eventId, IEnumerable<DateTime> dates);
     CalendarEvent? FindOriginalSeries(CalendarEvent virtualEvent);
     void InsertEvents(IEnumerable<CalendarEvent> events);
 

@@ -204,18 +204,25 @@ public partial class DayViewModel : ObservableObject
 
         if (result && dialogVm.IsDeleted)
         {
-            if (dialogVm.SelectedDeleteMode == "DeleteAll")
-                _db.DeleteEvent(originalEvent.Id);
-            else if (dialogVm.SelectedDeleteMode == "DeleteOnlyThis")
-                _db.ExcludeDateFromEvent(originalEvent.Id, SelectedDate);
-            else if (dialogVm.SelectedDeleteMode == "DeleteCustom" && dialogVm.DatesToRemove.Count > 0)
-                foreach (var date in dialogVm.DatesToRemove)
-                    _db.ExcludeDateFromEvent(originalEvent.Id, date);
+            var mode    = dialogVm.SelectedDeleteMode;
+            var dates   = dialogVm.DatesToRemove;
+            var eventId = originalEvent.Id;
+            var anchor  = SelectedDate;
+            await Task.Run(() =>
+            {
+                if (mode == "DeleteAll")
+                    _db.DeleteEvent(eventId);
+                else if (mode == "DeleteOnlyThis")
+                    _db.ExcludeDateFromEvent(eventId, anchor);
+                else if (mode == "DeleteCustom" && dates.Count > 0)
+                    _db.ExcludeDatesFromEvent(eventId, dates);
+            });
             LoadEvents();
         }
         else if (result && dialogVm.ResultEvent != null)
         {
-            _db.UpsertEvent(dialogVm.ResultEvent);
+            var updated = dialogVm.ResultEvent;
+            await Task.Run(() => _db.UpsertEvent(updated));
             LoadEvents();
         }
     }

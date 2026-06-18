@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:FocusFlowFinal.Views"
+        x:Class="FocusFlowFinal.Views.DeleteCustomDaysWindow"
+        x:CompileBindings="False"
+        Title="Выбор дней для освобождения"
+        Width="360" Height="440"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F4F6"
+        CanResize="False">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#DBEAFE"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="#1E40AF"/>
+        </Style>
+        <Style Selector="ListBoxItem TextBlock">
+            <Setter Property="Foreground" Value="#111827"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*, Auto" Margin="15">
+
+        <ListBox x:Name="DateListBox"
+                 Grid.Row="0"
+                 SelectionMode="Multiple, Toggle"
+                 Background="White"
+                 BorderBrush="#E5E7EB"
+                 BorderThickness="1"
+                 CornerRadius="6"
+                 Padding="4">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayText}"
+                               Margin="8,6"
+                               FontWeight="Medium"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,15,0,0">
+            <Button x:Name="BtnCancel"
+                    Content="Отмена"
+                    Padding="16,6"
+                    Background="#E5E7EB"
+                    CornerRadius="4"/>
+            <Button x:Name="BtnConfirm"
+                    Content="Применить"
+                    Padding="16,6"
+                    Background="#1A73E8"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    CornerRadius="4"
+                    BorderThickness="0"/>
+        </StackPanel>
+
+    </Grid>
+</Window>
