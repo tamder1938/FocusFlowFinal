@@ -44,6 +44,12 @@
 			<SolidColorBrush x:Key="DangerText" Color="#991B1B"/>
 			<SolidColorBrush x:Key="DangerButtonBackground" Color="#EF4444"/>
 
+			<!-- Brushes used by HabitWindow -->
+			<SolidColorBrush x:Key="InputBackgroundBrush"    Color="#F9FAFB"/>
+			<SolidColorBrush x:Key="AccentLightBrush"        Color="#EFF6FF"/>
+			<SolidColorBrush x:Key="SecondaryActionBrush"    Color="#E5E7EB"/>
+			<SolidColorBrush x:Key="SecondaryActionFgBrush"  Color="#374151"/>
+
 			<!-- КОНВЕРТЕРЫ (ОБЯЗАТЕЛЬНО) -->
 			<converters:CollectionCountToBoolConverter x:Key="CollectionCountToBoolConverter"/>
 			<converters:CollectionCountToInverseBoolConverter x:Key="CollectionCountToInverseBoolConverter"/>

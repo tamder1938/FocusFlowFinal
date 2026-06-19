@@ -1,0 +1,884 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FocusFlowFinal.Views.HabitWindow"
+        x:CompileBindings="False"
+        Title="{Binding Loc[Habit_Title]}"
+        Width="1100" Height="720"
+        MinWidth="920" MinHeight="580"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.actn">
+            <Setter Property="Background"      Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="12,6"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Button.ghost">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="6,3"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-btn">
+            <Setter Property="Background"      Value="{DynamicResource ButtonBackgroundBrush}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="12,5"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-btn.active">
+            <Setter Property="Background"  Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground"  Value="White"/>
+            <Setter Property="FontWeight"  Value="SemiBold"/>
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background"      Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="CornerRadius"    Value="10"/>
+            <Setter Property="Padding"         Value="12,10"/>
+            <Setter Property="Margin"          Value="0,0,0,6"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Border.card.selected">
+            <Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background"      Value="{DynamicResource AccentLightBrush}"/>
+        </Style>
+        <Style Selector="Border.form-panel">
+            <Setter Property="Background"      Value="{DynamicResource CardSecondaryBackgroundBrush}"/>
+            <Setter Property="CornerRadius"    Value="10"/>
+            <Setter Property="Padding"         Value="14"/>
+            <Setter Property="Margin"          Value="0,0,0,10"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.stat-box">
+            <Setter Property="Background"      Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="CornerRadius"    Value="8"/>
+            <Setter Property="Padding"         Value="10"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin"          Value="0,0,0,6"/>
+        </Style>
+        <Style Selector="TextBox, ComboBox, NumericUpDown">
+            <Setter Property="Background"      Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="BorderBrush"     Value="Transparent"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="8,5"/>
+            <Setter Property="Margin"          Value="0,2,0,6"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="48, Auto, *">
+
+        <!-- ══ ШАПКА ══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto, *, Auto" Margin="14,0">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Loc[Habit_Title]}"
+                           FontSize="16" FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           VerticalAlignment="Center"/>
+
+                <TextBox Grid.Column="1"
+                         Text="{Binding SearchText}"
+                         PlaceholderText="{Binding Loc[Habit_SearchWatermark]}"
+                         Margin="14,0" MaxWidth="280" HorizontalAlignment="Left"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                    <Button Classes="ghost" Content="{Binding Loc[Habit_TemplatesBtn]}"
+                            Command="{Binding ToggleTemplatePickerCommand}"
+                            Foreground="{DynamicResource AccentBackground}" FontWeight="SemiBold"/>
+                    <Button Classes="actn" Content="{Binding Loc[Habit_AddBtn]}"
+                            Command="{Binding BeginAddHabitCommand}"/>
+                    <ToggleButton Content="{Binding Loc[Habit_ArchiveTitle]}"
+                                  IsChecked="{Binding ShowArchived}"
+                                  Background="{DynamicResource ButtonBackgroundBrush}"
+                                  Foreground="{DynamicResource SecondaryTextBrush}"
+                                  BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                  CornerRadius="6" Padding="10,5" Cursor="Hand"/>
+                    <Button Classes="ghost" Content="{Binding Loc[Habit_ExportBtn]}"
+                            Foreground="{DynamicResource SecondaryTextBrush}">
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuItem Header="{Binding Loc[Habit_ExportCsv]}"
+                                          Command="{Binding ExportCsvCommand}"/>
+                                <MenuItem Header="{Binding Loc[Habit_ExportExcel]}"
+                                          Command="{Binding ExportExcelCommand}"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ═════════════════════════════ -->
+        <Border Grid.Row="1" Classes="form-panel"
+                Margin="14,10,14,0"
+                IsVisible="{Binding IsAddingHabit}">
+            <StackPanel Spacing="6">
+
+                <!-- Подборщик шаблонов -->
+                <Border IsVisible="{Binding IsChoosingTemplate}"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        CornerRadius="8" Padding="10" Margin="0,0,0,8"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding Loc[Habit_TemplateTitle]}"
+                                   FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <Grid ColumnDefinitions="*, 10, *">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="{Binding Loc[Habit_SysTemplates]}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <ItemsControl ItemsSource="{Binding SystemTemplates}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="ghost" HorizontalAlignment="Stretch"
+                                                    Command="{Binding $parent[Window].DataContext.LoadTemplateCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    HorizontalContentAlignment="Left" Margin="0,1">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Icon}" FontSize="14"/>
+                                                    <TextBlock Text="{Binding Name}" FontSize="12"
+                                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="{Binding Loc[Habit_MyTemplates]}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Text="{Binding Loc[Habit_TplEmpty]}"
+                                           IsVisible="{Binding IsUserTemplatesEmpty}"
+                                           FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <ItemsControl ItemsSource="{Binding UserTemplates}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*, Auto" Margin="0,1">
+                                                <Button Grid.Column="0" Classes="ghost"
+                                                        HorizontalAlignment="Stretch"
+                                                        Command="{Binding $parent[Window].DataContext.LoadTemplateCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        HorizontalContentAlignment="Left">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12"
+                                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                </Button>
+                                                <Button Grid.Column="1" Classes="ghost"
+                                                        Content="✕" Foreground="#EF4444"
+                                                        Command="{Binding $parent[Window].DataContext.DeleteTemplateCommand}"
+                                                        CommandParameter="{Binding}" FontSize="11"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Сохранение шаблона -->
+                <StackPanel IsVisible="{Binding IsSavingTemplate}"
+                            Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                    <TextBlock Text="{Binding Loc[Habit_TplName]}"
+                               VerticalAlignment="Center" FontSize="12"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBox Text="{Binding TemplateSaveName}" Width="180"/>
+                    <Button Classes="actn" Content="✓" Padding="8,4"
+                            Command="{Binding ConfirmSaveTemplateCommand}"/>
+                    <Button Classes="ghost" Content="✕" Foreground="#EF4444"
+                            Command="{Binding BeginSaveTemplateCommand}"/>
+                </StackPanel>
+
+                <!-- Статус экспорта -->
+                <TextBlock Text="{Binding ExportStatus}"
+                           IsVisible="{Binding ExportStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+
+                <!-- Строка ошибки -->
+                <Border IsVisible="{Binding FormError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                        Background="#FEE2E2" CornerRadius="6" Padding="10,5">
+                    <TextBlock Text="{Binding FormError}" Foreground="#DC2626" FontSize="12"/>
+                </Border>
+
+                <!-- Поля формы: 3 колонки -->
+                <Grid ColumnDefinitions="*, 14, *, 14, *">
+
+                    <!-- Колонка 1: Основные поля + задача -->
+                    <StackPanel Grid.Column="0" Spacing="0">
+                        <TextBlock Text="{Binding Loc[Habit_NameLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <TextBox Text="{Binding FormName}" PlaceholderText="Например, Утренняя зарядка"/>
+
+                        <TextBlock Text="{Binding Loc[Habit_DescLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <TextBox Text="{Binding FormDesc}" AcceptsReturn="True" Height="50"/>
+
+                        <TextBlock Text="{Binding Loc[Habit_CategoryLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <ComboBox Grid.Column="0"
+                                      ItemsSource="{Binding CategoryNames}"
+                                      SelectedItem="{Binding FormCategory}"/>
+                            <Button Grid.Column="1" Content="{Binding Loc[Habit_CategoryAddBtn]}"
+                                    Classes="ghost" Margin="4,0,0,0"
+                                    Command="{Binding BeginAddCategoryCommand}"
+                                    Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                        </Grid>
+                        <StackPanel IsVisible="{Binding IsAddingCategory}"
+                                    Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+                            <TextBox Text="{Binding NewCategoryName}" Width="130"
+                                     PlaceholderText="{Binding Loc[Habit_NewCatLbl]}"/>
+                            <Button Content="✓" Classes="actn" Padding="6,3"
+                                    Command="{Binding SaveCategoryCommand}"/>
+                            <Button Content="✕" Classes="ghost"
+                                    Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                        </StackPanel>
+
+                        <!-- Связанная задача -->
+                        <TextBlock Text="{Binding Loc[Habit_LinkedTask]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <ComboBox ItemsSource="{Binding AvailableTasks}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  SelectedValue="{Binding FormLinkedTaskId}"
+                                  PlaceholderText="{Binding Loc[Habit_NoLinkedTask]}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" FontSize="12"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Колонка 2: Иконка и цвет -->
+                    <StackPanel Grid.Column="2" Spacing="0">
+                        <TextBlock Text="{Binding Loc[Habit_IconLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <Border Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="8" Padding="8" Margin="0,2,0,6"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding FormIcon}" FontSize="26"/>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding IconPresets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Command="{Binding $parent[Window].DataContext.SelectIconCommand}"
+                                            CommandParameter="{Binding}"
+                                            Margin="2" Width="32" Height="32" Padding="0"
+                                            FontSize="16"
+                                            Background="{DynamicResource InputBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="6"
+                                            HorizontalContentAlignment="Center" Cursor="Hand"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="{Binding Loc[Habit_ColorLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"
+                                   Margin="0,6,0,0"/>
+                        <TextBox Text="{Binding FormColor}" PlaceholderText="#3B82F6"/>
+                    </StackPanel>
+
+                    <!-- Колонка 3: Повторение + кнопки -->
+                    <StackPanel Grid.Column="4" Spacing="0">
+                        <TextBlock Text="{Binding Loc[Habit_RepeatLbl]}"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                        <ComboBox ItemsSource="{Binding RepeatItems}"
+                                  SelectedIndex="{Binding FormRepeatIndex}"/>
+
+                        <StackPanel IsVisible="{Binding FormShowWeekDays}" Margin="0,2,0,6">
+                            <TextBlock Text="{Binding Loc[Habit_WeekDaysLbl]}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="11"
+                                       Margin="0,0,0,3"/>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <CheckBox Content="Пн" IsChecked="{Binding FormMonday}"/>
+                                <CheckBox Content="Вт" IsChecked="{Binding FormTuesday}"/>
+                                <CheckBox Content="Ср" IsChecked="{Binding FormWednesday}"/>
+                                <CheckBox Content="Чт" IsChecked="{Binding FormThursday}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2,0,0">
+                                <CheckBox Content="Пт" IsChecked="{Binding FormFriday}"/>
+                                <CheckBox Content="Сб" IsChecked="{Binding FormSaturday}"/>
+                                <CheckBox Content="Вс" IsChecked="{Binding FormSunday}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel IsVisible="{Binding FormShowTimesPerWeek}" Margin="0,2,0,6">
+                            <TextBlock Text="{Binding Loc[Habit_TimesLbl]}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="11"/>
+                            <NumericUpDown Value="{Binding FormTimesPerWeek}" Minimum="1" Maximum="7"/>
+                        </StackPanel>
+
+                        <StackPanel IsVisible="{Binding FormShowTimesPerMonth}" Margin="0,2,0,6">
+                            <TextBlock Text="{Binding Loc[Habit_TimesLbl]}"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="11"/>
+                            <NumericUpDown Value="{Binding FormTimesPerMonth}" Minimum="1" Maximum="31"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,10,0,0">
+                            <Button Classes="actn" Content="{Binding Loc[Habit_SaveBtn]}"
+                                    Command="{Binding SaveHabitCommand}" Width="100"
+                                    HorizontalContentAlignment="Center"/>
+                            <Button Content="{Binding Loc[Habit_CancelBtn]}"
+                                    Command="{Binding CancelHabitCommand}"
+                                    Background="{DynamicResource SecondaryActionBrush}"
+                                    Foreground="{DynamicResource SecondaryActionFgBrush}"
+                                    BorderThickness="0" CornerRadius="6" Height="32" Width="100"
+                                    HorizontalContentAlignment="Center" FontWeight="SemiBold"/>
+                            <Button Content="{Binding Loc[Habit_SaveTemplate]}"
+                                    Command="{Binding BeginSaveTemplateCommand}"
+                                    Classes="ghost" Foreground="{DynamicResource AccentBackground}"
+                                    FontSize="11"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ ОСНОВНОЙ КОНТЕНТ ══════════════════════════════════════════ -->
+        <Grid Grid.Row="2" ColumnDefinitions="280, *, 230" Margin="14,6,14,10">
+
+            <!-- ══ ЛЕВАЯ КОЛОНКА: Список привычек ══════════════════════ -->
+            <Grid Grid.Column="0" RowDefinitions="Auto, *" Margin="0,0,8,0">
+
+                <!-- Фильтр по категориям — выпадающий список -->
+                <ComboBox Grid.Row="0"
+                          ItemsSource="{Binding FilterCategoryList}"
+                          SelectedItem="{Binding SelectedCategoryFilter}"
+                          HorizontalAlignment="Stretch"
+                          Margin="0,0,0,6"/>
+
+                <!-- Список -->
+                <ScrollViewer Grid.Row="1" Padding="0,0,4,0">
+                    <StackPanel>
+                        <TextBlock IsVisible="{Binding IsHabitsEmpty}"
+                                   Text="{Binding Loc[Habit_EmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,20,0,0"
+                                   FontSize="12" TextWrapping="Wrap"/>
+
+                        <ItemsControl ItemsSource="{Binding Habits}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="card"
+                                            Classes.selected="{Binding IsSelected}"
+                                            PointerPressed="HabitCard_PointerPressed">
+                                        <Grid RowDefinitions="Auto, Auto">
+                                            <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto">
+                                                <Border Grid.Column="0"
+                                                        Width="34" Height="34" CornerRadius="8"
+                                                        Background="{Binding Color}"
+                                                        Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Icon}"
+                                                               FontSize="18" HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="SemiBold" FontSize="13"
+                                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Category}" FontSize="10"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StreakText}"
+                                                               FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="#F97316" HorizontalAlignment="Right"/>
+                                                    <Button Classes="actn"
+                                                            Command="{Binding $parent[Window].DataContext.ToggleCompleteCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Padding="4,2" FontSize="10"
+                                                            IsVisible="{Binding !IsCompletedToday}"
+                                                            Content="{Binding $parent[Window].DataContext.Loc[Habit_DoneBtn]}"/>
+                                                    <Border IsVisible="{Binding IsCompletedToday}"
+                                                            Background="#DCFCE7" CornerRadius="4" Padding="4,2">
+                                                        <TextBlock Text="✅" FontSize="10" Foreground="#16A34A"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4"
+                                                        HorizontalAlignment="Right" Margin="0,5,0,0">
+                                                <Button Classes="ghost" FontSize="11"
+                                                        Content="{Binding $parent[Window].DataContext.Loc[Habit_EditBtn]}"
+                                                        Command="{Binding $parent[Window].DataContext.BeginEditHabitCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Foreground="{DynamicResource AccentBackground}"/>
+                                                <Button Classes="ghost" FontSize="10"
+                                                        Content="{Binding $parent[Window].DataContext.Loc[Habit_ArchiveBtn]}"
+                                                        Command="{Binding $parent[Window].DataContext.ArchiveHabitCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                <Button Classes="ghost" FontSize="11"
+                                                        Content="{Binding $parent[Window].DataContext.Loc[Habit_DeleteBtn]}"
+                                                        Command="{Binding $parent[Window].DataContext.DeleteHabitCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Foreground="#EF4444"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ ЦЕНТРАЛЬНАЯ КОЛОНКА: Детали привычки ════════════════ -->
+            <Border Grid.Column="1"
+                    Background="{DynamicResource CardBackgroundBrush}"
+                    CornerRadius="12"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Margin="0,0,8,0" ClipToBounds="True">
+                <Grid>
+                    <!-- Заглушка -->
+                    <TextBlock IsVisible="{Binding SelectedHabitItem, Converter={x:Static ObjectConverters.IsNull}}"
+                               Text="{Binding Loc[Habit_SelectHint]}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="13"/>
+
+                    <!-- Детали -->
+                    <Grid IsVisible="{Binding SelectedHabitItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          RowDefinitions="Auto, Auto, Auto, *">
+
+                        <!-- Заголовок -->
+                        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="14,12,14,8">
+                            <Border Grid.Column="0"
+                                    Width="44" Height="44" CornerRadius="10"
+                                    Background="{Binding SelectedHabitItem.Color}" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding SelectedHabitItem.Icon}"
+                                           FontSize="22" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedHabitItem.Name}"
+                                           FontSize="16" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock Text="{Binding SelectedHabitItem.RepeatText}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
+                                <Button Classes="actn"
+                                        Content="{Binding Loc[Habit_DoneBtn]}"
+                                        Command="{Binding ToggleCompleteCommand}"
+                                        CommandParameter="{Binding SelectedHabitItem}"
+                                        IsVisible="{Binding !SelectedHabitItem.IsCompletedToday}"
+                                        Padding="10,6"/>
+                                <Button Content="{Binding Loc[Habit_UndoneBtn]}"
+                                        Command="{Binding ToggleCompleteCommand}"
+                                        CommandParameter="{Binding SelectedHabitItem}"
+                                        IsVisible="{Binding SelectedHabitItem.IsCompletedToday}"
+                                        Background="#DCFCE7" Foreground="#16A34A"
+                                        BorderThickness="0" CornerRadius="6" Padding="10,6"
+                                        FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Мини-статы -->
+                        <Grid Grid.Row="1" ColumnDefinitions="*, 6, *, 6, *" Margin="14,0,14,8">
+                            <Border Grid.Column="0" Classes="stat-box" Margin="0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedHabitItem.TotalCompletions}"
+                                               FontSize="20" FontWeight="Bold" Foreground="#3B82F6"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Loc[Habit_TotalLbl]}"
+                                               FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Classes="stat-box" Margin="0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding SelectedHabitItem.CurrentStreak}"
+                                                   FontSize="20" FontWeight="Bold" Foreground="#F97316"/>
+                                        <TextBlock Text="{Binding Loc[Habit_Days]}" FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Loc[Habit_StreakLbl]}" FontSize="9"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="4" Classes="stat-box" Margin="0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding SelectedHabitItem.BestStreak}"
+                                                   FontSize="20" FontWeight="Bold" Foreground="#22C55E"/>
+                                        <TextBlock Text="{Binding Loc[Habit_Days]}" FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Loc[Habit_BestStreakLbl]}" FontSize="9"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Вкладки -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6"
+                                    Margin="14,0,14,8">
+                            <Button Classes="tab-btn"
+                                    Classes.active="{Binding ShowActivity}"
+                                    Content="{Binding Loc[Habit_TabActivity]}"
+                                    Command="{Binding SetDetailTabCommand}" CommandParameter="0"/>
+                            <Button Classes="tab-btn"
+                                    Classes.active="{Binding ShowMonthGrid}"
+                                    Content="{Binding Loc[Habit_TabMonth]}"
+                                    Command="{Binding SetDetailTabCommand}" CommandParameter="1"/>
+                            <Button Classes="tab-btn"
+                                    Classes.active="{Binding ShowAchievements}"
+                                    Content="{Binding Loc[Habit_TabAchiev]}"
+                                    Command="{Binding SetDetailTabCommand}" CommandParameter="2"/>
+                        </StackPanel>
+
+                        <!-- Содержимое вкладок -->
+                        <ScrollViewer Grid.Row="3" Padding="14,0,14,14">
+                            <StackPanel>
+
+                                <!-- ─── Вкладка: Активность (HeatMap + история) ─── -->
+                                <StackPanel IsVisible="{Binding ShowActivity}" Spacing="10">
+
+                                    <!-- HeatMap с выровненными ячейками -->
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Loc[Habit_HeatMapLbl]}"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   Margin="0,0,0,4"/>
+                                        <!-- Подписи дней -->
+                                        <Grid ColumnDefinitions="Auto, *">
+                                            <StackPanel Grid.Column="0" Width="22" Spacing="0">
+                                                <TextBlock Text="Пн" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Вт" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Ср" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Чт" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Пт" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Сб" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="Вс" Height="16" FontSize="9"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <ItemsControl Grid.Column="1"
+                                                          ItemsSource="{Binding SelectedHabitHeatMap}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="12"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Width="14" Height="14" Margin="1"
+                                                                CornerRadius="2"
+                                                                Background="{Binding CellColor}"
+                                                                ToolTip.Tip="{Binding Tooltip}"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                        <!-- Легенда HeatMap -->
+                                        <StackPanel Orientation="Horizontal" Spacing="10"
+                                                    Margin="22,4,0,0">
+                                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                                <Border Width="10" Height="10" CornerRadius="2" Background="#22C55E"/>
+                                                <TextBlock Text="{Binding Loc[Habit_LegendDone]}"
+                                                           FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                                <Border Width="10" Height="10" CornerRadius="2" Background="#86EFAC"/>
+                                                <TextBlock Text="{Binding Loc[Habit_LegendPartial]}"
+                                                           FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                                <Border Width="10" Height="10" CornerRadius="2" Background="#E5E7EB"/>
+                                                <TextBlock Text="{Binding Loc[Habit_LegendNone]}"
+                                                           FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- История -->
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Loc[Habit_HistoryLbl]}"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBlock IsVisible="{Binding IsHistoryEmpty}"
+                                                   Text="{Binding Loc[Habit_NoHistory]}"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
+                                        <ItemsControl ItemsSource="{Binding SelectedHabitHistory}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="Auto, *, Auto" Margin="0,2">
+                                                        <TextBlock Grid.Column="0" Width="80"
+                                                                   Text="{Binding Date, StringFormat='{}{0:dd.MM.yyyy}'}"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                   FontSize="12" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding StatusText}"
+                                                                   Foreground="{Binding StatusColor}"
+                                                                   FontSize="12" VerticalAlignment="Center"/>
+                                                        <Button Grid.Column="2" Classes="ghost" Content="✕"
+                                                                Command="{Binding $parent[Window].DataContext.DeleteCompletionCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Foreground="#EF4444" FontSize="11"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- ─── Вкладка: Месяц ─────────────────────────── -->
+                                <StackPanel IsVisible="{Binding ShowMonthGrid}" Spacing="8">
+
+                                    <!-- Навигация по месяцу -->
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <Button Grid.Column="0" Classes="ghost"
+                                                Content="{Binding Loc[Habit_PrevMonth]}"
+                                                Command="{Binding PrevMonthCommand}"
+                                                FontSize="16" Foreground="{DynamicResource AccentBackground}"
+                                                FontWeight="Bold" Padding="8,4"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding CurrentMonthLabel}"
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="2" Classes="ghost"
+                                                Content="{Binding Loc[Habit_NextMonth]}"
+                                                Command="{Binding NextMonthCommand}"
+                                                FontSize="16" Foreground="{DynamicResource AccentBackground}"
+                                                FontWeight="Bold" Padding="8,4"/>
+                                    </Grid>
+
+                                    <!-- Заголовки дней недели -->
+                                    <UniformGrid Columns="7">
+                                        <TextBlock Text="Пн" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Вт" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Ср" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Чт" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Пт" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Сб" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="#EF4444"/>
+                                        <TextBlock Text="Вс" HorizontalAlignment="Center" FontSize="11"
+                                                   FontWeight="SemiBold" Foreground="#EF4444"/>
+                                    </UniformGrid>
+
+                                    <!-- Ячейки месяца -->
+                                    <ItemsControl ItemsSource="{Binding MonthGridCells}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="7"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Margin="2" Height="36" Padding="0"
+                                                        Background="{Binding CellColor}"
+                                                        BorderBrush="{Binding BorderColor}"
+                                                        BorderThickness="2"
+                                                        CornerRadius="6"
+                                                        Command="{Binding $parent[Window].DataContext.ToggleCellStatusCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsEnabled="{Binding IsCurrentMonth}"
+                                                        HorizontalContentAlignment="Center"
+                                                        VerticalContentAlignment="Center"
+                                                        ToolTip.Tip="{Binding Tooltip}"
+                                                        Cursor="Hand">
+                                                    <TextBlock Text="{Binding DayNumber}"
+                                                               FontSize="12"
+                                                               Foreground="{Binding TextColor}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Легенда -->
+                                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#22C55E"/>
+                                            <TextBlock Text="{Binding Loc[Habit_LegendDone]}"
+                                                       FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F59E0B"/>
+                                            <TextBlock Text="{Binding Loc[Habit_LegendPartial]}"
+                                                       FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F3F4F6"/>
+                                            <TextBlock Text="{Binding Loc[Habit_LegendNone]}"
+                                                       FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- ─── Вкладка: Достижения ───────────────────── -->
+                                <StackPanel IsVisible="{Binding ShowAchievements}" Spacing="8">
+                                    <TextBlock Text="{Binding Loc[Habit_AchievTitle]}"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               Margin="0,0,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding Achievements}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Padding="12,10" Margin="0,0,0,6"
+                                                        BorderBrush="{Binding Color}"
+                                                        BorderThickness="1">
+                                                    <Border.Background>
+                                                        <SolidColorBrush Opacity="0.05" Color="#22C55E"/>
+                                                    </Border.Background>
+                                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                                        <Border Width="10" Height="10" CornerRadius="5"
+                                                                Background="{Binding Color}"
+                                                                VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontSize="13" FontWeight="SemiBold"
+                                                                   Foreground="{Binding Color}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ══ ПРАВАЯ КОЛОНКА: Статистика ════════════════════════════ -->
+            <ScrollViewer Grid.Column="2">
+                <StackPanel Spacing="6">
+
+                    <!-- Сводка дня -->
+                    <Border Classes="stat-box">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{Binding Loc[Habit_StatTitle]}"
+                                       FontSize="13" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       Margin="0,0,0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Loc[Habit_ActiveCount]}"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalHabits}"
+                                           FontSize="12" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Loc[Habit_TodayCount]}"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TodayDoneText}"
+                                           FontSize="12" FontWeight="Bold" Foreground="#22C55E"/>
+                            </Grid>
+                            <ProgressBar Value="{Binding TodayDone}"
+                                         Maximum="{Binding TodayTotal}"
+                                         Minimum="0" Height="6" CornerRadius="3"
+                                         Background="{DynamicResource BorderBrush}"
+                                         Foreground="#22C55E"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Категории с удалением -->
+                    <Border Classes="stat-box">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding Loc[Habit_CategoryLbl]}"
+                                       FontSize="12" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       Margin="0,0,0,2"/>
+                            <TextBlock Text="Нет категорий"
+                                       IsVisible="{Binding IsCategoriesEmpty}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <ItemsControl ItemsSource="{Binding AllCategories}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto, *, Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Icon}" FontSize="14"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,6,0"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Name}" FontSize="12"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <Button Grid.Column="2"
+                                                    Classes="ghost" Content="✕"
+                                                    Foreground="#EF4444" FontSize="11"
+                                                    Command="{Binding $parent[Window].DataContext.DeleteHabitCategoryCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Статус последнего экспорта -->
+                    <TextBlock Text="{Binding ExportStatus}"
+                               IsVisible="{Binding ExportStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Foreground="{DynamicResource AccentBackground}"
+                               FontSize="11" TextWrapping="Wrap" Margin="4,0"/>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</Window>

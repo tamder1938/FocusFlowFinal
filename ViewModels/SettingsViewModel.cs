@@ -44,6 +44,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _soundNotificationsEnabled = true;
     [ObservableProperty] private bool _markTaskCompletedOnTimerFinish;
     [ObservableProperty] private bool _financeModuleEnabled;
+    [ObservableProperty] private bool _habitTrackerEnabled;
 
     // Исходные значения — на случай отмены (кнопка «Закрыть»), хотя поскольку
     // мы больше не применяем изменения мгновенно, откатывать по факту нечего.
@@ -73,6 +74,7 @@ public partial class SettingsViewModel : ObservableObject
         SoundNotificationsEnabled        = settings.SoundNotifications;
         MarkTaskCompletedOnTimerFinish   = settings.MarkTaskCompletedOnTimerFinish;
         FinanceModuleEnabled             = settings.FinanceModuleEnabled;
+        HabitTrackerEnabled              = settings.IsHabitTrackerEnabled;
 
         // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
         var services = ((App)App.Current!).Services!;
@@ -134,6 +136,7 @@ public partial class SettingsViewModel : ObservableObject
         settings.SoundNotifications              = SoundNotificationsEnabled;
         settings.MarkTaskCompletedOnTimerFinish  = MarkTaskCompletedOnTimerFinish;
         settings.FinanceModuleEnabled            = FinanceModuleEnabled;
+        settings.IsHabitTrackerEnabled           = HabitTrackerEnabled;
         settings.Save();
 
         // Применяем тему здесь, а не при клике по карточке
@@ -260,6 +263,7 @@ public partial class SettingsViewModel : ObservableObject
                 mainVm.CurrentTaskListViewModel?.RefreshTasks();
                 mainVm.RefreshTodayMiniStats();
                 mainVm.RefreshFinanceModuleState();
+                mainVm.RefreshHabitTrackerState();
 
                 if (mainVm.CurrentCalendarView is DayViewModel dayVm) dayVm.LoadEvents();
                 else if (mainVm.CurrentCalendarView is WeekViewModel weekVm) weekVm.RefreshWeek();

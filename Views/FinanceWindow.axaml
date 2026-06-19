@@ -663,11 +663,23 @@
                                         <TextBlock Text="{Binding Loc[Savings_BalanceLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
                                         <NumericUpDown Value="{Binding NewSavingsBalance}" Minimum="0" FormatString="0.##"/>
                                     </StackPanel>
-                                    <!-- Правый столбец: параметры и кнопки -->
+                                    <!-- Правый столбец: параметры только для копилки + кнопки -->
                                     <StackPanel Grid.Column="2">
-                                        <CheckBox IsChecked="{Binding NewSavingsCanWithdraw}"
-                                                  Content="{Binding Loc[Savings_CanWithdraw]}"
-                                                  Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,12,0,0"/>
+                                        <!-- Целевая сумма (только для копилки) -->
+                                        <StackPanel IsVisible="{Binding IsCreatingGoal}">
+                                            <TextBlock Text="{Binding Loc[Savings_TargetLbl]}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
+                                            <NumericUpDown Value="{Binding NewSavingsTargetAmount}"
+                                                           Minimum="0" FormatString="0.##"/>
+                                            <TextBlock Text="{Binding Loc[Savings_GoalRequiredHint]}"
+                                                       FontSize="10" Foreground="#F97316"
+                                                       Margin="0,0,0,8" TextWrapping="Wrap"/>
+                                            <!-- Можно снимать (только для копилки) -->
+                                            <CheckBox IsChecked="{Binding NewSavingsCanWithdraw}"
+                                                      Content="{Binding Loc[Savings_CanWithdraw]}"
+                                                      Foreground="{DynamicResource PrimaryTextBrush}"
+                                                      Margin="0,4,0,0"/>
+                                        </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
                                             <Button Classes="action-btn" Content="{Binding Loc[Savings_SaveBtn]}"
                                                     Command="{Binding SaveSavingsAccountCommand}" Width="110"

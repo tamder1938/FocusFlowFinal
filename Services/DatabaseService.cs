@@ -5,6 +5,7 @@ using System.Linq;
 using LiteDB;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
+using FocusFlowFinal.Models.Habits;
 
 namespace FocusFlowFinal.Services
 {
@@ -23,6 +24,10 @@ namespace FocusFlowFinal.Services
         private const string EarlyRepaymentCollection = "finance_early_repayment";
         private const string SavingsCollection       = "savings_account";
         private const string SavingsTxCollection     = "savings_tx";
+        private const string HabitsCollection           = "habits";
+        private const string HabitCompletionsCollection = "habit_completions";
+        private const string HabitCategoriesCollection  = "habit_categories";
+        private const string HabitTemplatesCollection   = "habit_templates";
 
         public DatabaseService()
         {
@@ -608,6 +613,160 @@ namespace FocusFlowFinal.Services
                 account.CurrentBalance -= tx.Amount;
                 accounts.Update(account);
             }
+        }
+
+        // ── Привычки ────────────────────────────────────────────────────
+
+        public IEnumerable<Habit> GetAllHabits()
+        {
+            return _db.GetCollection<Habit>(HabitsCollection)
+                      .FindAll().OrderBy(h => h.Name).ToList();
+        }
+
+        public void UpsertHabit(Habit habit)
+        {
+            var col = _db.GetCollection<Habit>(HabitsCollection);
+            if (habit.Id == 0) col.Insert(habit); else col.Update(habit);
+        }
+
+        public void DeleteHabit(int id)
+        {
+            _db.GetCollection<Habit>(HabitsCollection).Delete(id);
+            _db.GetCollection<HabitCompletion>(HabitCompletionsCollection).DeleteMany(c => c.HabitId == id);
+        }
+
+        public IEnumerable<HabitCompletion> GetHabitCompletions(int habitId)
+        {
+            return _db.GetCollection<HabitCompletion>(HabitCompletionsCollection)
+                      .Find(c => c.HabitId == habitId)
+                      .OrderByDescending(c => c.Date).ToList();
+        }
+
+        public IEnumerable<HabitCompletion> GetCompletionsForPeriod(DateTime start, DateTime end)
+        {
+            return _db.GetCollection<HabitCompletion>(HabitCompletionsCollection)
+                      .Find(c => c.Date >= start && c.Date <= end).ToList();
+        }
+
+        public bool HasCompletionForDate(int habitId, DateTime date)
+        {
+            var day = date.Date;
+            var next = day.AddDays(1);
+            return _db.GetCollection<HabitCompletion>(HabitCompletionsCollection)
+                      .Exists(c => c.HabitId == habitId && c.Date >= day && c.Date < next);
+        }
+
+        public void UpsertHabitCompletion(HabitCompletion completion)
+        {
+            var col = _db.GetCollection<HabitCompletion>(HabitCompletionsCollection);
+            if (completion.Id == 0) col.Insert(completion); else col.Update(completion);
+        }
+
+        public HabitCompletion? GetCompletionForDate(int habitId, DateTime date)
+        {
+            var day  = date.Date;
+            var next = day.AddDays(1);
+            return _db.GetCollection<HabitCompletion>(HabitCompletionsCollection)
+                      .FindOne(c => c.HabitId == habitId && c.Date >= day && c.Date < next);
+        }
+
+        public void DeleteHabitCompletion(int id)
+        {
+            _db.GetCollection<HabitCompletion>(HabitCompletionsCollection).Delete(id);
+        }
+
+        public void AutoCompleteHabitsForTask(int taskId)
+        {
+            var today  = DateTime.Today;
+            var habits = _db.GetCollection<Habit>(HabitsCollection)
+                            .Find(h => h.LinkedTaskId == taskId && !h.IsArchived).ToList();
+            foreach (var h in habits)
+            {
+                if (HasCompletionForDate(h.Id, today)) continue;
+                var comp = new HabitCompletion { HabitId = h.Id, Date = today, Status = 2 };
+                _db.GetCollection<HabitCompletion>(HabitCompletionsCollection).Insert(comp);
+                h.TotalCompletions++;
+                _db.GetCollection<Habit>(HabitsCollection).Update(h);
+            }
+        }
+
+        public IEnumerable<HabitCategory> GetAllHabitCategories()
+        {
+            return _db.GetCollection<HabitCategory>(HabitCategoriesCollection)
+                      .FindAll().OrderBy(c => c.Name).ToList();
+        }
+
+        public void UpsertHabitCategory(HabitCategory category)
+        {
+            var col = _db.GetCollection<HabitCategory>(HabitCategoriesCollection);
+            if (category.Id == 0) col.Insert(category); else col.Update(category);
+        }
+
+        public void DeleteHabitCategory(int id)
+        {
+            _db.GetCollection<HabitCategory>(HabitCategoriesCollection).Delete(id);
+        }
+
+        // ── Шаблоны привычек ────────────────────────────────────────────────
+
+        public IEnumerable<HabitTemplate> GetAllHabitTemplates()
+        {
+            var col = _db.GetCollection<HabitTemplate>(HabitTemplatesCollection);
+            if (col.Count() == 0) SeedHabitTemplates(col);
+            return col.FindAll().OrderBy(t => t.IsSystem ? 0 : 1).ThenBy(t => t.Name).ToList();
+        }
+
+        public void UpsertHabitTemplate(HabitTemplate template)
+        {
+            var col = _db.GetCollection<HabitTemplate>(HabitTemplatesCollection);
+            if (template.Id == 0) col.Insert(template); else col.Update(template);
+        }
+
+        public void DeleteHabitTemplate(int id)
+        {
+            _db.GetCollection<HabitTemplate>(HabitTemplatesCollection).Delete(id);
+        }
+
+        private static void SeedHabitTemplates(ILiteCollection<HabitTemplate> col)
+        {
+            col.InsertBulk(new[]
+            {
+                new HabitTemplate { Name = "Утренняя зарядка", Description = "15 минут упражнений утром",
+                    Category = "Спорт",        Icon = "🏃", Color = "#F97316",
+                    RepetitionType = HabitRepetitionType.Daily, IsSystem = true },
+                new HabitTemplate { Name = "Чтение книги",     Description = "Читать не менее 20 страниц",
+                    Category = "Саморазвитие", Icon = "📚", Color = "#8B5CF6",
+                    RepetitionType = HabitRepetitionType.Daily, IsSystem = true },
+                new HabitTemplate { Name = "Изучение языка",   Description = "Занятие иностранным языком",
+                    Category = "Учёба",        Icon = "🎓", Color = "#3B82F6",
+                    RepetitionType = HabitRepetitionType.WeekDays,
+                    WeekDaysList   = new System.Collections.Generic.List<int> { 0,1,2,3,4 }, IsSystem = true },
+                new HabitTemplate { Name = "Пить воду",        Description = "Выпивать 8 стаканов воды в день",
+                    Category = "Здоровье",     Icon = "💧", Color = "#06B6D4",
+                    RepetitionType = HabitRepetitionType.Daily, IsSystem = true },
+                new HabitTemplate { Name = "Медитация",        Description = "10 минут медитации",
+                    Category = "Здоровье",     Icon = "🧘", Color = "#10B981",
+                    RepetitionType = HabitRepetitionType.Daily, IsSystem = true },
+                new HabitTemplate { Name = "Отжимания",        Description = "Минимум 3 подхода",
+                    Category = "Спорт",        Icon = "💪", Color = "#EF4444",
+                    RepetitionType = HabitRepetitionType.TimesPerWeek, TimesPerWeek = 3, IsSystem = true },
+            });
+        }
+
+        private static void SeedHabitCategories(ILiteCollection<HabitCategory> col)
+        {
+            var defaults = new[]
+            {
+                new HabitCategory { Name = "Здоровье",       Icon = "❤️",  Color = "#EF4444", IsSystem = true },
+                new HabitCategory { Name = "Спорт",          Icon = "🏃",  Color = "#F97316", IsSystem = true },
+                new HabitCategory { Name = "Саморазвитие",   Icon = "📚",  Color = "#8B5CF6", IsSystem = true },
+                new HabitCategory { Name = "Учёба",          Icon = "🎓",  Color = "#3B82F6", IsSystem = true },
+                new HabitCategory { Name = "Работа",         Icon = "💼",  Color = "#6B7280", IsSystem = true },
+                new HabitCategory { Name = "Финансы",        Icon = "💰",  Color = "#22C55E", IsSystem = true },
+                new HabitCategory { Name = "Дом",            Icon = "🏠",  Color = "#F59E0B", IsSystem = true },
+                new HabitCategory { Name = "Другое",         Icon = "⭐",  Color = "#6B7280", IsSystem = true },
+            };
+            col.InsertBulk(defaults);
         }
     }
 }

@@ -57,6 +57,9 @@ public class AppSettings
     /// <summary>Включён ли финансовый модуль.</summary>
     public bool FinanceModuleEnabled { get; set; } = false;
 
+    /// <summary>Включён ли трекер привычек.</summary>
+    public bool IsHabitTrackerEnabled { get; set; } = false;
+
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FocusFlow", "settings.json");

@@ -380,6 +380,19 @@
 								<ToggleSwitch Grid.Column="1" IsChecked="{Binding FinanceModuleEnabled}"/>
 							</Grid>
 						</Border>
+						<!-- Трекер привычек -->
+						<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
+                                Padding="16" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+							<Grid ColumnDefinitions="*, Auto">
+								<StackPanel>
+									<TextBlock Text="{Binding Loc[HabitTrackerLbl]}" FontWeight="Bold"
+                                               Foreground="{DynamicResource HeaderForeground}"/>
+									<TextBlock Text="{Binding Loc[HabitTrackerSub]}"
+                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+								</StackPanel>
+								<ToggleSwitch Grid.Column="1" IsChecked="{Binding HabitTrackerEnabled}"/>
+							</Grid>
+						</Border>
 					</StackPanel>
 
 				</Grid>

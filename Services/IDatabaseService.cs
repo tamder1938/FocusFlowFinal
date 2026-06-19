@@ -1,5 +1,6 @@
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
+using FocusFlowFinal.Models.Habits;
 using System;
 using System.Collections.Generic;
 
@@ -88,4 +89,26 @@ public interface IDatabaseService
     IEnumerable<SavingsTransaction> GetSavingsTransactions(int accountId);
     void AddSavingsTransaction(SavingsTransaction tx);
     void DeleteSavingsTransaction(int id);
+
+    // ── Трекер привычек ─────────────────────────────────────────────
+    IEnumerable<Habit> GetAllHabits();
+    void UpsertHabit(Habit habit);
+    void DeleteHabit(int id);
+
+    IEnumerable<HabitCompletion> GetHabitCompletions(int habitId);
+    IEnumerable<HabitCompletion> GetCompletionsForPeriod(DateTime start, DateTime end);
+    bool HasCompletionForDate(int habitId, DateTime date);
+    HabitCompletion? GetCompletionForDate(int habitId, DateTime date);
+    void UpsertHabitCompletion(HabitCompletion completion);
+    void DeleteHabitCompletion(int id);
+    void AutoCompleteHabitsForTask(int taskId);
+
+    IEnumerable<HabitCategory> GetAllHabitCategories();
+    void UpsertHabitCategory(HabitCategory category);
+    void DeleteHabitCategory(int id);
+
+    // ── Шаблоны привычек ────────────────────────────────────────────────
+    IEnumerable<HabitTemplate> GetAllHabitTemplates();
+    void UpsertHabitTemplate(HabitTemplate template);
+    void DeleteHabitTemplate(int id);
 }

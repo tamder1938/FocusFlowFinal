@@ -761,6 +761,7 @@ public partial class FinanceViewModel : ObservableObject
     private SavingsAccount? _editingSavings;
     [ObservableProperty] private string _newSavingsName = string.Empty;
     [ObservableProperty] private decimal? _newSavingsBalance;
+    [ObservableProperty] private decimal? _newSavingsTargetAmount;
     [ObservableProperty] private bool _newSavingsCanWithdraw = true;
     [ObservableProperty] private DateTimeOffset _newSavingsStartDate = DateTimeOffset.Now;
     [ObservableProperty] private string _newSavingsNotes = string.Empty;
@@ -807,12 +808,13 @@ public partial class FinanceViewModel : ObservableObject
 
     private void ResetSavingsForm()
     {
-        _editingSavings       = null;
-        NewSavingsName        = string.Empty;
-        NewSavingsBalance     = null;
-        NewSavingsCanWithdraw = true;
-        NewSavingsStartDate   = DateTimeOffset.Now;
-        NewSavingsNotes       = string.Empty;
+        _editingSavings         = null;
+        NewSavingsName          = string.Empty;
+        NewSavingsBalance       = null;
+        NewSavingsTargetAmount  = null;
+        NewSavingsCanWithdraw   = true;
+        NewSavingsStartDate     = DateTimeOffset.Now;
+        NewSavingsNotes         = string.Empty;
     }
 
     [RelayCommand]
@@ -835,13 +837,14 @@ public partial class FinanceViewModel : ObservableObject
     private void EditSavingsAccount(SavingsAccount? account)
     {
         if (account == null) return;
-        _editingSavings       = account;
-        NewSavingsName        = account.Name;
-        NewSavingsBalance     = account.CurrentBalance;
-        NewSavingsCanWithdraw = account.CanWithdraw;
-        NewSavingsStartDate   = new DateTimeOffset(account.StartDate);
-        NewSavingsNotes       = account.Notes;
-        IsCreatingGoal        = account.IsGoal;
+        _editingSavings        = account;
+        NewSavingsName         = account.Name;
+        NewSavingsBalance      = account.CurrentBalance;
+        NewSavingsTargetAmount = account.IsGoal ? account.TargetAmount : (decimal?)null;
+        NewSavingsCanWithdraw  = account.CanWithdraw;
+        NewSavingsStartDate    = new DateTimeOffset(account.StartDate);
+        NewSavingsNotes        = account.Notes;
+        IsCreatingGoal         = account.IsGoal;
         IsAddingSavingsAccount = true;
     }
 
@@ -849,19 +852,43 @@ public partial class FinanceViewModel : ObservableObject
     private void SaveSavingsAccount()
     {
         if (string.IsNullOrWhiteSpace(NewSavingsName)) return;
+
+        // Для копилки целевая сумма обязательна
+        if (IsCreatingGoal && (NewSavingsTargetAmount ?? 0m) <= 0m)
+        {
+            ErrorMessage = Loc["Savings_GoalRequiredHint"];
+            HasError     = true;
+            return;
+        }
+
         try
         {
             var isNew = _editingSavings == null;
             var item  = _editingSavings ?? new SavingsAccount();
             item.Name           = NewSavingsName.Trim();
             item.CurrentBalance = NewSavingsBalance ?? 0m;
-            item.CanWithdraw    = NewSavingsCanWithdraw;
             item.StartDate      = NewSavingsStartDate.Date;
             item.Notes          = NewSavingsNotes;
             if (isNew) item.IsGoal = IsCreatingGoal;
+
+            // Поля только для копилки
+            if (IsCreatingGoal)
+            {
+                item.TargetAmount = NewSavingsTargetAmount ?? 0m;
+                item.CanWithdraw  = NewSavingsCanWithdraw;
+            }
+            else
+            {
+                // Счёт: всегда можно снимать, нет цели
+                item.TargetAmount = 0m;
+                item.CanWithdraw  = true;
+            }
+
             _db.UpsertSavingsAccount(item);
             IsAddingSavingsAccount   = false;
             IsCreatingGoal           = false;
+            HasError                 = false;
+            ErrorMessage             = string.Empty;
             LoadSavings();
         }
         catch (Exception ex)

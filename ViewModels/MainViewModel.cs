@@ -168,8 +168,16 @@ public partial class MainViewModel : ObservableObject
         get => AppSettings.Load().FinanceModuleEnabled;
     }
 
+    public bool IsHabitTrackerEnabled
+    {
+        get => AppSettings.Load().IsHabitTrackerEnabled;
+    }
+
     public void RefreshFinanceModuleState() =>
         OnPropertyChanged(nameof(IsFinanceModuleEnabled));
+
+    public void RefreshHabitTrackerState() =>
+        OnPropertyChanged(nameof(IsHabitTrackerEnabled));
 
     [RelayCommand]
     private async void OpenFinance()
@@ -177,6 +185,16 @@ public partial class MainViewModel : ObservableObject
         var ns  = _services.GetRequiredService<INotificationService>();
         var vm  = new FinanceViewModel(_db, ns);
         var win = new Views.FinanceWindow { DataContext = vm };
+        var owner = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
+    private async void OpenHabits()
+    {
+        var vm  = new HabitViewModel(_db);
+        var win = new Views.HabitWindow { DataContext = vm };
         var owner = GetMainWindow();
         if (owner != null) await win.ShowDialog(owner);
         else win.Show();
