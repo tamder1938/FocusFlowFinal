@@ -686,8 +686,18 @@ namespace FocusFlowFinal.Services
                 var comp = new HabitCompletion { HabitId = h.Id, Date = today, Status = 2 };
                 _db.GetCollection<HabitCompletion>(HabitCompletionsCollection).Insert(comp);
                 h.TotalCompletions++;
+                UpdateHabitStreak(h, today);
                 _db.GetCollection<Habit>(HabitsCollection).Update(h);
             }
+        }
+
+        private static void UpdateHabitStreak(Habit h, DateTime today)
+        {
+            var last = h.LastCompletedDate?.Date;
+            if (last == null || last < today.AddDays(-1)) h.CurrentStreak = 1;
+            else if (last == today.AddDays(-1))           h.CurrentStreak++;
+            if (h.CurrentStreak > h.BestStreak)           h.BestStreak = h.CurrentStreak;
+            h.LastCompletedDate = today;
         }
 
         public IEnumerable<HabitCategory> GetAllHabitCategories()

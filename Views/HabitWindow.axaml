@@ -68,6 +68,10 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin"          Value="0,0,0,6"/>
         </Style>
+        <!-- Ячейки пустых дней (не текущего месяца) не должны визуально "тускнеть" -->
+        <Style Selector="Button.habit-cell:disabled">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
         <Style Selector="TextBox, ComboBox, NumericUpDown">
             <Setter Property="Background"      Value="{DynamicResource InputBackgroundBrush}"/>
             <Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
@@ -721,7 +725,8 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Margin="2" Height="36" Padding="0"
+                                                <Button Classes="habit-cell"
+                                                        Margin="2" Height="36" Padding="0"
                                                         Background="{Binding CellColor}"
                                                         BorderBrush="{Binding BorderColor}"
                                                         BorderThickness="2"

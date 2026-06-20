@@ -124,6 +124,13 @@ public partial class TaskListViewModel : ObservableObject
         }
 
         _db.UpsertTask(task);
+
+        if (task.IsCompleted)
+        {
+            _db.AutoCompleteHabitsForTask(task.Id);
+            TriggerHabitRefreshIfOpen();
+        }
+
         ApplyFilter();
         TriggerMainStatsRefresh();
         RefreshCalendarUI();
@@ -232,6 +239,13 @@ public partial class TaskListViewModel : ObservableObject
         }
 
         _db.UpsertTask(task);
+
+        if (task.IsCompleted)
+        {
+            _db.AutoCompleteHabitsForTask(task.Id);
+            TriggerHabitRefreshIfOpen();
+        }
+
         ApplyFilter();
         TriggerMainStatsRefresh();
         RefreshCalendarUI();
@@ -314,5 +328,16 @@ public partial class TaskListViewModel : ObservableObject
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             if (desktop.MainWindow?.DataContext is MainViewModel mainVm)
                 mainVm.RefreshCurrentCalendarView();
+    }
+
+    private static void TriggerHabitRefreshIfOpen()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var habitWin = desktop.Windows.OfType<HabitWindow>().FirstOrDefault();
+            if (habitWin?.DataContext is HabitViewModel hVm)
+                hVm.RefreshAfterTaskCompletion();
+        }
     }
 }

@@ -447,6 +447,7 @@ public partial class TimerViewModel : ObservableObject
 
         task.IsCompleted = true;
         _db.UpsertTask(task);
+        _db.AutoCompleteHabitsForTask(task.Id);
 
         if (Avalonia.Application.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
@@ -456,6 +457,9 @@ public partial class TimerViewModel : ObservableObject
                 mainVm.CurrentTaskListViewModel?.RefreshTasks();
                 mainVm.RefreshCurrentCalendarView();
             }
+            var habitWin = desktop.Windows.OfType<HabitWindow>().FirstOrDefault();
+            if (habitWin?.DataContext is HabitViewModel hVm)
+                hVm.RefreshAfterTaskCompletion();
         }
     }
 

@@ -1,3 +1,4 @@
+using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -96,6 +97,9 @@ public class MonthGridCell : ObservableObject
     public bool     IsToday        { get; set; }
     public bool     IsFuture       { get; set; }
 
+    private static bool IsDarkTheme =>
+        Avalonia.Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
+
     private int _status;
     public int Status
     {
@@ -106,15 +110,15 @@ public class MonthGridCell : ObservableObject
     public string DayNumber => IsCurrentMonth ? Date.Day.ToString() : "";
 
     public string CellColor => !IsCurrentMonth ? "Transparent"
-                             : IsFuture        ? "#F9FAFB"
+                             : IsFuture        ? (IsDarkTheme ? "#222638" : "#F9FAFB")
                              : Status == 2     ? "#22C55E"
                              : Status == 1     ? "#F59E0B"
-                             : IsToday         ? "#DBEAFE"
-                             : "#F3F4F6";
+                             : IsToday         ? (IsDarkTheme ? "#1E3A5F" : "#DBEAFE")
+                             : (IsDarkTheme    ? "#252840" : "#F3F4F6");
 
     public string TextColor => Status >= 1 ? "White"
-                             : IsToday     ? "#1D4ED8"
-                             : "#374151";
+                             : IsToday     ? (IsDarkTheme ? "#93C5FD" : "#1D4ED8")
+                             : (IsDarkTheme ? "#C8CCE8" : "#374151");
 
     public string BorderColor => IsToday && IsCurrentMonth ? "#3B82F6" : "Transparent";
 
@@ -911,5 +915,14 @@ public partial class HabitViewModel : ObservableObject
     {
         try { Process.Start("explorer.exe", $"/select,\"{filePath}\""); }
         catch { /* ignore */ }
+    }
+
+    /// <summary>Вызывается извне (например, из TaskListViewModel) после автовыполнения связанных привычек.</summary>
+    public void RefreshAfterTaskCompletion()
+    {
+        LoadHabits();
+        RefreshStats();
+        if (SelectedHabitItem != null)
+            LoadHabitDetail(SelectedHabitItem);
     }
 }
