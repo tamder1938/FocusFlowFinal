@@ -170,10 +170,10 @@
 					</Button>
 				</StackPanel>
 
-				<!-- Кнопка Финансы + Привычки + Иконка настроек -->
+				<!-- Кнопки модулей + иконка настроек -->
 				<StackPanel Grid.Column="4" Orientation="Horizontal"
                             VerticalAlignment="Center" Spacing="2" Margin="8,0,0,0">
-					<!-- Привычки -->
+					<!-- Привычки (всегда видна, активна только когда включена) -->
 					<Button IsEnabled="{Binding IsHabitTrackerEnabled}"
                             Command="{Binding OpenHabitsCommand}"
                             Content="{Binding Loc[Habits]}"
@@ -184,7 +184,7 @@
                             CornerRadius="6" Padding="12,5" FontSize="13"
                             FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
-					<!-- Финансы (всегда видна, но неактивна когда модуль выключен) -->
+					<!-- Финансы (всегда видна, активна только когда включена) -->
 					<Button IsEnabled="{Binding IsFinanceModuleEnabled}"
                             Command="{Binding OpenFinanceCommand}"
                             Content="{Binding Loc[Finance]}"
@@ -195,6 +195,61 @@
                             CornerRadius="6" Padding="12,5" FontSize="13"
                             FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
+					<!-- Фоновые звуки — появляется только при включении -->
+					<Button IsVisible="{Binding IsBackgroundSoundsEnabled}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Feat_BackgroundSoundsLbl]}">
+						<TextBlock Text="🎵" FontSize="14"/>
+					</Button>
+					<!-- Трекер настроения -->
+					<Button IsVisible="{Binding IsMoodTrackerEnabled}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Feat_MoodTrackerLbl]}">
+						<TextBlock Text="😊" FontSize="14"/>
+					</Button>
+					<!-- Заметки и дневник -->
+					<Button IsVisible="{Binding IsNotesAndDiaryEnabled}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Feat_NotesAndDiaryLbl]}">
+						<TextBlock Text="📝" FontSize="14"/>
+					</Button>
+					<!-- Трекер тренировок -->
+					<Button IsVisible="{Binding IsWorkoutTrackerEnabled}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Feat_WorkoutTrackerLbl]}">
+						<TextBlock Text="🏋️" FontSize="14"/>
+					</Button>
+					<!-- Трекер медиа -->
+					<Button IsVisible="{Binding IsMediaTrackerEnabled}"
+                            Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6" Padding="12,5" FontSize="13"
+                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            ToolTip.Tip="{Binding Loc[Feat_MediaTrackerLbl]}">
+						<TextBlock Text="🎬" FontSize="14"/>
+					</Button>
 					<Button Classes="icon-btn" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Loc[Settings]}">
 						<PathIcon Width="16" Height="16"
                                   Foreground="{DynamicResource SecondaryTextBrush}"

@@ -163,21 +163,30 @@ public partial class MainViewModel : ObservableObject
         else win.Show();
     }
 
-    public bool IsFinanceModuleEnabled
-    {
-        get => AppSettings.Load().FinanceModuleEnabled;
-    }
-
-    public bool IsHabitTrackerEnabled
-    {
-        get => AppSettings.Load().IsHabitTrackerEnabled;
-    }
+    public bool IsFinanceModuleEnabled      => AppSettings.Load().FinanceModuleEnabled;
+    public bool IsHabitTrackerEnabled       => AppSettings.Load().IsHabitTrackerEnabled;
+    public bool IsBackgroundSoundsEnabled   => AppSettings.Load().BackgroundSoundsEnabled;
+    public bool IsMoodTrackerEnabled        => AppSettings.Load().MoodTrackerEnabled;
+    public bool IsNotesAndDiaryEnabled      => AppSettings.Load().NotesAndDiaryEnabled;
+    public bool IsWorkoutTrackerEnabled     => AppSettings.Load().WorkoutTrackerEnabled;
+    public bool IsMediaTrackerEnabled       => AppSettings.Load().MediaTrackerEnabled;
+    public bool IsExtendedStatisticsEnabled => AppSettings.Load().ExtendedStatisticsEnabled;
 
     public void RefreshFinanceModuleState() =>
         OnPropertyChanged(nameof(IsFinanceModuleEnabled));
 
     public void RefreshHabitTrackerState() =>
         OnPropertyChanged(nameof(IsHabitTrackerEnabled));
+
+    public void RefreshAllFeatureFlags()
+    {
+        OnPropertyChanged(nameof(IsBackgroundSoundsEnabled));
+        OnPropertyChanged(nameof(IsMoodTrackerEnabled));
+        OnPropertyChanged(nameof(IsNotesAndDiaryEnabled));
+        OnPropertyChanged(nameof(IsWorkoutTrackerEnabled));
+        OnPropertyChanged(nameof(IsMediaTrackerEnabled));
+        OnPropertyChanged(nameof(IsExtendedStatisticsEnabled));
+    }
 
     [RelayCommand]
     private async void OpenFinance()

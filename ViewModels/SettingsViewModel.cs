@@ -46,6 +46,14 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _financeModuleEnabled;
     [ObservableProperty] private bool _habitTrackerEnabled;
 
+    // Дополнительные модули
+    [ObservableProperty] private bool _backgroundSoundsEnabled;
+    [ObservableProperty] private bool _moodTrackerEnabled;
+    [ObservableProperty] private bool _notesAndDiaryEnabled;
+    [ObservableProperty] private bool _workoutTrackerEnabled;
+    [ObservableProperty] private bool _mediaTrackerEnabled;
+    [ObservableProperty] private bool _extendedStatisticsEnabled;
+
     // Исходные значения — на случай отмены (кнопка «Закрыть»), хотя поскольку
     // мы больше не применяем изменения мгновенно, откатывать по факту нечего.
     // Оставлены для ясности и возможного использования в будущем.
@@ -75,6 +83,12 @@ public partial class SettingsViewModel : ObservableObject
         MarkTaskCompletedOnTimerFinish   = settings.MarkTaskCompletedOnTimerFinish;
         FinanceModuleEnabled             = settings.FinanceModuleEnabled;
         HabitTrackerEnabled              = settings.IsHabitTrackerEnabled;
+        BackgroundSoundsEnabled          = settings.BackgroundSoundsEnabled;
+        MoodTrackerEnabled               = settings.MoodTrackerEnabled;
+        NotesAndDiaryEnabled             = settings.NotesAndDiaryEnabled;
+        WorkoutTrackerEnabled            = settings.WorkoutTrackerEnabled;
+        MediaTrackerEnabled              = settings.MediaTrackerEnabled;
+        ExtendedStatisticsEnabled        = settings.ExtendedStatisticsEnabled;
 
         // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
         var services = ((App)App.Current!).Services!;
@@ -137,6 +151,12 @@ public partial class SettingsViewModel : ObservableObject
         settings.MarkTaskCompletedOnTimerFinish  = MarkTaskCompletedOnTimerFinish;
         settings.FinanceModuleEnabled            = FinanceModuleEnabled;
         settings.IsHabitTrackerEnabled           = HabitTrackerEnabled;
+        settings.BackgroundSoundsEnabled         = BackgroundSoundsEnabled;
+        settings.MoodTrackerEnabled              = MoodTrackerEnabled;
+        settings.NotesAndDiaryEnabled            = NotesAndDiaryEnabled;
+        settings.WorkoutTrackerEnabled           = WorkoutTrackerEnabled;
+        settings.MediaTrackerEnabled             = MediaTrackerEnabled;
+        settings.ExtendedStatisticsEnabled       = ExtendedStatisticsEnabled;
         settings.Save();
 
         // Применяем тему здесь, а не при клике по карточке
@@ -264,6 +284,7 @@ public partial class SettingsViewModel : ObservableObject
                 mainVm.RefreshTodayMiniStats();
                 mainVm.RefreshFinanceModuleState();
                 mainVm.RefreshHabitTrackerState();
+                mainVm.RefreshAllFeatureFlags();
 
                 if (mainVm.CurrentCalendarView is DayViewModel dayVm) dayVm.LoadEvents();
                 else if (mainVm.CurrentCalendarView is WeekViewModel weekVm) weekVm.RefreshWeek();

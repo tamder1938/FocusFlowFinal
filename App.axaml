@@ -8,6 +8,10 @@
 
 	<Application.Resources>
 		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://FocusFlowFinal/Styles/Colors.axaml"/>
+			</ResourceDictionary.MergedDictionaries>
+
 			<!-- Светлая тема (значения по умолчанию) -->
 			<SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F4F7FC" />
 			<SolidColorBrush x:Key="CardBackgroundBrush" Color="White" />

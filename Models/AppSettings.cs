@@ -60,6 +60,14 @@ public class AppSettings
     /// <summary>Включён ли трекер привычек.</summary>
     public bool IsHabitTrackerEnabled { get; set; } = false;
 
+    // ── Дополнительные модули (Промпт 1) ────────────────────────────
+    public bool BackgroundSoundsEnabled  { get; set; } = false;
+    public bool MoodTrackerEnabled       { get; set; } = false;
+    public bool NotesAndDiaryEnabled     { get; set; } = false;
+    public bool WorkoutTrackerEnabled    { get; set; } = false;
+    public bool MediaTrackerEnabled      { get; set; } = false;
+    public bool ExtendedStatisticsEnabled{ get; set; } = false;
+
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FocusFlow", "settings.json");

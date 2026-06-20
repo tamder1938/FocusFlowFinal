@@ -573,7 +573,26 @@ public class LocalizationService : ObservableObject
                 ["Habit_ExportCsv"]      = "Экспорт в CSV",
                 ["Habit_ExportExcel"]    = "Экспорт в Excel",
                 ["Habit_ExportDone"]     = "Сохранено:",
-                ["Habit_ExportError"]    = "Ошибка экспорта"
+                ["Habit_ExportError"]    = "Ошибка экспорта",
+
+                // Дополнительные модули (Промпт 1)
+                ["Feat_AdditionalModulesCard"]   = "Дополнительные модули",
+                ["Feat_AdditionalStatsCard"]     = "Дополнительная статистика",
+                ["Feat_BackgroundSoundsLbl"]     = "Фоновые звуки",
+                ["Feat_BackgroundSoundsSub"]     = "Воспроизведение эмбиент-звуков и своих аудио",
+                ["Feat_MoodTrackerLbl"]          = "Трекер настроения",
+                ["Feat_MoodTrackerSub"]          = "Отслеживание настроения и активностей",
+                ["Feat_NotesAndDiaryLbl"]        = "Заметки и дневник",
+                ["Feat_NotesAndDiarySub"]        = "Личные записи с привязкой к дням",
+                ["Feat_WorkoutTrackerLbl"]       = "Трекер тренировок",
+                ["Feat_WorkoutTrackerSub"]       = "Программы, упражнения, прогресс в зале",
+                ["Feat_MediaTrackerLbl"]         = "Трекер медиа",
+                ["Feat_MediaTrackerSub"]         = "Фильмы, сериалы, аниме, книги, манга",
+                ["Feat_ExtendedStatsLbl"]        = "Расширенная статистика",
+                ["Feat_ExtendedStatsSub"]        = "Годовой отчёт и сводка по всем модулям",
+                ["Feat_ShowTodayStatsBtn"]       = "Показать статистику за сегодня",
+                ["Feat_EnabledInSettings"]       = "Включить в Настройки → Функции",
+                ["Feat_BaseModulesCard"]         = "Базовые модули"
             },
             ["English"] = new Dictionary<string, string>
             {
@@ -1130,7 +1149,26 @@ public class LocalizationService : ObservableObject
                 ["Habit_ExportCsv"]      = "Export to CSV",
                 ["Habit_ExportExcel"]    = "Export to Excel",
                 ["Habit_ExportDone"]     = "Saved:",
-                ["Habit_ExportError"]    = "Export error"
+                ["Habit_ExportError"]    = "Export error",
+
+                // Additional modules (Prompt 1)
+                ["Feat_AdditionalModulesCard"]   = "Additional Modules",
+                ["Feat_AdditionalStatsCard"]     = "Additional Statistics",
+                ["Feat_BackgroundSoundsLbl"]     = "Background Sounds",
+                ["Feat_BackgroundSoundsSub"]     = "Ambient audio playback and custom audio files",
+                ["Feat_MoodTrackerLbl"]          = "Mood Tracker",
+                ["Feat_MoodTrackerSub"]          = "Track your mood and daily activities",
+                ["Feat_NotesAndDiaryLbl"]        = "Notes & Diary",
+                ["Feat_NotesAndDiarySub"]        = "Personal entries linked to calendar days",
+                ["Feat_WorkoutTrackerLbl"]       = "Workout Tracker",
+                ["Feat_WorkoutTrackerSub"]       = "Programs, exercises and gym progress",
+                ["Feat_MediaTrackerLbl"]         = "Media Tracker",
+                ["Feat_MediaTrackerSub"]         = "Movies, series, anime, books and manga",
+                ["Feat_ExtendedStatsLbl"]        = "Extended Statistics",
+                ["Feat_ExtendedStatsSub"]        = "Annual report and summary across all modules",
+                ["Feat_ShowTodayStatsBtn"]       = "Show today's statistics",
+                ["Feat_EnabledInSettings"]       = "Enable in Settings → Features",
+                ["Feat_BaseModulesCard"]         = "Core Modules"
             }
         };
 

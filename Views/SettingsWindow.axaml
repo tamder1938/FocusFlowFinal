@@ -365,35 +365,201 @@
 					</StackPanel>
 
 					<!-- Вкладка: Функции -->
-					<StackPanel Spacing="16" IsVisible="{Binding IsFunctionsTab}">
-						<TextBlock Classes="SectionHeader" Text="{Binding Loc[Settings_Functions]}"/>
-						<!-- Финансовый модуль -->
-						<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
-                                Padding="16" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
-							<Grid ColumnDefinitions="*, Auto">
+					<ScrollViewer IsVisible="{Binding IsFunctionsTab}">
+						<StackPanel Spacing="16">
+							<TextBlock Classes="SectionHeader" Text="{Binding Loc[Settings_Functions]}"/>
+
+							<!-- ── Базовые модули ────────────────────────────── -->
+							<TextBlock Text="{Binding Loc[Feat_BaseModulesCard]}"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       Margin="2,0,0,0"/>
+							<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
+                                    Padding="0" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
 								<StackPanel>
-									<TextBlock Text="{Binding Loc[FinanceModuleLbl]}" FontWeight="Bold"
-                                               Foreground="{DynamicResource HeaderForeground}"/>
-									<TextBlock Text="{Binding Loc[FinanceModuleSub]}"
-                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+									<!-- Финансовый модуль -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="💰" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[FinanceModuleLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[FinanceModuleSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding FinanceModuleEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
+									<!-- Трекер привычек -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="🔥" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[HabitTrackerLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[HabitTrackerSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding HabitTrackerEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
 								</StackPanel>
-								<ToggleSwitch Grid.Column="1" IsChecked="{Binding FinanceModuleEnabled}"/>
-							</Grid>
-						</Border>
-						<!-- Трекер привычек -->
-						<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
-                                Padding="16" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
-							<Grid ColumnDefinitions="*, Auto">
+							</Border>
+
+							<!-- ── Дополнительные модули ─────────────────────── -->
+							<TextBlock Text="{Binding Loc[Feat_AdditionalModulesCard]}"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       Margin="2,4,0,0"/>
+							<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
+                                    Padding="0" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
 								<StackPanel>
-									<TextBlock Text="{Binding Loc[HabitTrackerLbl]}" FontWeight="Bold"
-                                               Foreground="{DynamicResource HeaderForeground}"/>
-									<TextBlock Text="{Binding Loc[HabitTrackerSub]}"
-                                               Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+									<!-- Фоновые звуки -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="🎵" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_BackgroundSoundsLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_BackgroundSoundsSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding BackgroundSoundsEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
+									<!-- Трекер настроения -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="😊" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_MoodTrackerLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_MoodTrackerSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding MoodTrackerEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
+									<!-- Заметки и дневник -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="📝" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_NotesAndDiaryLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_NotesAndDiarySub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding NotesAndDiaryEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
+									<!-- Трекер тренировок -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="🏋️" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_WorkoutTrackerLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_WorkoutTrackerSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding WorkoutTrackerEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
+									<!-- Трекер медиа -->
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="🎬" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_MediaTrackerLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_MediaTrackerSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding MediaTrackerEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
 								</StackPanel>
-								<ToggleSwitch Grid.Column="1" IsChecked="{Binding HabitTrackerEnabled}"/>
-							</Grid>
-						</Border>
-					</StackPanel>
+							</Border>
+
+							<!-- ── Дополнительная статистика ─────────────────── -->
+							<TextBlock Text="{Binding Loc[Feat_AdditionalStatsCard]}"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       Margin="2,4,0,0"/>
+							<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
+                                    Padding="0" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+								<StackPanel>
+									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
+										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+											<TextBlock Text="📊" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Text="{Binding Loc[Feat_ExtendedStatsLbl]}"
+                                                       FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Feat_ExtendedStatsSub]}"
+                                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+										</StackPanel>
+										<ToggleSwitch Grid.Column="2" IsChecked="{Binding ExtendedStatisticsEnabled}"
+                                                      VerticalAlignment="Center"/>
+									</Grid>
+									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"
+                                            IsVisible="{Binding ExtendedStatisticsEnabled}"/>
+									<Button Content="{Binding Loc[Feat_ShowTodayStatsBtn]}"
+                                            IsVisible="{Binding ExtendedStatisticsEnabled}"
+                                            Margin="16,10,16,14"
+                                            HorizontalAlignment="Stretch"
+                                            Background="{DynamicResource AccentBackground}"
+                                            Foreground="White" CornerRadius="6" Padding="0,9"
+                                            FontWeight="SemiBold"/>
+								</StackPanel>
+							</Border>
+						</StackPanel>
+					</ScrollViewer>
 
 				</Grid>
 			</Border>

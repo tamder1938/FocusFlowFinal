@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FocusFlow Brand Palette — default (light) values.
+         ApplyTheme() in App.axaml.cs overrides these at runtime for dark.
+         New modules should reference these keys instead of raw hex colors.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Backgrounds -->
+    <SolidColorBrush x:Key="PageBackgroundBrush"   Color="#F0F4FA"/>
+    <SolidColorBrush x:Key="SurfaceBrush"          Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="MutedBackgroundBrush"  Color="#F8FAFF"/>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextPrimaryBrush"      Color="#111827"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush"    Color="#6B7280"/>
+
+    <!-- Accent -->
+    <SolidColorBrush x:Key="AccentBrush"           Color="#3B82F6"/>
+    <SolidColorBrush x:Key="AccentHoverBrush2"     Color="#2563EB"/>
+    <SolidColorBrush x:Key="AccentLightBrush2"     Color="#EFF6FF"/>
+    <SolidColorBrush x:Key="AccentTextBrush2"      Color="#2563EB"/>
+
+    <!-- Success -->
+    <SolidColorBrush x:Key="SuccessBrush"          Color="#10B981"/>
+    <SolidColorBrush x:Key="SuccessTextBrush"      Color="#065F46"/>
+    <SolidColorBrush x:Key="SuccessLightBrush"     Color="#D1FAE5"/>
+
+    <!-- Warning -->
+    <SolidColorBrush x:Key="WarningBrush"          Color="#F59E0B"/>
+    <SolidColorBrush x:Key="WarningTextBrush"      Color="#92400E"/>
+    <SolidColorBrush x:Key="WarningLightBrush"     Color="#FEF3C7"/>
+
+    <!-- Danger -->
+    <SolidColorBrush x:Key="DangerBrush"           Color="#EF4444"/>
+    <SolidColorBrush x:Key="DangerTextBrush2"      Color="#991B1B"/>
+    <SolidColorBrush x:Key="DangerLightBrush"      Color="#FEE2E2"/>
+
+</ResourceDictionary>

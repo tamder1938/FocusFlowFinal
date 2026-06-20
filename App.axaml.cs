@@ -142,6 +142,26 @@ public partial class App : Application
         Set(r, "PriorityMediumFg",  "#F97316");
         Set(r, "PriorityLowBg",     d ? "#173A2A" : "#D1FAE5");
         Set(r, "PriorityLowFg",     "#10B981");
+
+        // ── Новая палитра (Colors.axaml aliases) — обновляем под тему ──
+        Set(r, "PageBackgroundBrush",  d ? "#0F1419" : "#F0F4FA");
+        Set(r, "SurfaceBrush",        d ? "#1A2028" : "#FFFFFF");
+        Set(r, "MutedBackgroundBrush", d ? "#222B36" : "#F8FAFF");
+        Set(r, "TextPrimaryBrush",    d ? "#E6ECF3" : "#111827");
+        Set(r, "TextSecondaryBrush",  d ? "#8893A8" : "#6B7280");
+        Set(r, "AccentBrush",         d ? "#4A85FA" : "#3B82F6");
+        Set(r, "AccentHoverBrush2",   d ? "#3B72E6" : "#2563EB");
+        Set(r, "AccentLightBrush2",   d ? "#1E2C45" : "#EFF6FF");
+        Set(r, "AccentTextBrush2",    d ? "#93C5FD" : "#2563EB");
+        Set(r, "SuccessBrush",        d ? "#34D399" : "#10B981");
+        Set(r, "SuccessTextBrush",    d ? "#A7F3D0" : "#065F46");
+        Set(r, "SuccessLightBrush",   d ? "#0D2E20" : "#D1FAE5");
+        Set(r, "WarningBrush",        d ? "#FBBF24" : "#F59E0B");
+        Set(r, "WarningTextBrush",    d ? "#FDE68A" : "#92400E");
+        Set(r, "WarningLightBrush",   d ? "#2E2006" : "#FEF3C7");
+        Set(r, "DangerBrush",         "#EF4444");
+        Set(r, "DangerTextBrush2",    d ? "#FCA5A5" : "#991B1B");
+        Set(r, "DangerLightBrush",    d ? "#2D0F0F" : "#FEE2E2");
     }
 
     private static void Set(IResourceDictionary r, string key, string hex) =>
