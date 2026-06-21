@@ -57,6 +57,21 @@ public partial class App : Application
                 var syncService = Services.GetRequiredService<ISyncService>();
                 if (syncService.IsSyncAvailable)
                     _ = syncService.SyncDataAsync();
+
+                // Авто-показ итогов года (после 26 декабря, если ещё не видели)
+                if (DateTime.Today.Month == 12 && DateTime.Today.Day >= 26
+                    && settings.ExtendedStatisticsEnabled
+                    && !settings.YearSummaryShownFor.Contains(DateTime.Today.Year))
+                {
+                    settings.YearSummaryShownFor.Add(DateTime.Today.Year);
+                    settings.Save();
+                    var yearSvc = Services.GetRequiredService<IYearStatisticsService>();
+                    var yearWin = new FocusFlowFinal.Views.YearSummaryWindow
+                    {
+                        DataContext = new FocusFlowFinal.ViewModels.YearSummaryViewModel(yearSvc)
+                    };
+                    _ = yearWin.ShowDialog(win);
+                }
             };
 
             var tv = Services.GetRequiredService<TimerViewModel>();
@@ -295,5 +310,8 @@ public partial class App : Application
         s.AddSingleton<IExerciseRepository, ExerciseRepository>();
         s.AddSingleton<IWorkoutRepository, WorkoutRepository>();
         s.AddSingleton<IWorkoutInitService, WorkoutInitService>();
+
+        // Годовая статистика
+        s.AddSingleton<IYearStatisticsService, YearStatisticsService>();
     }
 }

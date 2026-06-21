@@ -64,6 +64,11 @@ public class WorkoutRepository : IWorkoutRepository
 
     public void DeleteSession(int id) => _sessions.Delete(id);
 
+    public IEnumerable<WorkoutSession> GetSessionsForPeriod(DateTime start, DateTime end) =>
+        _sessions.FindAll()
+                 .Where(s => s.StartedAt >= start && s.StartedAt < end)
+                 .OrderByDescending(s => s.StartedAt);
+
     public IEnumerable<PerformedSet> GetHistoryForExercise(string exerciseKey, int limit = 30)
     {
         return _sessions.FindAll()

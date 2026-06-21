@@ -61,6 +61,25 @@
 		<Style Selector="Button.week-nav:pointerover">
 			<Setter Property="Background" Value="#2563EB"/>
 		</Style>
+		<Style Selector="Button.tab-nav">
+			<Setter Property="Background"      Value="#FFFFFF22"/>
+			<Setter Property="Foreground"      Value="#C7D2FE"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius"    Value="6"/>
+			<Setter Property="Padding"         Value="10,4"/>
+			<Setter Property="FontSize"        Value="12"/>
+			<Setter Property="FontWeight"      Value="Medium"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+		</Style>
+		<Style Selector="Button.tab-nav.active">
+			<Setter Property="Background" Value="#FFFFFF44"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+		</Style>
+		<Style Selector="Button.tab-nav:pointerover">
+			<Setter Property="Background" Value="#FFFFFF33"/>
+			<Setter Property="Foreground" Value="White"/>
+		</Style>
 	</Window.Styles>
 
 	<Grid RowDefinitions="60, *, 65">
@@ -77,8 +96,14 @@
 				<StackPanel Grid.Column="0" VerticalAlignment="Center">
 					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsTitle]}"
                                FontSize="16" FontWeight="Bold" Foreground="White"/>
-					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsSubtitle]}"
-                               FontSize="11" Foreground="#C7D2FE"/>
+					<StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+						<Button Classes="tab-nav active"
+                                Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TabWeek]}"/>
+						<Button Classes="tab-nav"
+                                Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TabYear]}"
+                                Command="{Binding OpenYearSummaryCommand}"
+                                CommandParameter="{Binding $parent[Window]}"/>
+					</StackPanel>
 				</StackPanel>
 				<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
 					<Button Classes="week-nav" Content="‹"

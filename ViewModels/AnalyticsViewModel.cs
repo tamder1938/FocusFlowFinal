@@ -1,8 +1,10 @@
 
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
+using FocusFlowFinal.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,8 +31,9 @@ public class DayChartItem
 
 public partial class AnalyticsViewModel : ObservableObject
 {
-    private readonly IDatabaseService _db;
-    private readonly LocalizationService _localization = LocalizationService.Instance;
+    private readonly IDatabaseService      _db;
+    private readonly IYearStatisticsService _yearSvc;
+    private readonly LocalizationService   _localization = LocalizationService.Instance;
 
     // Физический максимум — 168 часов в неделю
     private const int MaxWeekMinutes = 168 * 60;
@@ -76,9 +79,10 @@ public partial class AnalyticsViewModel : ObservableObject
     [ObservableProperty]
     private double _totalHours;
 
-    public AnalyticsViewModel(IDatabaseService db)
+    public AnalyticsViewModel(IDatabaseService db, IYearStatisticsService yearSvc)
     {
-        _db = db;
+        _db      = db;
+        _yearSvc = yearSvc;
 
         int diff = (7 + (DateTime.Today.DayOfWeek - DayOfWeek.Monday)) % 7;
         WeekStart = DateTime.Today.AddDays(-diff);
@@ -111,6 +115,14 @@ public partial class AnalyticsViewModel : ObservableObject
     private void CloseWindow(Avalonia.Controls.Window window)
     {
         window?.Close();
+    }
+
+    [RelayCommand]
+    private async void OpenYearSummary(Window owner)
+    {
+        var vm  = new YearSummaryViewModel(_yearSvc);
+        var win = new YearSummaryWindow { DataContext = vm };
+        await win.ShowDialog(owner);
     }
 
     private void LoadData()

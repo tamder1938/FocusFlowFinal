@@ -1,0 +1,600 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        xmlns:services="clr-namespace:FocusFlowFinal.Services"
+        x:Class="FocusFlowFinal.Views.YearSummaryWindow"
+        x:CompileBindings="False"
+        Title="{Binding YearTitle}"
+        Width="1060" Height="820"
+        MinWidth="900" MinHeight="600"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Styles>
+
+        <!-- Карточки модулей -->
+        <Style Selector="Border.YearCard">
+            <Setter Property="Background"     Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="CornerRadius"   Value="12"/>
+            <Setter Property="Padding"        Value="16,14"/>
+            <Setter Property="BorderBrush"    Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin"         Value="0,0,12,12"/>
+        </Style>
+        <Style Selector="TextBlock.CardTitle">
+            <Setter Property="FontSize"   Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Margin"     Value="6,0,0,0"/>
+        </Style>
+        <Style Selector="TextBlock.BigStat">
+            <Setter Property="FontSize"   Value="22"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+        <Style Selector="TextBlock.SubLabel">
+            <Setter Property="FontSize"   Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="Margin"     Value="0,2,0,0"/>
+        </Style>
+        <Style Selector="TextBlock.SubValue">
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+
+        <!-- Кнопки шапки -->
+        <Style Selector="Button.HdrBtn">
+            <Setter Property="Background"     Value="#FFFFFF22"/>
+            <Setter Property="Foreground"     Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"   Value="6"/>
+            <Setter Property="Padding"        Value="12,6"/>
+            <Setter Property="FontSize"       Value="12"/>
+            <Setter Property="Cursor"         Value="Hand"/>
+        </Style>
+        <Style Selector="Button.HdrBtn:pointerover">
+            <Setter Property="Background" Value="#FFFFFF44"/>
+        </Style>
+        <Style Selector="Button.NavBtn">
+            <Setter Property="Background"     Value="#FFFFFF22"/>
+            <Setter Property="Foreground"     Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"   Value="6"/>
+            <Setter Property="Padding"        Value="8,4"/>
+            <Setter Property="FontSize"       Value="16"/>
+            <Setter Property="FontWeight"     Value="Bold"/>
+            <Setter Property="Cursor"         Value="Hand"/>
+        </Style>
+        <Style Selector="Button.NavBtn:pointerover">
+            <Setter Property="Background" Value="#FFFFFF44"/>
+        </Style>
+
+        <!-- Ячейки героограммы -->
+        <Style Selector="Button.HeatCell">
+            <Setter Property="Width"          Value="13"/>
+            <Setter Property="Height"         Value="13"/>
+            <Setter Property="Margin"         Value="1"/>
+            <Setter Property="Padding"        Value="0"/>
+            <Setter Property="CornerRadius"   Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"         Value="Hand"/>
+        </Style>
+        <Style Selector="Button.HeatCell:pointerover">
+            <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+        <Style Selector="Button.HeatCell.empty">
+            <Setter Property="IsEnabled" Value="False"/>
+            <Setter Property="Opacity"   Value="0"/>
+        </Style>
+
+        <!-- Ячейки недели -->
+        <Style Selector="TextBlock.WdHdr">
+            <Setter Property="FontSize"   Value="9"/>
+            <Setter Property="Width"      Value="13"/>
+            <Setter Property="Margin"     Value="1"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+
+        <!-- Кнопка закрыть внизу -->
+        <Style Selector="Button.CloseBtn">
+            <Setter Property="Background"     Value="{DynamicResource PrimaryActionBrush}"/>
+            <Setter Property="Foreground"     Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"   Value="8"/>
+            <Setter Property="Padding"        Value="28,9"/>
+            <Setter Property="FontWeight"     Value="SemiBold"/>
+            <Setter Property="Cursor"         Value="Hand"/>
+        </Style>
+        <Style Selector="Button.CloseBtn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="64, *, 56">
+
+        <!-- ══ Шапка ══════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Color="#3B5BDB" Offset="0"/>
+                    <GradientStop Color="#4F6EF5" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="*, Auto, *" Margin="20,0">
+
+                <!-- Заголовок -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding YearTitle}"
+                               FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsSubtitle]}"
+                               FontSize="11" Foreground="#C7D2FE"/>
+                </StackPanel>
+
+                <!-- Навигация по годам -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                            VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Button Classes="NavBtn" Content="‹" Command="{Binding PreviousYearCommand}"/>
+                    <TextBlock Text="{Binding SelectedYear}" Foreground="White" FontSize="15"
+                               FontWeight="Bold" VerticalAlignment="Center" MinWidth="40"
+                               TextAlignment="Center"/>
+                    <Button Classes="NavBtn" Content="›" Command="{Binding NextYearCommand}"/>
+                </StackPanel>
+
+                <!-- Кнопки экспорта -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                            HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Classes="HdrBtn"
+                            Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_ExportPdf]}"
+                            Command="{Binding ExportPdfCommand}"/>
+                    <Button Classes="HdrBtn" x:Name="BtnExportPng"
+                            Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_ExportPng]}"
+                            Command="{Binding ExportPngCommand}"
+                            CommandParameter="{Binding #ScrollContent}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ Основное содержимое ════════════════════════════════════════════ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ScrollContent" Spacing="0" Margin="20,16,8,16">
+
+                <!-- Сетка из 8 карточек (3 колонки) -->
+                <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto">
+
+                    <!-- ── Задачи ────────────────────────────────────────── -->
+                    <Border Grid.Row="0" Grid.Column="0" Classes="YearCard">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📋" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardTasks]}"/>
+                            </StackPanel>
+
+                            <UniformGrid Columns="3" Rows="1" Margin="0,4,0,0">
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_Created]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding TasksCreated}"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_Completed]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding TasksCompleted}" Foreground="#10B981"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CompPct]}"/>
+                                    <TextBlock Classes="BigStat"
+                                               Text="{Binding TasksCompletionPct, StringFormat='{}{0:F1}%'}"
+                                               Foreground="#3B82F6"/>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <ProgressBar Value="{Binding TasksCompletionPct}"
+                                         Minimum="0" Maximum="100" Height="6" CornerRadius="3"
+                                         Foreground="{DynamicResource AccentBrush}"
+                                         Background="{DynamicResource ProgressBackgroundBrush}"/>
+
+                            <ItemsControl ItemsSource="{Binding TopProjects}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="10,*,Auto" Margin="0,3">
+                                            <Ellipse Grid.Column="0" Width="8" Height="8"
+                                                     Fill="{Binding Color}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                       Classes="SubLabel" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ValueLabel}"
+                                                       Classes="SubLabel" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Фокус ─────────────────────────────────────────── -->
+                    <Border Grid.Row="0" Grid.Column="1" Classes="YearCard">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⏱" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardFocus]}"/>
+                            </StackPanel>
+                            <TextBlock Classes="BigStat" Text="{Binding FocusTotalHours}"/>
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_AvgPerDay]}"/>
+                                    <TextBlock Classes="SubValue" Text="{Binding FocusAvgPerDay}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_BestMonth]}"/>
+                                    <TextBlock Classes="SubValue" Text="{Binding FocusBestMonth}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_BestDay]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding FocusBestDay}"/>
+
+                            <!-- Мини-бар по месяцам (12 столбцов) -->
+                            <ItemsControl ItemsSource="{Binding FocusMonthBars}" Margin="0,8,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="12" Rows="1" Height="70" VerticalAlignment="Bottom"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid RowDefinitions="*,Auto">
+                                            <Border Grid.Row="0" Width="12" Height="{Binding HeightRatio}"
+                                                    Background="{Binding Color}" CornerRadius="2"
+                                                    VerticalAlignment="Bottom"/>
+                                            <TextBlock Grid.Row="1" Text="{Binding Label}" FontSize="8"
+                                                       HorizontalAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── События ───────────────────────────────────────── -->
+                    <Border Grid.Row="0" Grid.Column="2" Classes="YearCard" Margin="0,0,0,12">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📅" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardEvents]}"/>
+                            </StackPanel>
+                            <TextBlock Classes="BigStat" Text="{Binding EventsTotal}"/>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TotalHours]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding EventsHours}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Привычки ──────────────────────────────────────── -->
+                    <Border Grid.Row="1" Grid.Column="0" Classes="YearCard">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔥" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardHabits]}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="20">
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_ActiveHabits]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding HabitsActive}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_AvgPct]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding HabitsAvgPct}" Foreground="#10B981"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_LongestStreak]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding HabitsLongestStreak}" TextWrapping="Wrap"/>
+
+                            <ItemsControl ItemsSource="{Binding TopHabits}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                       Classes="SubLabel" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ValueLabel}"
+                                                       Classes="SubLabel" Foreground="#10B981" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Тренировки ────────────────────────────────────── -->
+                    <Border Grid.Row="1" Grid.Column="1" Classes="YearCard">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏋" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardWorkouts]}"/>
+                            </StackPanel>
+                            <UniformGrid Columns="2" Rows="1">
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_Sessions]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding WorkoutSessions}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_Tonnage]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding WorkoutTonnage}" FontSize="16"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TotalHours]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding WorkoutHours}"/>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_Favorite]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding WorkoutFav}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Настроение ─────────────────────────────────────── -->
+                    <Border Grid.Row="1" Grid.Column="2" Classes="YearCard" Margin="0,0,0,12">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="😊" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardMood]}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TotalRecords]}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MoodTotal}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Classes="SubLabel"
+                                               Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_GreenMonth]}"/>
+                                    <TextBlock Classes="SubValue" Text="{Binding MoodBestMonth}"/>
+                                    <TextBlock Classes="SubValue" Text="{Binding MoodBestPct}" Foreground="#22C55E"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Горизонтальный stacked bar настроений -->
+                            <Border CornerRadius="4" ClipToBounds="True" Height="14" Margin="0,6,0,0">
+                                <ItemsControl ItemsSource="{Binding MoodBars}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding Color}"
+                                                    Width="{Binding WidthPct}"
+                                                    Height="14"
+                                                    ToolTip.Tip="{Binding LevelLabel}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                            <ItemsControl ItemsSource="{Binding MoodBars}" Margin="0,2,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="3"
+                                                    IsVisible="{Binding Count, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Ellipse Width="6" Height="6" Fill="{Binding Color}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding LevelLabel}" FontSize="9"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Заметки ───────────────────────────────────────── -->
+                    <Border Grid.Row="2" Grid.Column="0" Classes="YearCard">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📝" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardNotes]}"/>
+                            </StackPanel>
+                            <TextBlock Classes="BigStat" Text="{Binding NotesTotal}"/>
+                            <TextBlock Classes="SubLabel"
+                                       Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_DaysWithNotes]}"/>
+                            <TextBlock Classes="SubValue" Text="{Binding NotesDaysWithNotes}"/>
+                            <ItemsControl ItemsSource="{Binding TopNoteTags}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" Classes="SubLabel"
+                                                   Margin="0,2" Foreground="{DynamicResource AccentTextBrush}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ── Медиа ─────────────────────────────────────────── -->
+                    <Border Grid.Row="2" Grid.Column="1" Classes="YearCard">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🎬" FontSize="16"/>
+                                <TextBlock Classes="CardTitle"
+                                           Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CardMedia]}"/>
+                            </StackPanel>
+                            <UniformGrid Columns="3" Rows="2">
+                                <StackPanel Margin="0,0,4,4">
+                                    <TextBlock Text="🎬" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaMovies}" FontSize="16"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,4,4">
+                                    <TextBlock Text="📺" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaSeries}" FontSize="16"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,0,4">
+                                    <TextBlock Text="🗾" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaAnime}" FontSize="16"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,4,0">
+                                    <TextBlock Text="📚" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaBooks}" FontSize="16"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,4,0">
+                                    <TextBlock Text="🖼" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaManga}" FontSize="16"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,0,0">
+                                    <TextBlock Text="⭐" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Classes="BigStat" Text="{Binding MediaAvgScore}" FontSize="16" Foreground="#F59E0B"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            <ItemsControl ItemsSource="{Binding TopMedia}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                       Classes="SubLabel" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ValueLabel}"
+                                                       Classes="SubLabel" Foreground="#F59E0B" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Пустая 9-я ячейка (плейсхолдер) -->
+                    <Border Grid.Row="2" Grid.Column="2" Margin="0,0,0,12"/>
+
+                </Grid>
+
+                <!-- ══ Блок "Год в действиях" ══════════════════════════════════ -->
+                <Border Background="{DynamicResource CardBackgroundBrush}"
+                        CornerRadius="12" Padding="20" Margin="0,0,12,12"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                    <StackPanel Spacing="14">
+
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_YearInActions]}"
+                                   FontSize="15" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                        <!-- 12 мини-календарей в 4 колонки × 3 ряда -->
+                        <ItemsControl ItemsSource="{Binding MonthHeatmaps}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="4" Rows="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,16,16" Spacing="4">
+
+                                        <!-- Название месяца -->
+                                        <TextBlock Text="{Binding MonthName}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                                        <!-- Заголовок дней недели -->
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Пн" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Вт" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Ср" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Чт" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Пт" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Сб" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="Вс" FontSize="9" Width="15" Margin="1,0" TextAlignment="Center"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Ячейки дней: UniformGrid 7 колонок, 42 ячейки -->
+                                        <ItemsControl ItemsSource="{Binding Cells}" x:Name="CellsControl">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="7"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Width="13" Height="13" Margin="1" Padding="0"
+                                                            CornerRadius="2" BorderThickness="0"
+                                                            Background="{Binding Color}"
+                                                            IsEnabled="{Binding HasDate}"
+                                                            ToolTip.Tip="{Binding Tooltip}"
+                                                            Command="{Binding $parent[Window].DataContext.ShowDaySummaryCommand}"
+                                                            CommandParameter="{Binding Date}">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:disabled">
+                                                                <Setter Property="Opacity" Value="0"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Легенда -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_HeatLess]}"
+                                       FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"
+                                       VerticalAlignment="Center"/>
+                            <ItemsControl ItemsSource="{Binding HeatLegendCells}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="3"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="14" Height="14" CornerRadius="2"
+                                                Background="{Binding Color}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_HeatMore]}"
+                                       FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ══ Нижняя панель ══════════════════════════════════════════════════ -->
+        <Border Grid.Row="2" Background="{DynamicResource CardSecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,0">
+            <Button Classes="CloseBtn"
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[DoneBtn]}"
+                    Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Border>
+
+    </Grid>
+</Window>

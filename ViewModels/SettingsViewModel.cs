@@ -483,4 +483,20 @@ public partial class SettingsViewModel : ObservableObject
             win?.Close();
         }
     }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task ShowTodayStats()
+    {
+        var services = ((App)App.Current!).Services!;
+        var svc      = services.GetRequiredService<IYearStatisticsService>();
+        var date     = System.DateTime.Today;
+        var activity = svc.GetDayActivity(date);
+        var dlg      = new FocusFlowFinal.Views.DayStatsDialog
+        {
+            DataContext = new DayStatsViewModel(activity)
+        };
+        var owner = GetOwnerWindow();
+        if (owner != null) await dlg.ShowDialog(owner);
+        else dlg.Show();
+    }
 }

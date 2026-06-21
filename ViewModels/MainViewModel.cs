@@ -149,7 +149,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenAnalytics()
     {
-        var win = new AnalyticsWindow { DataContext = new AnalyticsViewModel(_db) };
+        var yearSvc = _services.GetRequiredService<IYearStatisticsService>();
+        var win = new AnalyticsWindow { DataContext = new AnalyticsViewModel(_db, yearSvc) };
         var owner = GetMainWindow();
         if (owner != null) await win.ShowDialog(owner);
         else win.Show();

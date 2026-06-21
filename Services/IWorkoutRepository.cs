@@ -20,6 +20,9 @@ public interface IWorkoutRepository
     void                        UpsertSession(WorkoutSession session);
     void                        DeleteSession(int id);
 
+    // Сессии за период
+    IEnumerable<WorkoutSession> GetSessionsForPeriod(DateTime start, DateTime end);
+
     // История по упражнению
     IEnumerable<PerformedSet>   GetHistoryForExercise(string exerciseKey, int limit = 30);
 

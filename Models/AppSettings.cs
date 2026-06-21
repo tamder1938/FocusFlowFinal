@@ -73,6 +73,9 @@ public class AppSettings
     public bool   UseSystemAccent { get; set; } = false;
     public string CustomAccentHex { get; set; } = "#2F6FED";
 
+    // ── Годовая статистика (Промпт 10) ───────────────────────────
+    public List<int> YearSummaryShownFor { get; set; } = new();
+
     // ── Яндекс.Карты (Промпт 6) ──────────────────────────────────
     public string? YandexSuggestApiKey  { get; set; }
     public string? YandexGeocoderApiKey { get; set; }

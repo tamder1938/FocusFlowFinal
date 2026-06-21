@@ -786,6 +786,7 @@
                                             IsVisible="{Binding ExtendedStatisticsEnabled}"/>
 									<Button Content="{Binding Loc[Feat_ShowTodayStatsBtn]}"
                                             IsVisible="{Binding ExtendedStatisticsEnabled}"
+                                            Command="{Binding ShowTodayStatsCommand}"
                                             Margin="16,10,16,14"
                                             HorizontalAlignment="Stretch"
                                             Background="{DynamicResource AccentBackground}"
