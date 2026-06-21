@@ -23,6 +23,7 @@ public partial class App : Application
     {
         var settings = AppSettings.Load();
         ApplyTheme(settings.ThemeMode);
+        ApplyAccentFromSettings(settings);
         LocalizationService.Instance.CurrentLanguage = settings.Language;
 
         var svc = new ServiceCollection();
@@ -66,6 +67,85 @@ public partial class App : Application
                 (Services.GetRequiredService<INotificationService>() as NotificationService)?.StopPolling();
         }
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // ── Системный акцент Windows ──────────────────────────────────
+    public static Color GetSystemAccentColor()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser
+                    .OpenSubKey(@"Software\Microsoft\Windows\DWM");
+                if (key?.GetValue("ColorizationColor") is int value)
+                    return Color.FromRgb(
+                        (byte)((value >> 16) & 0xFF),
+                        (byte)((value >> 8)  & 0xFF),
+                        (byte)( value        & 0xFF));
+            }
+            catch { }
+        }
+        return Color.Parse("#2F6FED");
+    }
+
+    // ── Производные оттенки ───────────────────────────────────────
+    private static Color Darken(Color c, double f) =>
+        Color.FromRgb(
+            (byte)(c.R * (1 - f)),
+            (byte)(c.G * (1 - f)),
+            (byte)(c.B * (1 - f)));
+
+    private static Color Lighten(Color c, double f) =>
+        Color.FromRgb(
+            (byte)(c.R + (255 - c.R) * f),
+            (byte)(c.G + (255 - c.G) * f),
+            (byte)(c.B + (255 - c.B) * f));
+
+    private static Color MakeTint(Color c, bool dark) => dark
+        ? Color.FromRgb((byte)(c.R * 0.13), (byte)(c.G * 0.13), (byte)(c.B * 0.22))
+        : Color.FromRgb(
+            (byte)(c.R + (255 - c.R) * 0.88),
+            (byte)(c.G + (255 - c.G) * 0.88),
+            (byte)(c.B + (255 - c.B) * 0.84));
+
+    private static void SetColor(IResourceDictionary r, string key, Color c) =>
+        r[key] = new SolidColorBrush(c);
+
+    // ── Применить акцентный цвет (все производные ключи) ─────────
+    public void ApplyAccent(Color accent)
+    {
+        bool d     = RequestedThemeVariant == ThemeVariant.Dark;
+        var  r     = Resources;
+        var  hover = Darken(accent, 0.12);
+        var  tint  = MakeTint(accent, d);
+        var  text  = d ? Lighten(accent, 0.45) : Darken(accent, 0.22);
+
+        SetColor(r, "AccentBackground",              accent);
+        SetColor(r, "AccentHoverBrush",              hover);
+        SetColor(r, "AccentLightBrush",              tint);
+        SetColor(r, "AccentTextBrush",               text);
+        SetColor(r, "NavActiveBg",                   accent);
+        SetColor(r, "SideNavButtonActiveBackground", accent);
+        SetColor(r, "AccentBrush",                   accent);
+        SetColor(r, "AccentHoverBrush2",             hover);
+        SetColor(r, "AccentLightBrush2",             tint);
+        SetColor(r, "AccentTextBrush2",              text);
+        SetColor(r, "PrimaryActionBrush",            accent);
+        SetColor(r, "PrimaryActionHoverBrush",       hover);
+    }
+
+    // ── Восстановить акцент из настроек ──────────────────────────
+    public void ApplyAccentFromSettings(AppSettings s)
+    {
+        try
+        {
+            var color = s.UseSystemAccent
+                ? GetSystemAccentColor()
+                : Color.Parse(s.CustomAccentHex ?? "#2F6FED");
+            ApplyAccent(color);
+        }
+        catch { ApplyAccent(Color.Parse("#2F6FED")); }
     }
 
     public void ApplyTheme(int mode)

@@ -116,6 +116,27 @@
 			<Setter Property="Padding" Value="16"/>
 		</Style>
 
+		<!-- Стиль для ListBoxItem в палитре свотчей -->
+		<Style Selector="ListBoxItem.swatch">
+			<Setter Property="Padding"          Value="3"/>
+			<Setter Property="Background"       Value="Transparent"/>
+			<Setter Property="CornerRadius"     Value="20"/>
+			<Setter Property="BorderThickness"  Value="2"/>
+			<Setter Property="BorderBrush"      Value="Transparent"/>
+			<Setter Property="Width"            Value="36"/>
+			<Setter Property="Height"           Value="36"/>
+			<Setter Property="Cursor"           Value="Hand"/>
+		</Style>
+		<Style Selector="ListBoxItem.swatch:selected">
+			<Setter Property="BorderBrush"     Value="{DynamicResource AccentBackground}"/>
+		</Style>
+		<Style Selector="ListBoxItem.swatch:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="ListBoxItem.swatch:selected /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+
 		<!-- ИСПРАВЛЕНО (Проблема 13): кнопка экспорта компактная, не растягивается -->
 		<Style Selector="Button.ExportBtn">
 			<Setter Property="Background" Value="{DynamicResource PrimaryActionBrush}"/>
@@ -171,50 +192,187 @@
                                                    IsVisible="{Binding $parent[Window].((vm:SettingsViewModel)DataContext).IsAccountTab}"/>
 
 					<!-- Вкладка: Общие -->
-					<StackPanel Spacing="20" IsVisible="{Binding IsGeneralTab}">
-						<StackPanel>
-							<TextBlock Classes="SectionHeader" Text="{Binding Loc[Appearance]}"/>
-							<TextBlock Text="{Binding Loc[CustomMode]}" Classes="SubLabel" Margin="0,0,0,12"
-                                       IsVisible="False"/>
-							<StackPanel Orientation="Horizontal" Spacing="12">
-								<!-- ИСПРАВЛЕНО (Проблема 1): Command="SetThemeCommand" — без мгновенного применения -->
-								<Border Classes="ThemeCard" Classes.active="{Binding IsLightSelected}"
-                                        PointerPressed="ThemeCard_PointerPressed" Tag="0">
-									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-										<TextBlock Text="☀️" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="{Binding Loc[LightTheme]}" Classes="ThemeCardText"/>
-									</StackPanel>
-								</Border>
-								<Border Classes="ThemeCard" Classes.active="{Binding IsDarkSelected}"
-                                        PointerPressed="ThemeCard_PointerPressed" Tag="1">
-									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-										<TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="{Binding Loc[DarkTheme]}" Classes="ThemeCardText"/>
-									</StackPanel>
-								</Border>
-								<Border Classes="ThemeCard" Classes.active="{Binding IsAutoSelected}"
-                                        PointerPressed="ThemeCard_PointerPressed" Tag="2">
-									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-										<TextBlock Text="🔁" FontSize="24" HorizontalAlignment="Center"/>
-										<TextBlock Text="{Binding Loc[AutoTheme]}" Classes="ThemeCardText"/>
+					<ScrollViewer IsVisible="{Binding IsGeneralTab}">
+						<StackPanel Spacing="20">
+							<StackPanel>
+								<TextBlock Classes="SectionHeader" Text="{Binding Loc[Appearance]}"/>
+								<TextBlock Text="{Binding Loc[CustomMode]}" Classes="SubLabel" Margin="0,0,0,12"
+                                           IsVisible="False"/>
+								<StackPanel Orientation="Horizontal" Spacing="12">
+									<Border Classes="ThemeCard" Classes.active="{Binding IsLightSelected}"
+                                            PointerPressed="ThemeCard_PointerPressed" Tag="0">
+										<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+											<TextBlock Text="☀️" FontSize="24" HorizontalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[LightTheme]}" Classes="ThemeCardText"/>
+										</StackPanel>
+									</Border>
+									<Border Classes="ThemeCard" Classes.active="{Binding IsDarkSelected}"
+                                            PointerPressed="ThemeCard_PointerPressed" Tag="1">
+										<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+											<TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[DarkTheme]}" Classes="ThemeCardText"/>
+										</StackPanel>
+									</Border>
+									<Border Classes="ThemeCard" Classes.active="{Binding IsAutoSelected}"
+                                            PointerPressed="ThemeCard_PointerPressed" Tag="2">
+										<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+											<TextBlock Text="🔁" FontSize="24" HorizontalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[AutoTheme]}" Classes="ThemeCardText"/>
+										</StackPanel>
+									</Border>
+								</StackPanel>
+							</StackPanel>
+
+							<StackPanel>
+								<TextBlock Classes="SectionHeader" Text="{Binding Loc[LangRegion]}"/>
+								<TextBlock Text="{Binding Loc[LangRegion]}" Classes="SubLabel" Margin="0,0,0,8"
+                                           IsVisible="False"/>
+								<ComboBox SelectedItem="{Binding SelectedLanguage}"
+                                          ItemsSource="{Binding Languages}"
+                                          Width="200" HorizontalAlignment="Left"
+                                          Background="{DynamicResource CardBackground}"
+                                          Foreground="{DynamicResource PrimaryText}"
+                                          BorderBrush="{DynamicResource CardBorder}"/>
+							</StackPanel>
+
+							<!-- ── Цветовая схема ──────────────────────────────── -->
+							<StackPanel>
+								<TextBlock Classes="SectionHeader" Text="Цветовая схема"/>
+								<Border Classes="NotifCard">
+									<StackPanel Spacing="10">
+
+										<!-- Выбор режима акцента -->
+										<RadioButton GroupName="AccentMode"
+                                                     IsChecked="{Binding UseSystemAccent}"
+                                                     Foreground="{DynamicResource PrimaryText}">
+											<StackPanel Orientation="Horizontal" Spacing="6">
+												<TextBlock Text="⚙" FontSize="13"/>
+												<TextBlock Text="Системный акцент Windows" FontSize="13"
+                                                           Foreground="{DynamicResource PrimaryText}"/>
+											</StackPanel>
+										</RadioButton>
+										<RadioButton GroupName="AccentMode"
+                                                     IsChecked="{Binding IsCustomAccent}"
+                                                     Foreground="{DynamicResource PrimaryText}">
+											<StackPanel Orientation="Horizontal" Spacing="6">
+												<TextBlock Text="🎨" FontSize="13"/>
+												<TextBlock Text="Свой цвет" FontSize="13"
+                                                           Foreground="{DynamicResource PrimaryText}"/>
+											</StackPanel>
+										</RadioButton>
+
+										<!-- Блок кастомного цвета -->
+										<StackPanel IsVisible="{Binding IsCustomAccent}" Spacing="12"
+                                                    Margin="24,4,0,0">
+
+											<!-- Свотчи -->
+											<ListBox x:CompileBindings="False"
+                                                     ItemsSource="{Binding PresetColors}"
+                                                     SelectedItem="{Binding SelectedPresetHex, Mode=TwoWay}"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     Padding="0"
+                                                     HorizontalAlignment="Left">
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<StackPanel Orientation="Horizontal" Spacing="6"/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemContainerTheme>
+													<ControlTheme TargetType="ListBoxItem">
+														<Setter Property="Padding"         Value="3"/>
+														<Setter Property="Background"      Value="Transparent"/>
+														<Setter Property="CornerRadius"    Value="20"/>
+														<Setter Property="BorderThickness" Value="2"/>
+														<Setter Property="BorderBrush"     Value="Transparent"/>
+														<Setter Property="Width"           Value="36"/>
+														<Setter Property="Height"          Value="36"/>
+														<Setter Property="Cursor"          Value="Hand"/>
+														<Setter Property="Template">
+															<ControlTemplate>
+																<Border Name="Root"
+                                                                        Background="{TemplateBinding Background}"
+                                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                                                        Padding="{TemplateBinding Padding}">
+																	<ContentPresenter HorizontalContentAlignment="Center"
+                                                                                      VerticalContentAlignment="Center"/>
+																</Border>
+															</ControlTemplate>
+														</Setter>
+														<Style Selector="^:selected">
+															<Setter Property="BorderBrush" Value="{DynamicResource AccentBackground}"/>
+														</Style>
+														<Style Selector="^:pointerover /template/ Border#Root">
+															<Setter Property="Opacity" Value="0.85"/>
+														</Style>
+													</ControlTheme>
+												</ListBox.ItemContainerTheme>
+												<ListBox.ItemTemplate>
+													<DataTemplate x:CompileBindings="False">
+														<Ellipse Width="26" Height="26" Fill="{Binding}"/>
+													</DataTemplate>
+												</ListBox.ItemTemplate>
+											</ListBox>
+
+											<!-- HEX-поле -->
+											<StackPanel Orientation="Horizontal" Spacing="10"
+                                                        VerticalAlignment="Center">
+												<TextBlock Text="HEX:"
+                                                           FontSize="13" FontWeight="Medium"
+                                                           Foreground="{DynamicResource PrimaryText}"
+                                                           VerticalAlignment="Center"/>
+												<TextBox Text="{Binding CustomAccentHex}"
+                                                         Width="110" MaxLength="7"
+                                                         Background="{DynamicResource CardBackground}"
+                                                         BorderBrush="{DynamicResource CardBorder}"
+                                                         Foreground="{DynamicResource PrimaryText}"
+                                                         CornerRadius="6" Padding="8,5"
+                                                         FontFamily="Consolas,Courier New,Monospace"/>
+												<TextBlock Text="⚠ Неверный формат"
+                                                           IsVisible="{Binding IsHexInvalid}"
+                                                           Foreground="#F59E0B" FontSize="11"
+                                                           VerticalAlignment="Center"/>
+											</StackPanel>
+
+											<!-- Превью карточка -->
+											<Border CornerRadius="12" Padding="14"
+                                                    Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource CardBorder}"
+                                                    BorderThickness="1">
+												<StackPanel Spacing="8">
+													<TextBlock Text="Предпросмотр" FontSize="11"
+                                                               Foreground="{DynamicResource SecondaryText}"
+                                                               Margin="0,0,0,2"/>
+													<StackPanel Orientation="Horizontal" Spacing="10">
+														<Button Content="Сохранить"
+                                                                Background="{DynamicResource AccentBackground}"
+                                                                Foreground="White"
+                                                                CornerRadius="6" Padding="14,7"
+                                                                FontWeight="SemiBold" Cursor="Arrow"
+                                                                IsHitTestVisible="False"/>
+														<Border Background="{DynamicResource AccentLightBrush}"
+                                                                CornerRadius="6" Padding="10,7">
+															<TextBlock Text="Выделение"
+                                                                       Foreground="{DynamicResource AccentTextBrush}"
+                                                                       FontSize="12"/>
+														</Border>
+														<TextBlock Text="Ссылка"
+                                                                   Foreground="{DynamicResource AccentBackground}"
+                                                                   FontWeight="SemiBold" FontSize="13"
+                                                                   VerticalAlignment="Center"/>
+													</StackPanel>
+												</StackPanel>
+											</Border>
+
+										</StackPanel>
 									</StackPanel>
 								</Border>
 							</StackPanel>
-						</StackPanel>
 
-						<StackPanel>
-							<TextBlock Classes="SectionHeader" Text="{Binding Loc[LangRegion]}"/>
-							<TextBlock Text="{Binding Loc[LangRegion]}" Classes="SubLabel" Margin="0,0,0,8"
-                                       IsVisible="False"/>
-							<ComboBox SelectedItem="{Binding SelectedLanguage}"
-                                      ItemsSource="{Binding Languages}"
-                                      Width="200" HorizontalAlignment="Left"
-                                      Background="{DynamicResource CardBackground}"
-                                      Foreground="{DynamicResource PrimaryText}"
-                                      BorderBrush="{DynamicResource CardBorder}"/>
 						</StackPanel>
-
-					</StackPanel>
+					</ScrollViewer>
 
 					<!-- Вкладка: Уведомления -->
 					<StackPanel Spacing="12" IsVisible="{Binding IsNotificationsTab}">

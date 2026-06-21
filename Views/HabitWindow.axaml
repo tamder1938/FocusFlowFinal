@@ -729,17 +729,17 @@
                                                         Margin="2" Height="36" Padding="0"
                                                         Background="{Binding CellColor}"
                                                         BorderBrush="{Binding BorderColor}"
-                                                        BorderThickness="2"
+                                                        BorderThickness="{Binding CellBorderThickness}"
                                                         CornerRadius="6"
-                                                        Command="{Binding $parent[Window].DataContext.ToggleCellStatusCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        IsEnabled="{Binding IsCurrentMonth}"
+                                                        Command="{Binding ToggleStatusCommand}"
+                                                        IsEnabled="{Binding CanInteract}"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
                                                         ToolTip.Tip="{Binding Tooltip}"
                                                         Cursor="Hand">
                                                     <TextBlock Text="{Binding DayNumber}"
                                                                FontSize="12"
+                                                               FontWeight="{Binding DayFontWeight}"
                                                                Foreground="{Binding TextColor}"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"/>
@@ -751,19 +751,21 @@
                                     <!-- Легенда -->
                                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#22C55E"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#3B82F6"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendDone]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F59E0B"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#EFF6FF"
+                                                    BorderBrush="#BFDBFE" BorderThickness="1"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendPartial]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F3F4F6"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F8FAFF"
+                                                    BorderBrush="#E5E7EB" BorderThickness="0.5"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendNone]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>

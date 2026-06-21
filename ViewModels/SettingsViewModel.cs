@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -5,6 +6,7 @@ using FocusFlowFinal.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace FocusFlowFinal.ViewModels;
 
@@ -54,13 +56,78 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _mediaTrackerEnabled;
     [ObservableProperty] private bool _extendedStatisticsEnabled;
 
-    // Исходные значения — на случай отмены (кнопка «Закрыть»), хотя поскольку
-    // мы больше не применяем изменения мгновенно, откатывать по факту нечего.
-    // Оставлены для ясности и возможного использования в будущем.
-    private readonly int _originalThemeMode;
+    // ── Цветовая схема ────────────────────────────────────────────
+    [ObservableProperty] private bool    _useSystemAccent;
+    [ObservableProperty] private string  _customAccentHex = "#2F6FED";
+    [ObservableProperty] private string? _selectedPresetHex;
+
+    private bool _syncingAccent;
+
+    public bool IsCustomAccent
+    {
+        get => !UseSystemAccent;
+        set => UseSystemAccent = !value;
+    }
+
+    public bool IsHexValid   => Regex.IsMatch(CustomAccentHex ?? "", @"^#[0-9A-Fa-f]{6}$");
+    public bool IsHexInvalid => !IsHexValid;
+
+    public string[] PresetColors => new[]
+    {
+        "#2F6FED", "#0EA5A0", "#5FB87A", "#7C3AED",
+        "#EC4899", "#F59E0B", "#DC4F4F", "#475569"
+    };
+
+    partial void OnUseSystemAccentChanged(bool v)
+    {
+        OnPropertyChanged(nameof(IsCustomAccent));
+        ApplyLiveAccent();
+    }
+
+    partial void OnCustomAccentHexChanged(string v)
+    {
+        OnPropertyChanged(nameof(IsHexValid));
+        OnPropertyChanged(nameof(IsHexInvalid));
+        if (!_syncingAccent)
+        {
+            _syncingAccent = true;
+            SelectedPresetHex = PresetColors.Contains(v) ? v : null;
+            _syncingAccent = false;
+        }
+        if (!UseSystemAccent && IsHexValid)
+            ApplyLiveAccent();
+    }
+
+    partial void OnSelectedPresetHexChanged(string? v)
+    {
+        if (_syncingAccent || v == null) return;
+        _syncingAccent = true;
+        CustomAccentHex = v;
+        _syncingAccent = false;
+    }
+
+    private void ApplyLiveAccent()
+    {
+        try
+        {
+            Color c;
+            if (UseSystemAccent)
+                c = App.GetSystemAccentColor();
+            else if (IsHexValid)
+                c = Color.Parse(CustomAccentHex);
+            else return;
+            ((App)App.Current!).ApplyAccent(c);
+        }
+        catch { }
+    }
+
+    // Исходные значения — для отката при Cancel()
+    private readonly int    _originalThemeMode;
     private readonly string _originalLanguage;
-    private readonly bool _originalSystemNotifications;
-    private readonly bool _originalSoundNotifications;
+    private readonly bool   _originalSystemNotifications;
+    private readonly bool   _originalSoundNotifications;
+    private readonly bool   _originalUseSystemAccent;
+    private readonly string _originalCustomAccentHex;
 
     // Зона "Данные" — статус экспорта/очистки
     [ObservableProperty] private string _exportStatusText = string.Empty;
@@ -75,6 +142,8 @@ public partial class SettingsViewModel : ObservableObject
         _originalLanguage             = settings.Language;
         _originalSystemNotifications  = settings.SystemNotifications;
         _originalSoundNotifications   = settings.SoundNotifications;
+        _originalUseSystemAccent      = settings.UseSystemAccent;
+        _originalCustomAccentHex      = settings.CustomAccentHex ?? "#2F6FED";
 
         CurrentThemeMode                 = settings.ThemeMode;
         SelectedLanguage                 = settings.Language;
@@ -89,6 +158,10 @@ public partial class SettingsViewModel : ObservableObject
         WorkoutTrackerEnabled            = settings.WorkoutTrackerEnabled;
         MediaTrackerEnabled              = settings.MediaTrackerEnabled;
         ExtendedStatisticsEnabled        = settings.ExtendedStatisticsEnabled;
+
+        _useSystemAccent  = settings.UseSystemAccent;
+        _customAccentHex  = settings.CustomAccentHex ?? "#2F6FED";
+        _selectedPresetHex = PresetColors.Contains(_customAccentHex) ? _customAccentHex : null;
 
         // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
         var services = ((App)App.Current!).Services!;
@@ -157,10 +230,13 @@ public partial class SettingsViewModel : ObservableObject
         settings.WorkoutTrackerEnabled           = WorkoutTrackerEnabled;
         settings.MediaTrackerEnabled             = MediaTrackerEnabled;
         settings.ExtendedStatisticsEnabled       = ExtendedStatisticsEnabled;
+        settings.UseSystemAccent                 = UseSystemAccent;
+        settings.CustomAccentHex                 = CustomAccentHex;
         settings.Save();
 
-        // Применяем тему здесь, а не при клике по карточке
-        (App.Current as App)?.ApplyTheme(settings.ThemeMode);
+        var app = App.Current as App;
+        app?.ApplyTheme(settings.ThemeMode);
+        app?.ApplyAccentFromSettings(settings);
 
         // Применяем язык
         LocalizationService.Instance.CurrentLanguage = settings.Language;
@@ -172,11 +248,20 @@ public partial class SettingsViewModel : ObservableObject
         CloseWindow();
     }
 
-    // ИСПРАВЛЕНО (Проблема 1, 2): «Закрыть» — НЕ применяет никакие изменения.
-    // Поскольку SetTheme больше не трогает реальную тему приложения,
-    // здесь достаточно просто закрыть окно — приложение остаётся как было.
     [RelayCommand]
-    private void Cancel() => CloseWindow();
+    private void Cancel()
+    {
+        // Откатываем live-preview акцента к исходному значению
+        try
+        {
+            Color originalColor = _originalUseSystemAccent
+                ? App.GetSystemAccentColor()
+                : Color.Parse(_originalCustomAccentHex);
+            ((App)App.Current!).ApplyAccent(originalColor);
+        }
+        catch { }
+        CloseWindow();
+    }
 
     [RelayCommand]
     private async System.Threading.Tasks.Task ExportData()

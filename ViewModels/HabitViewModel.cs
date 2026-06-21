@@ -89,13 +89,16 @@ public class HabitHeatCell
                                                   : Status == 1 ? " ~ Частично" : "");
 }
 
-// ── Ячейка месячной сетки (3 состояния) ──────────────────────────────────
-public class MonthGridCell : ObservableObject
+// ── Ячейка месячной сетки ─────────────────────────────────────────────────
+public partial class MonthGridCell : ObservableObject
 {
-    public DateTime Date          { get; set; }
+    public DateTime Date           { get; set; }
     public bool     IsCurrentMonth { get; set; }
     public bool     IsToday        { get; set; }
     public bool     IsFuture       { get; set; }
+
+    // Callback, установленный HabitViewModel при построении сетки
+    internal Action<MonthGridCell, int>? StatusChanged { get; set; }
 
     private static bool IsDarkTheme =>
         Avalonia.Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
@@ -104,26 +107,79 @@ public class MonthGridCell : ObservableObject
     public int Status
     {
         get => _status;
-        set { _status = value; OnPropertyChanged(); OnPropertyChanged(nameof(CellColor)); OnPropertyChanged(nameof(TextColor)); OnPropertyChanged(nameof(BorderColor)); }
+        set
+        {
+            _status = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CellColor));
+            OnPropertyChanged(nameof(TextColor));
+            OnPropertyChanged(nameof(BorderColor));
+            OnPropertyChanged(nameof(CellBorderThickness));
+            OnPropertyChanged(nameof(DayFontWeight));
+            OnPropertyChanged(nameof(Tooltip));
+        }
     }
 
-    public string DayNumber => IsCurrentMonth ? Date.Day.ToString() : "";
+    public string DayNumber   => IsCurrentMonth ? Date.Day.ToString() : "";
+    public bool   CanInteract => IsCurrentMonth && !IsFuture;
 
-    public string CellColor => !IsCurrentMonth ? "Transparent"
-                             : IsFuture        ? (IsDarkTheme ? "#222638" : "#F9FAFB")
-                             : Status == 2     ? "#22C55E"
-                             : Status == 1     ? "#F59E0B"
-                             : IsToday         ? (IsDarkTheme ? "#1E3A5F" : "#DBEAFE")
-                             : (IsDarkTheme    ? "#252840" : "#F3F4F6");
+    public string CellColor =>
+        !IsCurrentMonth ? "Transparent"
+        : IsFuture      ? "Transparent"
+        : Status == 2   ? "#3B82F6"
+        : Status == 1   ? (IsDarkTheme ? "#1E2C45" : "#EFF6FF")
+        : IsToday       ? (IsDarkTheme ? "#1A2028" : "#FFFFFF")
+        : (IsDarkTheme  ? "#222B36" : "#F8FAFF");
 
-    public string TextColor => Status >= 1 ? "White"
-                             : IsToday     ? (IsDarkTheme ? "#93C5FD" : "#1D4ED8")
-                             : (IsDarkTheme ? "#C8CCE8" : "#374151");
+    public string TextColor =>
+        !IsCurrentMonth ? "Transparent"
+        : IsFuture      ? "#C7CFDD"
+        : Status == 2   ? "#FFFFFF"
+        : Status == 1   ? (IsDarkTheme ? "#93C5FD" : "#2563EB")
+        : IsToday       ? (IsDarkTheme ? "#4A85FA" : "#3B82F6")
+        : (IsDarkTheme  ? "#C8CCE8" : "#374151");
 
-    public string BorderColor => IsToday && IsCurrentMonth ? "#3B82F6" : "Transparent";
+    public string BorderColor =>
+        !IsCurrentMonth          ? "Transparent"
+        : IsToday                ? "#3B82F6"
+        : Status > 0             ? "Transparent"
+        : (IsDarkTheme           ? "#252840" : "#E5E7EB");
 
-    public string Tooltip => !IsCurrentMonth ? "" :
-        $"{Date:dd.MM.yyyy}" + (Status == 2 ? " ✓" : Status == 1 ? " ~" : "");
+    public Avalonia.Thickness CellBorderThickness =>
+        !IsCurrentMonth ? new Avalonia.Thickness(0)
+        : IsToday       ? new Avalonia.Thickness(1.5)
+        : Status > 0    ? new Avalonia.Thickness(0)
+        : new Avalonia.Thickness(0.5);
+
+    public string DayFontWeight =>
+        IsToday    ? "SemiBold"
+        : Status > 0 ? "Medium"
+        : "Normal";
+
+    public string Tooltip
+    {
+        get
+        {
+            if (!IsCurrentMonth) return "";
+            var ci = new System.Globalization.CultureInfo("ru-RU");
+            string dateStr = Date.ToString("d MMMM yyyy", ci);
+            string status  = Status switch
+            {
+                2 => "Выполнено",
+                1 => "Частично",
+                _ => IsFuture ? "Будущая дата" : "Пропуск"
+            };
+            return $"{dateStr} — {status}";
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleStatus()
+    {
+        if (!CanInteract) return;
+        int next = Status switch { 0 => 2, 2 => 1, _ => 0 };
+        StatusChanged?.Invoke(this, next);
+    }
 }
 
 // ── Достижение ────────────────────────────────────────────────────────────
@@ -468,14 +524,16 @@ public partial class HabitViewModel : ObservableObject
         for (var d = first; d <= lastDay; d = d.AddDays(1))
         {
             comps.TryGetValue(d, out var comp);
-            MonthGridCells.Add(new MonthGridCell
+            var cell = new MonthGridCell
             {
                 Date           = d,
                 IsCurrentMonth = true,
                 IsToday        = d == today,
                 IsFuture       = d > today,
                 Status         = comp?.Status ?? 0
-            });
+            };
+            cell.StatusChanged = HandleCellStatusChange;
+            MonthGridCells.Add(cell);
         }
 
         // Выравнивание до кратного 7
@@ -504,15 +562,11 @@ public partial class HabitViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentMonthLabel));
     }
 
-    [RelayCommand]
-    private void ToggleCellStatus(MonthGridCell? cell)
+    private void HandleCellStatusChange(MonthGridCell cell, int newStatus)
     {
-        if (cell == null || !cell.IsCurrentMonth || cell.IsFuture || SelectedHabitItem == null) return;
+        if (SelectedHabitItem == null) return;
 
-        // Цикл: 0 → 2 (Выполнено) → 1 (Частично) → 0 (Нет)
-        int next = cell.Status switch { 0 => 2, 2 => 1, _ => 0 };
-
-        if (next == 0)
+        if (newStatus == 0)
         {
             var existing = _db.GetCompletionForDate(SelectedHabitItem.Habit.Id, cell.Date);
             if (existing != null)
@@ -526,17 +580,17 @@ public partial class HabitViewModel : ObservableObject
             var comp = _db.GetCompletionForDate(SelectedHabitItem.Habit.Id, cell.Date)
                        ?? new HabitCompletion { HabitId = SelectedHabitItem.Habit.Id, Date = cell.Date };
             bool wasNew = comp.Id == 0;
-            comp.Status = next;
+            comp.Status = newStatus;
             _db.UpsertHabitCompletion(comp);
             if (wasNew) SelectedHabitItem.Habit.TotalCompletions++;
         }
 
         _db.UpsertHabit(SelectedHabitItem.Habit);
-        cell.Status = next;
+        cell.Status = newStatus;
 
         if (cell.Date == DateTime.Today)
         {
-            SelectedHabitItem.IsCompletedToday = next >= 1;
+            SelectedHabitItem.IsCompletedToday = newStatus >= 1;
             LoadHeatMap(SelectedHabitItem);
         }
 

@@ -68,6 +68,10 @@ public class AppSettings
     public bool MediaTrackerEnabled      { get; set; } = false;
     public bool ExtendedStatisticsEnabled{ get; set; } = false;
 
+    // ── Цветовая схема (Промпт 3) ────────────────────────────────
+    public bool   UseSystemAccent { get; set; } = false;
+    public string CustomAccentHex { get; set; } = "#2F6FED";
+
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FocusFlow", "settings.json");
