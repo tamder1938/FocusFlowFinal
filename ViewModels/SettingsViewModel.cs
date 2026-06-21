@@ -1,6 +1,7 @@
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Avalonia.Media;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -67,6 +68,10 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private bool _syncingAccent;
     private bool _isInitializing = true;
 
+    // DEBUG: счётчик живых экземпляров — удалить после подтверждения фикса
+    private static int _aliveCount;
+    internal static int AliveCount => _aliveCount;
+
     public bool IsCustomAccent
     {
         get => !UseSystemAccent;
@@ -82,10 +87,23 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         "#EC4899", "#F59E0B", "#DC4F4F", "#475569"
     };
 
+    // Вызывается из SettingsWindow.OnOpened — после полной инициализации биндингов
+    internal void MarkInitialized()
+    {
+        _isInitializing = false;
+        Debug.WriteLine($"[SettingsVM] MarkInitialized. Alive={_aliveCount}");
+    }
+
     partial void OnUseSystemAccentChanged(bool v)
     {
         OnPropertyChanged(nameof(IsCustomAccent));
-        if (!_isInitializing) ApplyLiveAccent();
+        if (_isInitializing)
+        {
+            Debug.WriteLine($"[SettingsVM] OnUseSystemAccentChanged({v}) suppressed — init");
+            return;
+        }
+        Debug.WriteLine($"[SettingsVM] OnUseSystemAccentChanged({v}) → ApplyLiveAccent");
+        ApplyLiveAccent();
     }
 
     partial void OnCustomAccentHexChanged(string v)
@@ -99,7 +117,10 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             _syncingAccent = false;
         }
         if (!_isInitializing && !UseSystemAccent && IsHexValid)
+        {
+            Debug.WriteLine($"[SettingsVM] OnCustomAccentHexChanged({v}) → ApplyLiveAccent");
             ApplyLiveAccent();
+        }
     }
 
     partial void OnSelectedPresetHexChanged(string? v)
@@ -146,6 +167,9 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
     public SettingsViewModel()
     {
+        Interlocked.Increment(ref _aliveCount);
+        Debug.WriteLine($"[SettingsVM] Created. Alive={_aliveCount}");
+
         var settings = AppSettings.Load();
 
         _originalThemeMode           = settings.ThemeMode;
@@ -185,11 +209,8 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             services.GetRequiredService<ISyncService>());
 
         Loc.PropertyChanged += OnLocChanged;
-
-        // Сбрасываем флаг ПОСЛЕ того, как Avalonia завершит инициализацию биндингов
-        // (RadioButton.GroupName вызывает сеттеры обратно во время binding init,
-        // что при активном ApplyLiveAccent блокирует UI через Application.Resources).
-        Dispatcher.UIThread.Post(() => _isInitializing = false, DispatcherPriority.Loaded);
+        // _isInitializing сбрасывается в MarkInitialized(), которая вызывается из
+        // SettingsWindow.OnOpened — гарантированно ПОСЛЕ завершения binding init.
     }
 
     private void OnLocChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -202,7 +223,12 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(FunctionsTabLabel));
     }
 
-    public void Dispose() => Loc.PropertyChanged -= OnLocChanged;
+    public void Dispose()
+    {
+        Interlocked.Decrement(ref _aliveCount);
+        Debug.WriteLine($"[SettingsVM] Disposed. Alive={_aliveCount}");
+        Loc.PropertyChanged -= OnLocChanged;
+    }
 
     // ── Локализованные заголовки вкладок (Проблема 9; Часть 2, п.5) ─
     public string AccountTabLabel       => Loc["Account"];

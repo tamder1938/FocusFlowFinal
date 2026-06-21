@@ -108,8 +108,8 @@ public partial class NoteViewModel : ObservableObject
         }
         else
         {
-            EditTitle   = value.Title;
-            EditContent = value.MarkdownContent;
+            EditTitle   = value.Title ?? string.Empty;
+            EditContent = value.MarkdownContent ?? string.Empty;
             EditDate    = value.Date;
             EditTags.Clear();
             foreach (var t in value.Tags) EditTags.Add(t);

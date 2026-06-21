@@ -12,6 +12,15 @@ public partial class SettingsWindow : Window
         InitializeComponent();
     }
 
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        // Разрешаем ApplyLiveAccent только после полной инициализации биндингов.
+        // Dispatcher.UIThread.Post(Loaded) накапливался в очереди и сбрасывал флаг
+        // до binding init на 3-м открытии → вызывал App.SetColor во время layout → дедлок.
+        (DataContext as SettingsViewModel)?.MarkInitialized();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);

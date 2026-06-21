@@ -241,9 +241,12 @@
 								<Border Classes="NotifCard">
 									<StackPanel Spacing="10">
 
-										<!-- Выбор режима акцента -->
-										<RadioButton GroupName="AccentMode"
-                                                     IsChecked="{Binding UseSystemAccent}"
+										<!-- Выбор режима акцента.
+										     GroupName убран намеренно: групповая логика Avalonia вызывала
+										     обратные записи в сеттеры ViewModel при инициализации биндингов,
+										     что приводило к App.SetColor во время layout → дедлок.
+										     Взаимоисключение обеспечивается через IsCustomAccent = !UseSystemAccent. -->
+										<RadioButton IsChecked="{Binding UseSystemAccent}"
                                                      Foreground="{DynamicResource PrimaryText}">
 											<StackPanel Orientation="Horizontal" Spacing="6">
 												<TextBlock Text="⚙" FontSize="13"/>
@@ -251,8 +254,7 @@
                                                            Foreground="{DynamicResource PrimaryText}"/>
 											</StackPanel>
 										</RadioButton>
-										<RadioButton GroupName="AccentMode"
-                                                     IsChecked="{Binding IsCustomAccent}"
+										<RadioButton IsChecked="{Binding IsCustomAccent}"
                                                      Foreground="{DynamicResource PrimaryText}">
 											<StackPanel Orientation="Horizontal" Spacing="6">
 												<TextBlock Text="🎨" FontSize="13"/>

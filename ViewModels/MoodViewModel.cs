@@ -328,7 +328,7 @@ public partial class MoodViewModel : ObservableObject
     private void LoadEntryIntoForm(MoodEntry e, bool readOnly)
     {
         EditDate    = e.Date;
-        EditComment = e.Comment;
+        EditComment = e.Comment ?? string.Empty;
         SelectMoodLevel(e.Level);
 
         var selectedIds = new HashSet<int>(e.ActivityIds);

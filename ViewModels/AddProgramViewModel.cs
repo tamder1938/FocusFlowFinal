@@ -76,7 +76,7 @@ public partial class AddProgramViewModel : ObservableObject
         {
             Name  = existing.Name;
             Icon  = existing.Icon;
-            Notes = existing.Notes;
+            Notes = existing.Notes ?? string.Empty;
             Color = existing.Color;
             foreach (var d in existing.Days.OrderBy(d => d.DayNumber))
                 Days.Add(new DayItemViewModel(d));
@@ -125,7 +125,7 @@ public partial class AddProgramViewModel : ObservableObject
         var program = _existing ?? new WorkoutProgram { CreatedAt = DateTime.Now };
         program.Name  = Name.Trim();
         program.Icon  = string.IsNullOrEmpty(Icon) ? "🏋️" : Icon;
-        program.Notes = Notes.Trim();
+        program.Notes = Notes?.Trim() ?? string.Empty;
         program.Color = Color;
         program.Days  = Days.Select((d, i) => d.ToModel(i + 1)).ToList();
 
