@@ -17,6 +17,7 @@ public partial class WorkoutViewModel : ObservableObject
     public WorkoutProgramListViewModel  ProgramListVm { get; }
     public SessionHistoryViewModel      HistoryVm     { get; }
     public WorkoutAnalyticsViewModel    AnalyticsVm   { get; }
+    public WorkoutStrengthViewModel     StrengthVm    { get; }
     public IWorkoutRepository           WorkoutRepo   => _workouts;
 
     // ── Правая колонка ─────────────────────────────────────────────────
@@ -47,6 +48,7 @@ public partial class WorkoutViewModel : ObservableObject
         ProgramListVm  = new WorkoutProgramListViewModel(_workouts);
         HistoryVm      = new SessionHistoryViewModel(_workouts);
         AnalyticsVm    = new WorkoutAnalyticsViewModel(_workouts);
+        StrengthVm     = new WorkoutStrengthViewModel(_workouts, _exercises);
         ExerciseListVm = new ExerciseListViewModel(_exercises);
 
         ProgramListVm.PropertyChanged += (_, e) =>
@@ -61,6 +63,9 @@ public partial class WorkoutViewModel : ObservableObject
         await _initService.EnsureSeededAsync();
         ExerciseListVm.Refresh();
         ProgramListVm.Refresh();
+        HistoryVm.Refresh();
+        AnalyticsVm.Refresh();
+        StrengthVm.Refresh();
     }
 
     // ── Флаги центральной колонки ──────────────────────────────────────
@@ -101,6 +106,7 @@ public partial class WorkoutViewModel : ObservableObject
         ProgramListVm.Refresh();
         HistoryVm.Refresh();
         AnalyticsVm.Refresh();
+        StrengthVm.Refresh();
     }
 
     // ── Добавить упражнение в активную сессию ──────────────────────────

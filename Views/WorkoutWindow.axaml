@@ -1094,12 +1094,366 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <StackPanel x:Name="PanelStrength" IsVisible="False"
-                                VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
-                        <TextBlock Text="💪" FontSize="48" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Уровень силы — Этап 6" FontSize="14"
-                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
-                    </StackPanel>
+                    <ScrollViewer x:Name="PanelStrength" IsVisible="False"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="8,8,8,12" Spacing="10">
+
+                            <!-- Пусто -->
+                            <StackPanel IsVisible="{Binding StrengthVm.IsEmpty}"
+                                        HorizontalAlignment="Center" Spacing="8" Margin="0,60,0,0">
+                                <TextBlock Text="💪" FontSize="48" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Нет данных тренировок"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Завершите хотя бы одну сессию"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Вес тела -->
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"
+                                    CornerRadius="10" Padding="12,10">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Вес тела"
+                                               FontSize="13" FontWeight="Medium"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Column="1"
+                                                   Value="{Binding StrengthVm.BodyWeight}"
+                                                   Minimum="30" Maximum="300"
+                                                   Increment="0.5"
+                                                   FormatString="0.#"
+                                                   Width="100" Height="34"
+                                                   Background="{DynamicResource CardBackgroundBrush}"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   BorderBrush="{DynamicResource BorderBrush}"
+                                                   CornerRadius="8" FontSize="13"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text=" кг"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Мышечный силуэт -->
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"
+                                    CornerRadius="10" Padding="10,10">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="{Binding StrengthVm.WeekLabel}"
+                                               FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                                    <!-- Canvas — тело (вид спереди) -->
+                                    <Canvas Width="130" Height="248"
+                                            HorizontalAlignment="Center">
+
+                                        <!-- Back (пики из-за груди по бокам, рисуются первыми) -->
+                                        <Border Canvas.Left="22" Canvas.Top="44"
+                                                Width="18" Height="44"
+                                                Background="{Binding StrengthVm.BackBrush}"
+                                                CornerRadius="3" Opacity="0.75"
+                                                ToolTip.Tip="{Binding StrengthVm.BackHint}"/>
+                                        <Border Canvas.Left="90" Canvas.Top="44"
+                                                Width="18" Height="44"
+                                                Background="{Binding StrengthVm.BackBrush}"
+                                                CornerRadius="3" Opacity="0.75"
+                                                ToolTip.Tip="{Binding StrengthVm.BackHint}"/>
+
+                                        <!-- Ноги — бёдра -->
+                                        <Border Canvas.Left="38" Canvas.Top="134"
+                                                Width="54" Height="20"
+                                                Background="{Binding StrengthVm.LegsBrush}"
+                                                CornerRadius="3"
+                                                ToolTip.Tip="{Binding StrengthVm.LegsHint}"/>
+                                        <!-- Ноги — квадрицепсы -->
+                                        <Border Canvas.Left="39" Canvas.Top="154"
+                                                Width="25" Height="50"
+                                                Background="{Binding StrengthVm.LegsBrush}"
+                                                CornerRadius="4,4,2,2"
+                                                ToolTip.Tip="{Binding StrengthVm.LegsHint}"/>
+                                        <Border Canvas.Left="66" Canvas.Top="154"
+                                                Width="25" Height="50"
+                                                Background="{Binding StrengthVm.LegsBrush}"
+                                                CornerRadius="4,4,2,2"
+                                                ToolTip.Tip="{Binding StrengthVm.LegsHint}"/>
+                                        <!-- Ноги — голени -->
+                                        <Border Canvas.Left="41" Canvas.Top="206"
+                                                Width="21" Height="34"
+                                                Background="{Binding StrengthVm.LegsBrush}"
+                                                CornerRadius="3" Opacity="0.8"
+                                                ToolTip.Tip="{Binding StrengthVm.LegsHint}"/>
+                                        <Border Canvas.Left="68" Canvas.Top="206"
+                                                Width="21" Height="34"
+                                                Background="{Binding StrengthVm.LegsBrush}"
+                                                CornerRadius="3" Opacity="0.8"
+                                                ToolTip.Tip="{Binding StrengthVm.LegsHint}"/>
+
+                                        <!-- Трицепс (за бицепсом, рисуется до) -->
+                                        <Border Canvas.Left="12" Canvas.Top="68"
+                                                Width="16" Height="28"
+                                                Background="{Binding StrengthVm.TricepsBrush}"
+                                                CornerRadius="3" Opacity="0.7"
+                                                ToolTip.Tip="{Binding StrengthVm.TricepsHint}"/>
+                                        <Border Canvas.Left="102" Canvas.Top="68"
+                                                Width="16" Height="28"
+                                                Background="{Binding StrengthVm.TricepsBrush}"
+                                                CornerRadius="3" Opacity="0.7"
+                                                ToolTip.Tip="{Binding StrengthVm.TricepsHint}"/>
+
+                                        <!-- Бицепс -->
+                                        <Border Canvas.Left="14" Canvas.Top="64"
+                                                Width="20" Height="36"
+                                                Background="{Binding StrengthVm.BicepsBrush}"
+                                                CornerRadius="4"
+                                                ToolTip.Tip="{Binding StrengthVm.BicepsHint}"/>
+                                        <Border Canvas.Left="96" Canvas.Top="64"
+                                                Width="20" Height="36"
+                                                Background="{Binding StrengthVm.BicepsBrush}"
+                                                CornerRadius="4"
+                                                ToolTip.Tip="{Binding StrengthVm.BicepsHint}"/>
+
+                                        <!-- Предплечья (нейтральные) -->
+                                        <Border Canvas.Left="16" Canvas.Top="102"
+                                                Width="16" Height="26"
+                                                Background="{DynamicResource CardBackgroundBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1" CornerRadius="3"/>
+                                        <Border Canvas.Left="98" Canvas.Top="102"
+                                                Width="16" Height="26"
+                                                Background="{DynamicResource CardBackgroundBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1" CornerRadius="3"/>
+
+                                        <!-- Грудь -->
+                                        <Border Canvas.Left="38" Canvas.Top="42"
+                                                Width="54" Height="44"
+                                                Background="{Binding StrengthVm.ChestBrush}"
+                                                CornerRadius="4"
+                                                ToolTip.Tip="{Binding StrengthVm.ChestHint}"/>
+
+                                        <!-- Плечи -->
+                                        <Ellipse Canvas.Left="13" Canvas.Top="36"
+                                                 Width="26" Height="22"
+                                                 Fill="{Binding StrengthVm.ShouldersBrush}"
+                                                 ToolTip.Tip="{Binding StrengthVm.ShouldersHint}"/>
+                                        <Ellipse Canvas.Left="91" Canvas.Top="36"
+                                                 Width="26" Height="22"
+                                                 Fill="{Binding StrengthVm.ShouldersBrush}"
+                                                 ToolTip.Tip="{Binding StrengthVm.ShouldersHint}"/>
+
+                                        <!-- Кор/пресс (поверх груди снизу) -->
+                                        <Border Canvas.Left="43" Canvas.Top="87"
+                                                Width="44" Height="42"
+                                                Background="{Binding StrengthVm.CoreBrush}"
+                                                CornerRadius="3"
+                                                ToolTip.Tip="{Binding StrengthVm.CoreHint}"/>
+
+                                        <!-- Шея (нейтральная) -->
+                                        <Border Canvas.Left="59" Canvas.Top="28"
+                                                Width="12" Height="12"
+                                                Background="{DynamicResource CardBackgroundBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1"/>
+
+                                        <!-- Голова (нейтральная) -->
+                                        <Ellipse Canvas.Left="50" Canvas.Top="0"
+                                                 Width="30" Height="30"
+                                                 Fill="{DynamicResource CardBackgroundBrush}"
+                                                 Stroke="{DynamicResource BorderBrush}"
+                                                 StrokeThickness="1"/>
+                                    </Canvas>
+
+                                    <!-- Легенда мышц (2 колонки) -->
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                        <StackPanel Grid.Column="0" Grid.Row="0"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.ChestBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Грудь" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Grid.Row="0"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.BackBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Спина" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="0" Grid.Row="1"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.LegsBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Ноги" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Grid.Row="1"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.ShouldersBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Плечи" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="0" Grid.Row="2"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.BicepsBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Бицепс" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Grid.Row="2"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.TricepsBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Трицепс" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="0" Grid.Row="3"
+                                                    Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{Binding StrengthVm.CoreBrush}"
+                                                     VerticalAlignment="Center"/>
+                                            <TextBlock Text="Кор" FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <!-- Шкала цветов -->
+                                        <StackPanel Grid.Column="1" Grid.Row="3"
+                                                    Orientation="Horizontal" Spacing="3" Margin="0,2">
+                                            <Ellipse Width="7" Height="7" Fill="#374151" VerticalAlignment="Center"/>
+                                            <Ellipse Width="7" Height="7" Fill="#1E40AF" VerticalAlignment="Center"/>
+                                            <Ellipse Width="7" Height="7" Fill="#3B82F6" VerticalAlignment="Center"/>
+                                            <Ellipse Width="7" Height="7" Fill="#10B981" VerticalAlignment="Center"/>
+                                            <TextBlock Text="↑" FontSize="9"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Ключевые подъёмы / 1RM -->
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"
+                                    CornerRadius="10" Padding="10,10">
+                                <StackPanel Spacing="10">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="⚡ Расчётный 1RM"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <TextBlock Text="Формула Эпли · 1RM = вес × (1 + повт/30)"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    </StackPanel>
+
+                                    <ItemsControl ItemsSource="{Binding StrengthVm.KeyLifts}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,8"
+                                                        Background="{DynamicResource CardBackgroundBrush}"
+                                                        BorderBrush="{DynamicResource BorderBrush}"
+                                                        BorderThickness="1" CornerRadius="10"
+                                                        Padding="10,10">
+                                                    <StackPanel Spacing="6">
+
+                                                        <!-- Шапка: эмодзи, название, 1RM -->
+                                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding Emoji}"
+                                                                       FontSize="20"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding ExerciseName}"
+                                                                       FontSize="13" FontWeight="Medium"
+                                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                       VerticalAlignment="Center"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="2"
+                                                                       Text="{Binding OneRmLabel}"
+                                                                       FontSize="14" FontWeight="Bold"
+                                                                       Foreground="{DynamicResource AccentBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Grid>
+
+                                                        <!-- Уровень (когда есть данные) -->
+                                                        <StackPanel IsVisible="{Binding HasData}" Spacing="4">
+                                                            <!-- Бейдж уровня -->
+                                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                <Border Background="{Binding LevelBrush}"
+                                                                        CornerRadius="4" Padding="8,3">
+                                                                    <TextBlock Text="{Binding LevelLabel}"
+                                                                               FontSize="11" FontWeight="Medium"
+                                                                               Foreground="White"/>
+                                                                </Border>
+                                                            </StackPanel>
+                                                            <!-- Прогресс-бар уровня -->
+                                                            <ProgressBar Value="{Binding LevelProgress}"
+                                                                         Maximum="1.0"
+                                                                         Height="6" CornerRadius="3"
+                                                                         Foreground="{Binding LevelBrush}"
+                                                                         Background="{DynamicResource BorderBrush}"/>
+                                                            <!-- Подсказка: до следующего уровня -->
+                                                            <TextBlock Text="{Binding NextLevelHint}"
+                                                                       FontSize="10"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                        </StackPanel>
+
+                                                        <!-- Нет данных -->
+                                                        <TextBlock IsVisible="{Binding !HasData}"
+                                                                   Text="{Binding NextLevelHint}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Легенда уровней -->
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="Уровни силы (% от веса тела):"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <Border Background="#9CA3AF" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="Нач." FontSize="9" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#3B82F6" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="Нов." FontSize="9" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#10B981" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="Сред." FontSize="9" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#F59E0B" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="Прод." FontSize="9" Foreground="White"/>
+                                            </Border>
+                                            <Border Background="#8B5CF6" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="Элита" FontSize="9" Foreground="White"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
 
                 </Grid>
             </Grid>
