@@ -78,13 +78,9 @@
                                     <DataTemplate>
                                         <Border Margin="0,0,0,6" CornerRadius="10"
                                                 BorderThickness="2" Cursor="Hand"
-                                                Tapped="ProgramCard_Tapped">
-                                            <Border.BorderBrush>
-                                                <SolidColorBrush Color="{DynamicResource BorderBrush}"/>
-                                            </Border.BorderBrush>
-                                            <Border.Background>
-                                                <SolidColorBrush Color="{DynamicResource WindowBackgroundBrush}"/>
-                                            </Border.Background>
+                                                Tapped="ProgramCard_Tapped"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                Background="{DynamicResource WindowBackgroundBrush}">
                                             <Grid ColumnDefinitions="Auto,*,Auto" Margin="10,10">
                                                 <Border Grid.Column="0"
                                                         Width="40" Height="40" CornerRadius="10"

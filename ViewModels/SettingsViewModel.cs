@@ -1,4 +1,6 @@
+using System;
 using Avalonia.Media;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -11,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace FocusFlowFinal.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject, IDisposable
 {
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -63,6 +65,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string? _selectedPresetHex;
 
     private bool _syncingAccent;
+    private bool _isInitializing = true;
 
     public bool IsCustomAccent
     {
@@ -82,7 +85,7 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnUseSystemAccentChanged(bool v)
     {
         OnPropertyChanged(nameof(IsCustomAccent));
-        ApplyLiveAccent();
+        if (!_isInitializing) ApplyLiveAccent();
     }
 
     partial void OnCustomAccentHexChanged(string v)
@@ -95,7 +98,7 @@ public partial class SettingsViewModel : ObservableObject
             SelectedPresetHex = PresetColors.Contains(v) ? v : null;
             _syncingAccent = false;
         }
-        if (!UseSystemAccent && IsHexValid)
+        if (!_isInitializing && !UseSystemAccent && IsHexValid)
             ApplyLiveAccent();
     }
 
@@ -181,17 +184,25 @@ public partial class SettingsViewModel : ObservableObject
             services.GetRequiredService<IPaymentService>(),
             services.GetRequiredService<ISyncService>());
 
-        // ИСПРАВЛЕНО (Проблема 9): обновляем локализованные подписи вкладок при смене языка
-        Loc.PropertyChanged += (_, _) =>
-        {
-            OnPropertyChanged(nameof(AccountTabLabel));
-            OnPropertyChanged(nameof(GeneralTabLabel));
-            OnPropertyChanged(nameof(NotificationsTabLabel));
-            OnPropertyChanged(nameof(HotkeysTabLabel));
-            OnPropertyChanged(nameof(DataTabLabel));
-            OnPropertyChanged(nameof(FunctionsTabLabel));
-        };
+        Loc.PropertyChanged += OnLocChanged;
+
+        // Сбрасываем флаг ПОСЛЕ того, как Avalonia завершит инициализацию биндингов
+        // (RadioButton.GroupName вызывает сеттеры обратно во время binding init,
+        // что при активном ApplyLiveAccent блокирует UI через Application.Resources).
+        Dispatcher.UIThread.Post(() => _isInitializing = false, DispatcherPriority.Loaded);
     }
+
+    private void OnLocChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(AccountTabLabel));
+        OnPropertyChanged(nameof(GeneralTabLabel));
+        OnPropertyChanged(nameof(NotificationsTabLabel));
+        OnPropertyChanged(nameof(HotkeysTabLabel));
+        OnPropertyChanged(nameof(DataTabLabel));
+        OnPropertyChanged(nameof(FunctionsTabLabel));
+    }
+
+    public void Dispose() => Loc.PropertyChanged -= OnLocChanged;
 
     // ── Локализованные заголовки вкладок (Проблема 9; Часть 2, п.5) ─
     public string AccountTabLabel       => Loc["Account"];

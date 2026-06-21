@@ -100,7 +100,8 @@ public partial class AccountSettingsViewModel : ObservableObject
         }
 
         var settings = AppSettings.Load();
-        SyncEnabled = settings.SyncEnabled;
+        _syncEnabled = settings.SyncEnabled;
+        OnPropertyChanged(nameof(SyncEnabled));
         LastSyncText = settings.LastSyncUtc.HasValue
             ? settings.LastSyncUtc.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
             : Loc["NeverLbl"];
