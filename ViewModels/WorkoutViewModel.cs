@@ -14,9 +14,10 @@ public partial class WorkoutViewModel : ObservableObject
     private readonly IWorkoutInitService _initService;
 
     // ── Левая колонка ──────────────────────────────────────────────────
-    public WorkoutProgramListViewModel ProgramListVm { get; }
-    public SessionHistoryViewModel     HistoryVm     { get; }
-    public IWorkoutRepository          WorkoutRepo   => _workouts;
+    public WorkoutProgramListViewModel  ProgramListVm { get; }
+    public SessionHistoryViewModel      HistoryVm     { get; }
+    public WorkoutAnalyticsViewModel    AnalyticsVm   { get; }
+    public IWorkoutRepository           WorkoutRepo   => _workouts;
 
     // ── Правая колонка ─────────────────────────────────────────────────
     public ExerciseListViewModel ExerciseListVm { get; }
@@ -45,6 +46,7 @@ public partial class WorkoutViewModel : ObservableObject
 
         ProgramListVm  = new WorkoutProgramListViewModel(_workouts);
         HistoryVm      = new SessionHistoryViewModel(_workouts);
+        AnalyticsVm    = new WorkoutAnalyticsViewModel(_workouts);
         ExerciseListVm = new ExerciseListViewModel(_exercises);
 
         ProgramListVm.PropertyChanged += (_, e) =>
@@ -98,6 +100,7 @@ public partial class WorkoutViewModel : ObservableObject
         ActiveSessionVm = null;
         ProgramListVm.Refresh();
         HistoryVm.Refresh();
+        AnalyticsVm.Refresh();
     }
 
     // ── Добавить упражнение в активную сессию ──────────────────────────
