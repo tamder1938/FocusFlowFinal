@@ -14,7 +14,8 @@ namespace FocusFlowFinal.ViewModels;
 
 public partial class MonthViewModel : ObservableObject
 {
-    private readonly IDatabaseService _db;
+    private readonly IDatabaseService  _db;
+    private readonly INoteRepository?  _notes;
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -26,9 +27,10 @@ public partial class MonthViewModel : ObservableObject
     /// <summary>Пользователь кликнул на число месяца — переход на DayView.</summary>
     public event Action<DateTime>? DaySelected;
 
-    public MonthViewModel(IDatabaseService db)
+    public MonthViewModel(IDatabaseService db, INoteRepository notes)
     {
-        _db = db;
+        _db    = db;
+        _notes = notes;
         Loc.PropertyChanged += (s, e) => UpdateLocalization();
         GoToMonth(DateTime.Today);
     }
@@ -69,9 +71,12 @@ public partial class MonthViewModel : ObservableObject
         DateTime startDate  = firstDayOfMonth.AddDays(-offset);
         int currentMonth    = CurrentMonthDate.Month;
         int currentYear     = CurrentMonthDate.Year;
+        DateTime endDate    = startDate.AddDays(41);
 
         var items = await Task.Run(() =>
         {
+            HashSet<DateTime> noteDates = _notes?.GetDatesWithNotes(startDate, endDate) ?? new();
+
             var list = new List<MonthDayItem>();
             for (int i = 0; i < 42; i++)
             {
@@ -82,7 +87,8 @@ public partial class MonthViewModel : ObservableObject
                     Date           = day,
                     IsCurrentMonth = day.Month == currentMonth && day.Year == currentYear,
                     DayNumber      = day.Day.ToString(),
-                    Events         = new ObservableCollection<CalendarEvent>(displayEvents)
+                    Events         = new ObservableCollection<CalendarEvent>(displayEvents),
+                    HasNotes       = noteDates.Contains(day.Date),
                 });
             }
             return list;

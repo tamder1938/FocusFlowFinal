@@ -12,4 +12,7 @@ public class MonthDayItem
 
     /// <summary>true, если эта ячейка соответствует сегодняшней дате (для синего бейджа в MonthView).</summary>
     public bool IsToday => Date.Date == DateTime.Today;
+
+    public bool HasNotes { get; set; }
+    public int  NoteCount { get; set; }
 }

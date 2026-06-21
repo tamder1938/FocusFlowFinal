@@ -1,0 +1,323 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.NotesWindow"
+        x:DataType="vm:NoteViewModel"
+        x:CompileBindings="False"
+        Title="{Binding Loc[Notes_Title]}"
+        Width="1000" Height="680"
+        MinWidth="740" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SettingsWindowBackground}"
+        CanResize="True">
+
+    <Window.Styles>
+
+        <Style Selector="Border.note-item">
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="Padding"      Value="12,8"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+        </Style>
+        <Style Selector="Border.note-item:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SideNavButtonHoverBackground}"/>
+        </Style>
+
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Background"      Value="{DynamicResource ButtonBackgroundBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource ButtonBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="4"/>
+            <Setter Property="Padding"         Value="8,4"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Foreground"      Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SideNavButtonHoverBackground}"/>
+        </Style>
+
+        <Style Selector="Button.accent-btn">
+            <Setter Property="Background"  Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground"  Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="12,6"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+
+        <Style Selector="TextBox.filter-box">
+            <Setter Property="Background"      Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="8,5"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+
+        <Style Selector="TextBox.editor-box">
+            <Setter Property="Background"      Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="10,8"/>
+            <Setter Property="FontFamily"      Value="Consolas,Courier New,monospace"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Foreground"      Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="280,*" Margin="0">
+
+        <!-- ═══ ЛЕВАЯ ПАНЕЛЬ: список заметок ═══ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SidePanelBackground}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <DockPanel>
+
+                <!-- Заголовок + кнопка новой заметки -->
+                <Border DockPanel.Dock="Top"
+                        Padding="12,12,12,8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid RowDefinitions="Auto,Auto,Auto">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Loc[Notes_Title]}"
+                                       FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Classes="accent-btn"
+                                    Command="{Binding NewNoteCommand}"
+                                    Content="{Binding Loc[Notes_NewBtn]}"/>
+                        </Grid>
+
+                        <!-- Поиск -->
+                        <TextBox Grid.Row="1"
+                                 Classes="filter-box"
+                                 Text="{Binding SearchQuery}"
+                                 Watermark="{Binding Loc[Notes_SearchWatermark]}"
+                                 Margin="0,0,0,6"/>
+
+                        <!-- Фильтр по тегу -->
+                        <ComboBox Grid.Row="2"
+                                  ItemsSource="{Binding AllTags}"
+                                  SelectedItem="{Binding SelectedTag}"
+                                  PlaceholderText="{Binding Loc[Notes_AllTags]}"
+                                  HorizontalAlignment="Stretch"
+                                  Background="{DynamicResource InputBackgroundBrush}"
+                                  BorderBrush="{DynamicResource BorderBrush}"
+                                  Foreground="{DynamicResource PrimaryTextBrush}"
+                                  FontSize="12"/>
+
+                    </Grid>
+                </Border>
+
+                <!-- Список заметок -->
+                <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+
+                        <!-- Подсказка когда список пуст -->
+                        <TextBlock IsVisible="{Binding IsNoteListEmpty}"
+                                   Text="{Binding Loc[Notes_EmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="12,16" HorizontalAlignment="Center"/>
+
+                        <ItemsControl ItemsSource="{Binding NoteList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Name="NoteItemBorder"
+                                            Classes="note-item"
+                                            PointerPressed="NoteItem_PointerPressed">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxLines="1"/>
+                                            <TextBlock Text="{Binding Date, StringFormat='{}{0:dd.MM.yyyy}'}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ ПРАВАЯ ПАНЕЛЬ: редактор ═══ -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource CardBackground}"
+                Padding="0">
+            <Grid RowDefinitions="Auto,*">
+
+                <!-- Тулбар редактора -->
+                <Border Grid.Row="0"
+                        Padding="14,10"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <!-- Кнопки форматирования -->
+                        <WrapPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Button Classes="toolbar-btn" Name="BtnBold"   Click="BtnBold_Click"   Content="B"  FontWeight="Bold"   Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtBold]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnItalic" Click="BtnItalic_Click" Content="I"  FontStyle="Italic" Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtItalic]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnCode"   Click="BtnCode_Click"   Content="&lt;/&gt;" Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtCode]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnH1"     Click="BtnH1_Click"     Content="H1" FontWeight="Bold"   Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtH1]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnH2"     Click="BtnH2_Click"     Content="H2" FontWeight="Bold"   Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtH2]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnQuote"  Click="BtnQuote_Click"  Content="❝"                    Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtQuote]}"/>
+                            <Button Classes="toolbar-btn" Name="BtnList"   Click="BtnList_Click"   Content="≡"                    Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Notes_FmtList]}"/>
+                        </WrapPanel>
+
+                        <!-- Статус + Экспорт -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding SaveStatus}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Button Classes="toolbar-btn"
+                                    Name="BtnExportMd"
+                                    Click="BtnExportMd_Click"
+                                    IsEnabled="{Binding HasSelectedNote}"
+                                    Content=".md" ToolTip.Tip="{Binding Loc[Notes_ExportMd]}"/>
+                            <Button Classes="toolbar-btn"
+                                    Name="BtnExportHtml"
+                                    Click="BtnExportHtml_Click"
+                                    IsEnabled="{Binding HasSelectedNote}"
+                                    Content=".html" ToolTip.Tip="{Binding Loc[Notes_ExportHtml]}"/>
+                            <Button Classes="toolbar-btn"
+                                    Name="BtnExportTxt"
+                                    Click="BtnExportTxt_Click"
+                                    IsEnabled="{Binding HasSelectedNote}"
+                                    Content=".txt" ToolTip.Tip="{Binding Loc[Notes_ExportTxt]}"/>
+                            <Button Classes="toolbar-btn"
+                                    Name="BtnDelete"
+                                    Click="BtnDelete_Click"
+                                    IsEnabled="{Binding HasSelectedNote}"
+                                    Foreground="#EF4444"
+                                    Content="{Binding Loc[Notes_DeleteBtn]}"/>
+                        </StackPanel>
+
+                    </Grid>
+                </Border>
+
+                <!-- Тело редактора -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <Grid>
+
+                        <!-- Подсказка когда ничего не выбрано -->
+                        <TextBlock IsVisible="{Binding !HasSelectedNote}"
+                                   Text="{Binding Loc[Notes_SelectHint]}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="14"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,80"/>
+
+                        <!-- Редактор активной заметки -->
+                        <StackPanel IsVisible="{Binding HasSelectedNote}"
+                                    Spacing="10" Margin="16,14">
+
+                            <!-- Заголовок и дата -->
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                                <TextBox Grid.Column="0"
+                                         Classes="editor-box"
+                                         Text="{Binding EditTitle}"
+                                         Watermark="{Binding Loc[Notes_TitleWatermark]}"
+                                         FontSize="16" FontWeight="SemiBold"
+                                         FontFamily="Segoe UI,Arial,sans-serif"
+                                         Margin="0,0,8,0"/>
+                                <DatePicker Grid.Column="1"
+                                            SelectedDate="{Binding EditDate}"
+                                            Background="{DynamicResource InputBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </Grid>
+
+                            <!-- Теги -->
+                            <Border Background="{DynamicResource InputBackgroundBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="6" Padding="8,6">
+                                <WrapPanel Orientation="Horizontal">
+                                    <!-- Существующие теги -->
+                                    <ItemsControl ItemsSource="{Binding EditTags}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource AccentLightBrush}"
+                                                        CornerRadius="10"
+                                                        Padding="8,3"
+                                                        Margin="0,2,4,2">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="{Binding}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource AccentTextBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Button Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Padding="0"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                Cursor="Hand"
+                                                                Command="{Binding $parent[Window].DataContext.RemoveTagCommand}"
+                                                                CommandParameter="{Binding}">✕</Button>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <!-- Инпут нового тега -->
+                                    <TextBox Text="{Binding NewTagInput}"
+                                             Watermark="{Binding Loc[Notes_TagWatermark]}"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Padding="4,2"
+                                             FontSize="12"
+                                             MinWidth="160"
+                                             Foreground="{DynamicResource PrimaryTextBrush}"
+                                             Name="TagInput"
+                                             KeyDown="TagInput_KeyDown"/>
+                                </WrapPanel>
+                            </Border>
+
+                            <!-- Текстовый редактор -->
+                            <TextBox Name="ContentEditor"
+                                     Classes="editor-box"
+                                     Text="{Binding EditContent}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="380"
+                                     VerticalAlignment="Stretch"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+
+                            <!-- Результат экспорта -->
+                            <TextBlock Text="{Binding ExportResult}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       IsVisible="{Binding ExportResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                       TextWrapping="Wrap"/>
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

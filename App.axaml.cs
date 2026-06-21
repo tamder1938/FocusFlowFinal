@@ -269,5 +269,9 @@ public partial class App : Application
 
         // Финансовый модуль
         s.AddTransient<FinanceViewModel>();
+
+        // Заметки и дневник
+        s.AddSingleton<INoteRepository, NoteRepository>();
+        s.AddSingleton<NoteExportService>();
     }
 }

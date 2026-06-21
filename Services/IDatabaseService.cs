@@ -1,6 +1,7 @@
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
+using FocusFlowFinal.Models.Notes;
 using System;
 using System.Collections.Generic;
 
@@ -111,4 +112,13 @@ public interface IDatabaseService
     IEnumerable<HabitTemplate> GetAllHabitTemplates();
     void UpsertHabitTemplate(HabitTemplate template);
     void DeleteHabitTemplate(int id);
+
+    // ── Заметки и дневник ───────────────────────────────────────────
+    IEnumerable<Note> GetAllNotes();
+    Note? GetNoteById(int id);
+    int UpsertNote(Note note);
+    void DeleteNote(int id);
+    HashSet<DateTime> GetNoteDates(DateTime from, DateTime to);
+    IEnumerable<string> GetAllNoteTags();
+    IEnumerable<Note> SearchNotes(string? query, string? tag, DateTime? from, DateTime? to);
 }

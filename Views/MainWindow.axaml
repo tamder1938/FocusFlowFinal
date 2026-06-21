@@ -219,6 +219,7 @@
 					</Button>
 					<!-- Заметки и дневник -->
 					<Button IsVisible="{Binding IsNotesAndDiaryEnabled}"
+                            Command="{Binding OpenNotesCommand}"
                             Background="{DynamicResource ButtonBackgroundBrush}"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             BorderBrush="{DynamicResource ButtonBorderBrush}"

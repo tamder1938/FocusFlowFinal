@@ -6,6 +6,7 @@ using LiteDB;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
+using FocusFlowFinal.Models.Notes;
 
 namespace FocusFlowFinal.Services
 {
@@ -28,6 +29,7 @@ namespace FocusFlowFinal.Services
         private const string HabitCompletionsCollection = "habit_completions";
         private const string HabitCategoriesCollection  = "habit_categories";
         private const string HabitTemplatesCollection   = "habit_templates";
+        private const string NotesCollection            = "notes";
 
         public DatabaseService()
         {
@@ -42,6 +44,8 @@ namespace FocusFlowFinal.Services
             _db.GetCollection<CalendarEvent>(EventsCollection).EnsureIndex(e => e.Start);
             _db.GetCollection<TaskItem>(TasksCollection).EnsureIndex(t => t.DueDate);
             _db.GetCollection<FocusSession>(SessionsCollection).EnsureIndex(s => s.StartTime);
+            _db.GetCollection<Note>(NotesCollection).EnsureIndex(n => n.Date);
+            _db.GetCollection<Note>(NotesCollection).EnsureIndex(n => n.UpdatedAt);
 
             var templates = _db.GetCollection<TimerTemplate>(TemplatesCollection);
             templates.EnsureIndex(t => t.Name);
@@ -777,6 +781,74 @@ namespace FocusFlowFinal.Services
                 new HabitCategory { Name = "Другое",         Icon = "⭐",  Color = "#6B7280", IsSystem = true },
             };
             col.InsertBulk(defaults);
+        }
+
+        // ── Заметки и дневник ───────────────────────────────────────────
+
+        public IEnumerable<Note> GetAllNotes() =>
+            _db.GetCollection<Note>(NotesCollection)
+               .FindAll()
+               .OrderByDescending(n => n.UpdatedAt)
+               .ToList();
+
+        public Note? GetNoteById(int id) =>
+            _db.GetCollection<Note>(NotesCollection).FindById(id);
+
+        public int UpsertNote(Note note)
+        {
+            note.UpdatedAt = DateTime.Now;
+            var col = _db.GetCollection<Note>(NotesCollection);
+            if (note.Id == 0)
+            {
+                note.CreatedAt = DateTime.Now;
+                return col.Insert(note).AsInt32;
+            }
+            col.Update(note);
+            return note.Id;
+        }
+
+        public void DeleteNote(int id) =>
+            _db.GetCollection<Note>(NotesCollection).Delete(id);
+
+        public HashSet<DateTime> GetNoteDates(DateTime from, DateTime to)
+        {
+            var fromDate = from.Date;
+            var toDate   = to.Date;
+            var dates = _db.GetCollection<Note>(NotesCollection)
+                .FindAll()
+                .Where(n => n.Date.Date >= fromDate && n.Date.Date <= toDate)
+                .Select(n => n.Date.Date);
+            return new HashSet<DateTime>(dates);
+        }
+
+        public IEnumerable<string> GetAllNoteTags() =>
+            _db.GetCollection<Note>(NotesCollection)
+               .FindAll()
+               .SelectMany(n => n.Tags)
+               .Distinct()
+               .OrderBy(t => t)
+               .ToList();
+
+        public IEnumerable<Note> SearchNotes(string? query, string? tag, DateTime? from, DateTime? to)
+        {
+            var all = _db.GetCollection<Note>(NotesCollection).FindAll();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var q = query.ToLower();
+                all = all.Where(n => n.Title.ToLower().Contains(q) || n.MarkdownContent.ToLower().Contains(q));
+            }
+
+            if (!string.IsNullOrWhiteSpace(tag))
+                all = all.Where(n => n.Tags.Contains(tag));
+
+            if (from.HasValue)
+                all = all.Where(n => n.Date.Date >= from.Value.Date);
+
+            if (to.HasValue)
+                all = all.Where(n => n.Date.Date <= to.Value.Date);
+
+            return all.OrderByDescending(n => n.UpdatedAt).ToList();
         }
     }
 }

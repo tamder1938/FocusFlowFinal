@@ -138,6 +138,16 @@
 											</ItemsControl.ItemTemplate>
 										</ItemsControl>
 
+										<!-- Бейдж заметок -->
+										<Border IsVisible="{Binding HasNotes}"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                CornerRadius="4" Padding="5,2"
+                                                HorizontalAlignment="Left" Margin="0,2,0,0">
+											<TextBlock Text="📝"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource AccentTextBrush}"/>
+										</Border>
+
 									</StackPanel>
 								</Button>
 							</Border>

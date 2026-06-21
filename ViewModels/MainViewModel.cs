@@ -209,6 +209,19 @@ public partial class MainViewModel : ObservableObject
         else win.Show();
     }
 
+    [RelayCommand]
+    private async void OpenNotes()
+    {
+        var repo   = _services.GetRequiredService<INoteRepository>();
+        var export = _services.GetRequiredService<NoteExportService>();
+        var vm     = new NoteViewModel(repo, export);
+        var win    = new Views.NotesWindow { DataContext = vm };
+        var owner  = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+        if (CurrentCalendarView is MonthViewModel mv) mv.RefreshMonth();
+    }
+
     private Window? GetMainWindow() =>
         (App.Current?.ApplicationLifetime as
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
