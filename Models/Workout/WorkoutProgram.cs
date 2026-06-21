@@ -29,6 +29,16 @@ public class WorkoutDay
     public string                    Name              { get; set; } = string.Empty;
     public List<MuscleGroup>         TargetMuscles     { get; set; } = new();
     public List<PlannedExercise>     PlannedExercises  { get; set; } = new();
+
+    [BsonIgnore]
+    public string MusclesLabel =>
+        TargetMuscles.Count > 0
+            ? string.Join(", ", TargetMuscles.Select(MuscleGroupLabels.Get))
+            : "Все группы";
+
+    [BsonIgnore]
+    public string ExerciseCountLabel =>
+        PlannedExercises.Count > 0 ? $"{PlannedExercises.Count} упр." : "Упражнения не добавлены";
 }
 
 public class PlannedExercise

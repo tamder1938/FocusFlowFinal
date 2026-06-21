@@ -1,21 +1,24 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FocusFlowFinal.Models.Workout;
 using FocusFlowFinal.Services;
-using System;
 using System.Threading.Tasks;
 
 namespace FocusFlowFinal.ViewModels;
 
 public partial class WorkoutViewModel : ObservableObject
 {
-    private readonly IExerciseRepository  _exercises;
-    private readonly IWorkoutRepository   _workouts;
-    private readonly IWorkoutInitService  _initService;
+    private readonly IExerciseRepository _exercises;
+    private readonly IWorkoutRepository  _workouts;
+    private readonly IWorkoutInitService _initService;
 
-    // ── Правая колонка ────────────────────────────────────────────────
+    // ── Левая колонка — программы ─────────────────────────────────────
+    public WorkoutProgramListViewModel ProgramListVm { get; }
+    public IWorkoutRepository          WorkoutRepo   => _workouts;
 
+    // ── Правая колонка — упражнения ───────────────────────────────────
     public ExerciseListViewModel ExerciseListVm { get; }
+
+    // ── Состояние центральной колонки ─────────────────────────────────
+    public bool HasSelectedProgram => ProgramListVm.SelectedProgram != null;
 
     // ── Вкладка правой колонки ────────────────────────────────────────
     [ObservableProperty] private int _rightTabIndex = 0;
@@ -29,12 +32,20 @@ public partial class WorkoutViewModel : ObservableObject
         _workouts    = workouts;
         _initService = initService;
 
-        ExerciseListVm = new ExerciseListViewModel(exercises);
+        ProgramListVm  = new WorkoutProgramListViewModel(_workouts);
+        ExerciseListVm = new ExerciseListViewModel(_exercises);
+
+        ProgramListVm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkoutProgramListViewModel.SelectedProgram))
+                OnPropertyChanged(nameof(HasSelectedProgram));
+        };
     }
 
     public async Task InitializeAsync()
     {
         await _initService.EnsureSeededAsync();
         ExerciseListVm.Refresh();
+        ProgramListVm.Refresh();
     }
 }

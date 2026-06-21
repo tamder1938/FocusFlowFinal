@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.AddProgramDialog"
+        x:CompileBindings="False"
+        Title="{Binding DialogTitle}"
+        Width="560" Height="700"
+        MinWidth="480" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Border Padding="20">
+        <Grid RowDefinitions="*,Auto">
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="14">
+
+                    <!-- Иконка + Название -->
+                    <Grid ColumnDefinitions="72,*">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
+                            <TextBlock Text="Иконка" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBox Text="{Binding Icon}" Width="66"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="8" Padding="8"
+                                     FontSize="22" TextAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Название *" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBox Text="{Binding Name}"
+                                     Watermark="Например: PPL Split"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="8" Padding="10,8"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Цвет -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Цвет" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                    x:Name="ColorPanel">
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#3B82F6" Tapped="ColorSwatch_Tapped" Tag="#3B82F6"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#8B5CF6" Tapped="ColorSwatch_Tapped" Tag="#8B5CF6"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#10B981" Tapped="ColorSwatch_Tapped" Tag="#10B981"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#F59E0B" Tapped="ColorSwatch_Tapped" Tag="#F59E0B"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#EF4444" Tapped="ColorSwatch_Tapped" Tag="#EF4444"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#EC4899" Tapped="ColorSwatch_Tapped" Tag="#EC4899"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#14B8A6" Tapped="ColorSwatch_Tapped" Tag="#14B8A6"/>
+                            <Border Width="28" Height="28" CornerRadius="8" Cursor="Hand"
+                                    Background="#F97316" Tapped="ColorSwatch_Tapped" Tag="#F97316"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Заметки -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Описание / Заметки" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <TextBox Text="{Binding Notes}"
+                                 AcceptsReturn="True" TextWrapping="Wrap" Height="64"
+                                 Background="{DynamicResource CardBackgroundBrush}"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 CornerRadius="8" Padding="10,8"
+                                 Watermark="Опишите цель программы…"/>
+                    </StackPanel>
+
+                    <!-- Разделитель -->
+                    <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,4"/>
+
+                    <!-- Дни тренировок -->
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="Дни тренировок"
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Command="{Binding AddDayCommand}"
+                                    Content="+ Добавить день"
+                                    Background="Transparent"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="1"
+                                    Foreground="{DynamicResource AccentBrush}"
+                                    CornerRadius="8" Padding="10,6" FontSize="12"/>
+                        </Grid>
+
+                        <!-- Список дней -->
+                        <ItemsControl ItemsSource="{Binding Days}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,10"
+                                            Background="{DynamicResource CardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="10"
+                                            Padding="14,12">
+                                        <StackPanel Spacing="10">
+
+                                            <!-- Заголовок дня -->
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0"
+                                                        Background="{DynamicResource AccentBrush}"
+                                                        CornerRadius="6"
+                                                        Width="28" Height="28"
+                                                        Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding DayNumber}"
+                                                               FontSize="12" FontWeight="Bold"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBox Grid.Column="1"
+                                                         Text="{Binding DayName}"
+                                                         Background="{DynamicResource WindowBackgroundBrush}"
+                                                         Foreground="{DynamicResource PrimaryTextBrush}"
+                                                         BorderBrush="{DynamicResource BorderBrush}"
+                                                         CornerRadius="6" Padding="8,5"
+                                                         FontSize="13" FontWeight="Medium"/>
+                                                <Button Grid.Column="2"
+                                                        Content="✕"
+                                                        Command="{Binding DataContext.RemoveDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                                        Padding="8,0" Margin="6,0,0,0"
+                                                        FontSize="14"/>
+                                            </Grid>
+
+                                            <!-- Мышечные группы -->
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Целевые мышцы" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                <ItemsControl ItemsSource="{Binding MuscleItems}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Button Margin="0,0,4,4"
+                                                                    Command="{Binding ToggleCommand}"
+                                                                    Background="{Binding IsSelected, Converter={x:Static conv:BoolToChipBrushConverter.Instance}}"
+                                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="8"
+                                                                    Padding="10,5"
+                                                                    FontSize="12"
+                                                                    Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                    Content="{Binding Label}"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Ошибка -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding ErrorMessage}"
+                               Foreground="#DC4F4F" FontSize="12"/>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Кнопки -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,16,0,0">
+                <Button Grid.Column="1"
+                        Command="{Binding CancelCommand}"
+                        Content="Отмена"
+                        Margin="0,0,8,0"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        CornerRadius="8" Padding="16,9"/>
+                <Button Grid.Column="2"
+                        Command="{Binding SaveCommand}"
+                        Content="Сохранить"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White"
+                        CornerRadius="8" Padding="18,9"/>
+            </Grid>
+        </Grid>
+    </Border>
+
+</Window>

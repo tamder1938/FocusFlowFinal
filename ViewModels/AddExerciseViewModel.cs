@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace FocusFlowFinal.ViewModels;
 
@@ -15,13 +16,16 @@ public class MuscleGroupItem : ObservableObject
 {
     public MuscleGroup Group    { get; }
     public string      Label    { get; }
+    public ICommand    ToggleCommand { get; }
+
     private bool _selected;
     public bool IsSelected { get => _selected; set => SetProperty(ref _selected, value); }
 
     public MuscleGroupItem(MuscleGroup g)
     {
-        Group = g;
-        Label = MuscleGroupLabels.Get(g);
+        Group  = g;
+        Label  = MuscleGroupLabels.Get(g);
+        ToggleCommand = new RelayCommand(() => IsSelected = !IsSelected);
     }
 }
 

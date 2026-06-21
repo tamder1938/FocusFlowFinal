@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using FocusFlowFinal.Models.Workout;
 using FocusFlowFinal.ViewModels;
 using System;
 
@@ -21,14 +22,15 @@ public partial class WorkoutWindow : Window
 
         Vm.ExerciseListVm.AddExerciseRequested    += OnAddExerciseRequested;
         Vm.ExerciseListVm.ExerciseHistoryRequested += OnExerciseHistoryRequested;
+        Vm.ProgramListVm.AddProgramRequested       += OnAddProgramRequested;
+        Vm.ProgramListVm.EditProgramRequested      += OnEditProgramRequested;
 
         await Vm.InitializeAsync();
 
-        // Устанавливаем начальную активную вкладку
         SetActiveTab(0);
     }
 
-    // ── Переключение вкладок правой колонки ────────────────────────────
+    // ── Вкладки правой колонки ─────────────────────────────────────────
 
     private void RightTab_Click(object? sender, RoutedEventArgs e)
     {
@@ -39,12 +41,10 @@ public partial class WorkoutWindow : Window
 
     private void SetActiveTab(int idx)
     {
-        // Панели
         if (PanelExercises != null) PanelExercises.IsVisible = idx == 0;
         if (PanelAnalytics  != null) PanelAnalytics.IsVisible  = idx == 1;
         if (PanelStrength   != null) PanelStrength.IsVisible   = idx == 2;
 
-        // Стили кнопок
         SetTabActive(TabExercises, idx == 0);
         SetTabActive(TabAnalytics,  idx == 1);
         SetTabActive(TabStrength,   idx == 2);
@@ -53,13 +53,53 @@ public partial class WorkoutWindow : Window
     private static void SetTabActive(Button? btn, bool active)
     {
         if (btn == null) return;
-        if (active)
-            btn.Classes.Add("right-tab-active");
-        else
-            btn.Classes.Remove("right-tab-active");
+        if (active) btn.Classes.Add("right-tab-active");
+        else        btn.Classes.Remove("right-tab-active");
     }
 
-    // ── Диалог добавления упражнения ───────────────────────────────────
+    // ── Карточка программы — клик ──────────────────────────────────────
+
+    private void ProgramCard_Tapped(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Border { DataContext: WorkoutProgramCardViewModel cardVm })
+            Vm?.ProgramListVm.SelectProgramCommand.Execute(cardVm);
+    }
+
+    // ── Диалог: добавить программу ─────────────────────────────────────
+
+    private async void OnAddProgramRequested(object? sender, EventArgs e)
+    {
+        var vm = Vm;
+        if (vm == null) return;
+
+        var dialogVm = new AddProgramViewModel(vm.WorkoutRepo);
+        await OpenProgramDialog(dialogVm, vm);
+    }
+
+    private async void OnEditProgramRequested(object? sender, WorkoutProgram program)
+    {
+        var vm = Vm;
+        if (vm == null) return;
+
+        var dialogVm = new AddProgramViewModel(vm.WorkoutRepo, program);
+        await OpenProgramDialog(dialogVm, vm);
+    }
+
+    private async System.Threading.Tasks.Task OpenProgramDialog(
+        AddProgramViewModel dialogVm, WorkoutViewModel wvm)
+    {
+        var dialog = new AddProgramDialog { DataContext = dialogVm };
+
+        dialogVm.CloseRequested += (_, _) =>
+        {
+            dialog.Close();
+            if (dialogVm.Saved) wvm.ProgramListVm.Refresh();
+        };
+
+        await dialog.ShowDialog(this);
+    }
+
+    // ── Диалог: добавить упражнение ────────────────────────────────────
 
     private async void OnAddExerciseRequested(object? sender, EventArgs e)
     {
@@ -80,8 +120,5 @@ public partial class WorkoutWindow : Window
 
     // ── История упражнения (заглушка — Этап 5) ─────────────────────────
 
-    private void OnExerciseHistoryRequested(object? sender, Models.Workout.Exercise exercise)
-    {
-        // TODO Этап 5: открыть попап с историей подходов
-    }
+    private void OnExerciseHistoryRequested(object? sender, Exercise exercise) { }
 }
