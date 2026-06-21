@@ -2,9 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FocusFlowFinal.ViewModels"
         xmlns:models="using:FocusFlowFinal.Models"
+        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
         x:Class="FocusFlowFinal.Views.TaskDialog"
         x:DataType="vm:TaskDialogViewModel"
-        Title="{Binding Loc[TaskTitle]}" Width="420" Height="760"
+        Title="{Binding Loc[TaskTitle]}" Width="420" Height="820"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
@@ -248,6 +249,14 @@
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
 				<TextBox Text="{Binding DurationMinutes}" Width="90" Margin="0"/>
 			</StackPanel>
+
+			<!-- Место -->
+			<CheckBox Content="{Binding Loc[Loc_AddPlace]}" IsChecked="{Binding HasLocation}"
+			          Foreground="{DynamicResource PrimaryTextBrush}"/>
+			<controls:AddressPickerControl
+			    IsVisible="{Binding HasLocation}"
+			    SelectedLocation="{Binding SelectedLocation, Mode=TwoWay}"
+			    Margin="0,4,0,12"/>
 
 			<!-- Приоритет -->
 			<TextBlock Classes="field-label" Text="{Binding Loc[PriorityLabel]}" Margin="0,4,0,8"/>

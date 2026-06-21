@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:FocusFlowFinal.Converters"
+             x:Class="FocusFlowFinal.Views.Controls.AddressPickerControl"
+             x:CompileBindings="False">
+
+    <UserControl.Resources>
+        <converters:PathToBitmapConverter x:Key="PathToBitmapConverter"/>
+    </UserControl.Resources>
+
+    <StackPanel Spacing="6">
+
+        <!-- Поле ввода адреса -->
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBox x:Name="AddressBox"
+                     Grid.Column="0"
+                     Watermark="{Binding Loc[Loc_EnterAddress]}"
+                     Background="{DynamicResource CardBackgroundBrush}"
+                     Foreground="{DynamicResource ForegroundBrush}"
+                     BorderBrush="{DynamicResource BorderBrush}"
+                     CornerRadius="6"
+                     FontSize="13"
+                     Padding="8,6"
+                     TextChanged="AddressBox_TextChanged"
+                     KeyDown="AddressBox_KeyDown"/>
+            <Button x:Name="ClearBtn"
+                    Grid.Column="1"
+                    IsVisible="False"
+                    Content="×"
+                    FontSize="16"
+                    Width="32"
+                    Margin="4,0,0,0"
+                    Background="{DynamicResource CardBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Click="ClearBtn_Click"/>
+        </Grid>
+
+        <!-- Выпадающий список подсказок -->
+        <Popup x:Name="SuggestPopup"
+               PlacementTarget="{Binding #AddressBox}"
+               Placement="Bottom"
+               IsLightDismissEnabled="True"
+               Width="{Binding #AddressBox.Bounds.Width}">
+            <Border Background="{DynamicResource CardBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    BoxShadow="0 4 12 0 #20000000"
+                    Padding="4">
+                <ContentControl x:Name="SuggestList"/>
+            </Border>
+        </Popup>
+
+        <!-- Подсказка «нет API-ключей» -->
+        <TextBlock x:Name="NoApiHint"
+                   IsVisible="False"
+                   Text="{Binding Loc[Loc_NoApiKeys]}"
+                   FontSize="11"
+                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                   TextWrapping="Wrap"/>
+
+        <!-- Мини-карта -->
+        <Border x:Name="MapContainer"
+                IsVisible="False"
+                CornerRadius="10"
+                ClipToBounds="True"
+                Height="160">
+            <Image x:Name="MapImage"
+                   Stretch="UniformToFill"/>
+        </Border>
+
+        <!-- Ссылка «Открыть в Яндекс.Картах» -->
+        <Button x:Name="OpenMapsBtn"
+                IsVisible="False"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                Click="OpenMapsBtn_Click">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="🗺" FontSize="13"/>
+                <TextBlock Text="{Binding Loc[Loc_OpenInMaps]}"
+                           FontSize="13"
+                           Foreground="{DynamicResource AccentBrush}"
+                           TextDecorations="Underline"/>
+            </StackPanel>
+        </Button>
+
+    </StackPanel>
+</UserControl>

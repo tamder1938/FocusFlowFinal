@@ -8,6 +8,7 @@ using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
 using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
+using FocusFlowFinal.Models.Sound;
 
 namespace FocusFlowFinal.Services
 {
@@ -33,6 +34,7 @@ namespace FocusFlowFinal.Services
         private const string NotesCollection             = "notes";
         private const string MoodEntriesCollection       = "mood_entries";
         private const string MoodActivitiesCollection    = "mood_activities";
+        private const string UserSoundsCollection        = "userSounds";
 
         public DatabaseService()
         {
@@ -929,5 +931,22 @@ namespace FocusFlowFinal.Services
                 CreatedAt = DateTime.Now
             }));
         }
+
+        // ── Пользовательские звуки ───────────────────────────────────────
+
+        public IEnumerable<UserSound> GetAllUserSounds() =>
+            _db.GetCollection<UserSound>(UserSoundsCollection).FindAll().ToList();
+
+        public int UpsertUserSound(UserSound sound)
+        {
+            var col = _db.GetCollection<UserSound>(UserSoundsCollection);
+            if (sound.Id == 0) return col.Insert(sound).AsInt32;
+            col.Update(sound);
+            return sound.Id;
+        }
+
+        public void DeleteUserSound(int id) =>
+            _db.GetCollection<UserSound>(UserSoundsCollection).Delete(id);
     }
 }
+

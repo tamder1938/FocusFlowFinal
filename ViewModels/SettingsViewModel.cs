@@ -5,6 +5,7 @@ using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -134,6 +135,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _exportStatusIsError;
     [ObservableProperty] private bool _exportStatusVisible;
 
+    // ── Яндекс.Карты ─────────────────────────────────────────────────────
+    [ObservableProperty] private string _yandexSuggestKey  = string.Empty;
+    [ObservableProperty] private string _yandexGeocoderKey = string.Empty;
+    [ObservableProperty] private string _yandexStaticKey   = string.Empty;
+    [ObservableProperty] private string _apiKeysSavedMsg   = string.Empty;
+
     public SettingsViewModel()
     {
         var settings = AppSettings.Load();
@@ -162,6 +169,10 @@ public partial class SettingsViewModel : ObservableObject
         _useSystemAccent  = settings.UseSystemAccent;
         _customAccentHex  = settings.CustomAccentHex ?? "#2F6FED";
         _selectedPresetHex = PresetColors.Contains(_customAccentHex) ? _customAccentHex : null;
+
+        YandexSuggestKey  = settings.YandexSuggestApiKey  ?? string.Empty;
+        YandexGeocoderKey = settings.YandexGeocoderApiKey ?? string.Empty;
+        YandexStaticKey   = settings.YandexStaticApiKey   ?? string.Empty;
 
         // ИСПРАВЛЕНО (Часть 2, п.5): создаём подмодель вкладки "Аккаунт"
         var services = ((App)App.Current!).Services!;
@@ -246,6 +257,28 @@ public partial class SettingsViewModel : ObservableObject
         RefreshMainWindow();
 
         CloseWindow();
+    }
+
+    [RelayCommand]
+    private void SaveApiKeys()
+    {
+        var settings = AppSettings.Load();
+        settings.YandexSuggestApiKey  = YandexSuggestKey.Trim();
+        settings.YandexGeocoderApiKey = YandexGeocoderKey.Trim();
+        settings.YandexStaticApiKey   = YandexStaticKey.Trim();
+        settings.Save();
+        ApiKeysSavedMsg = Loc["Maps_KeysSaved"];
+    }
+
+    [RelayCommand]
+    private void OpenYandexDev()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://developer.tech.yandex.ru")
+                { UseShellExecute = true });
+        }
+        catch { }
     }
 
     [RelayCommand]

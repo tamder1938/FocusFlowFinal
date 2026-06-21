@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             x:Class="FocusFlowFinal.Views.Controls.SoundPlayerWidget"
+             x:CompileBindings="False"
+             x:Name="SoundWidgetRoot">
+
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="14,10,14,12"
+            Margin="0,0,0,8">
+        <StackPanel Spacing="10">
+
+            <!-- ── Шапка ──────────────────────────────────────────── -->
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Loc[Sound_Title]}"
+                           FontSize="14" FontWeight="Medium"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Content="⚙"
+                        FontSize="14"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="4"
+                        Foreground="{DynamicResource SecondaryForegroundBrush}"
+                        ToolTip.Tip="{Binding Loc[Sound_ManageSounds]}"
+                        Click="ManageBtn_Click"/>
+            </Grid>
+
+            <!-- ── Сетка чипов ────────────────────────────────────── -->
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          MaxHeight="200">
+                <ItemsControl ItemsSource="{Binding Chips}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SoundChipItem">
+                            <Button Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="4"
+                                    Width="72"
+                                    ToolTip.Tip="{Binding Label}"
+                                    Command="{Binding DataContext.ToggleSoundCommand, ElementName=SoundWidgetRoot}"
+                                    CommandParameter="{Binding}"
+                                    Opacity="{Binding AvailableOpacity}">
+                                <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                    <Grid Width="44" Height="44">
+                                        <!-- Пульсирующий ореол -->
+                                        <Ellipse Width="44" Height="44"
+                                                 Fill="{Binding ChipBackground}"
+                                                 Opacity="{Binding PulseOpacity}"
+                                                 ScaleTransform.ScaleX="{Binding DataContext.PulseScale, ElementName=SoundWidgetRoot}"
+                                                 ScaleTransform.ScaleY="{Binding DataContext.PulseScale, ElementName=SoundWidgetRoot}"/>
+                                        <!-- Основной круг -->
+                                        <Ellipse Width="40" Height="40"
+                                                 Fill="{Binding ChipBackground}"/>
+                                        <!-- Иконка -->
+                                        <TextBlock Text="{Binding Icon}"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{Binding IconForeground}"/>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Label}"
+                                               FontSize="11"
+                                               TextAlignment="Center"
+                                               TextWrapping="NoWrap"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="68"
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- ── Кнопка «+ Добавить свой» ─────────────────────── -->
+            <Button Command="{Binding AddUserSoundCommand}"
+                    HorizontalAlignment="Stretch"
+                    Background="Transparent"
+                    CornerRadius="8"
+                    Padding="8,6"
+                    BorderThickness="1.5"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                    FontSize="12">
+                <Button.Styles>
+                    <Style Selector="Button">
+                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                    </Style>
+                </Button.Styles>
+                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                    <TextBlock Text="＋" FontSize="13"/>
+                    <TextBlock Text="{Binding Loc[Sound_AddOwn]}" FontSize="12"/>
+                </StackPanel>
+            </Button>
+
+            <!-- ── Индивидуальные громкости (раскрывающийся блок) ── -->
+            <Expander IsExpanded="{Binding ShowIndividualVolumes}"
+                      IsVisible="{Binding HasActiveChips}"
+                      Foreground="{DynamicResource PrimaryTextBrush}">
+                <Expander.Header>
+                    <TextBlock Text="{Binding Loc[Sound_IndivVolumes]}"
+                               FontSize="12"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                </Expander.Header>
+                <ItemsControl ItemsSource="{Binding ActiveChips}" Margin="0,6,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SoundChipItem">
+                            <Grid ColumnDefinitions="24,*,Auto" Margin="0,3">
+                                <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="14"
+                                           VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1"
+                                        Minimum="0" Maximum="1"
+                                        Value="{Binding Volume}"
+                                        Margin="6,0"
+                                        VerticalAlignment="Center"
+                                        ValueChanged="ChipVolumeSlider_Changed"/>
+                                <TextBlock Grid.Column="2"
+                                           FontSize="11" Width="30" TextAlignment="Right"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{Binding Volume, StringFormat='{}{0:P0}'}"/>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <!-- ── Строка управления: громкость + Play/Pause ──────── -->
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,2,0,0">
+                <TextBlock Grid.Column="0" Text="🔊" FontSize="14"
+                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <Slider Grid.Column="1"
+                        Minimum="0" Maximum="1"
+                        Value="{Binding MasterVolume}"
+                        VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2"
+                           Text="{Binding MasterVolumeDisplay}"
+                           FontSize="11" Width="34" TextAlignment="Right"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center" Margin="4,0,8,0"/>
+                <Button Grid.Column="3"
+                        Command="{Binding PlayPauseCommand}"
+                        Width="36" Height="36"
+                        CornerRadius="18"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White"
+                        FontSize="14"
+                        Padding="0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Content="{Binding PlayPauseIcon}"/>
+            </Grid>
+
+            <!-- ── Переключатель «Микс с Помодоро» ───────────────── -->
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="1">
+                    <TextBlock Text="{Binding Loc[Sound_MixPomodoro]}"
+                               FontSize="12"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBlock Text="{Binding Loc[Sound_MixPomodoroTip]}"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1"
+                              IsChecked="{Binding MixWithPomodoro}"
+                              OffContent="" OnContent=""
+                              VerticalAlignment="Center"
+                              Margin="8,0,0,0"/>
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -75,4 +75,6 @@ public class CalendarEvent : ISyncableEntity
     /// null = повторять бессрочно.
     /// </summary>
     public int? RecurrenceEndYear { get; set; }
+
+    public PlaceLocation? Location { get; set; }
 }

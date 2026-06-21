@@ -6,6 +6,7 @@ using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
 using FocusFlowFinal.Views;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -26,6 +27,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private DateTime _selectedDate   = DateTime.Today;
     [ObservableProperty] private TaskListViewModel? _currentTaskListViewModel;
     [ObservableProperty] private TimerViewModel? _currentTimerViewModel;
+    [ObservableProperty] private SoundViewModel? _soundViewModel;
     [ObservableProperty] private string _todayPlanTimeStr  = "0:00";
     [ObservableProperty] private string _todayFactTimeStr  = "0:00";
     [ObservableProperty] private double _todayFactProgress;
@@ -53,6 +55,14 @@ public partial class MainViewModel : ObservableObject
 
         CurrentTaskListViewModel = _services.GetRequiredService<TaskListViewModel>();
         CurrentTimerViewModel    = _services.GetRequiredService<TimerViewModel>();
+
+        // Фоновые звуки
+        var soundSvc  = _services.GetRequiredService<ISoundService>();
+        var soundRepo = _services.GetRequiredService<ISoundRepository>();
+        SoundViewModel = new SoundViewModel(soundSvc, soundRepo);
+
+        // Подписка на смену фазы Помодоро
+        CurrentTimerViewModel.PropertyChanged += OnTimerStateChanged;
 
         CurrentTaskListViewModel.StartTimerRequested += OnStartTimerRequested;
         CurrentTaskListViewModel.FocusRequested      += OnFocusRequested;
@@ -233,6 +243,21 @@ public partial class MainViewModel : ObservableObject
         var owner    = GetMainWindow();
         if (owner != null) await win.ShowDialog(owner);
         else win.Show();
+    }
+
+    private void OnTimerStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(TimerViewModel.State)) return;
+        var soundSvc = _services.GetService(typeof(ISoundService)) as ISoundService;
+        if (soundSvc == null) return;
+
+        var phase = CurrentTimerViewModel?.State switch
+        {
+            TimerState.Working => PomodoroPhase.Work,
+            TimerState.Break   => PomodoroPhase.Break,
+            _                  => PomodoroPhase.Stopped
+        };
+        soundSvc.OnPomodoroPhaseChanged(phase);
     }
 
     private Window? GetMainWindow() =>

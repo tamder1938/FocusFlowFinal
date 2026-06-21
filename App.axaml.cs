@@ -278,5 +278,12 @@ public partial class App : Application
         s.AddSingleton<IMoodRepository, MoodRepository>();
         s.AddSingleton<IMoodPhotoService, MoodPhotoService>();
         s.AddSingleton<IMoodStatisticsService, MoodStatisticsService>();
+
+        // Яндекс.Карты
+        s.AddSingleton<IYandexMapsService, YandexMapsService>();
+
+        // Фоновые звуки
+        s.AddSingleton<ISoundService, SoundService>();
+        s.AddSingleton<ISoundRepository, SoundRepository>();
     }
 }

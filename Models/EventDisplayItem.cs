@@ -11,4 +11,7 @@ public class EventDisplayItem
     public double Width { get; set; } = 250.0;
     public string? TimeLabel { get; set; }
     public CalendarEvent? OriginalEvent { get; set; }
+
+    public bool HasLocation => OriginalEvent?.Location != null && !string.IsNullOrEmpty(OriginalEvent.Location.DisplayName);
+    public string LocationShort => OriginalEvent?.Location?.ShortDisplay ?? string.Empty;
 }

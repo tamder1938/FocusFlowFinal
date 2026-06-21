@@ -371,6 +371,83 @@
 								</Border>
 							</StackPanel>
 
+						<!-- ── Интеграции ───────────────────────────────── -->
+							<StackPanel>
+								<TextBlock Classes="SectionHeader" Text="{Binding Loc[Maps_IntegrTitle]}"/>
+								<Border Classes="NotifCard">
+									<StackPanel Spacing="12">
+										<StackPanel Spacing="2">
+											<TextBlock Text="{Binding Loc[Maps_YandexTitle]}" FontWeight="Bold"
+                                                       Foreground="{DynamicResource HeaderForeground}"/>
+											<TextBlock Text="{Binding Loc[Maps_YandexSub]}"
+                                                       Foreground="{DynamicResource SecondaryText}" FontSize="12"/>
+										</StackPanel>
+
+										<StackPanel Spacing="6">
+											<TextBlock Text="{Binding Loc[Maps_SuggestKey]}" FontSize="12"
+                                                       Foreground="{DynamicResource PrimaryText}"/>
+											<TextBox Text="{Binding YandexSuggestKey}"
+                                                     PasswordChar="•"
+                                                     RevealPassword="True"
+                                                     FontSize="12"
+                                                     Background="{DynamicResource CardBackground}"
+                                                     Foreground="{DynamicResource PrimaryText}"
+                                                     BorderBrush="{DynamicResource CardBorder}"/>
+										</StackPanel>
+
+										<StackPanel Spacing="6">
+											<TextBlock Text="{Binding Loc[Maps_GeocoderKey]}" FontSize="12"
+                                                       Foreground="{DynamicResource PrimaryText}"/>
+											<TextBox Text="{Binding YandexGeocoderKey}"
+                                                     PasswordChar="•"
+                                                     RevealPassword="True"
+                                                     FontSize="12"
+                                                     Background="{DynamicResource CardBackground}"
+                                                     Foreground="{DynamicResource PrimaryText}"
+                                                     BorderBrush="{DynamicResource CardBorder}"/>
+										</StackPanel>
+
+										<StackPanel Spacing="6">
+											<TextBlock Text="{Binding Loc[Maps_StaticKey]}" FontSize="12"
+                                                       Foreground="{DynamicResource PrimaryText}"/>
+											<TextBox Text="{Binding YandexStaticKey}"
+                                                     PasswordChar="•"
+                                                     RevealPassword="True"
+                                                     FontSize="12"
+                                                     Background="{DynamicResource CardBackground}"
+                                                     Foreground="{DynamicResource PrimaryText}"
+                                                     BorderBrush="{DynamicResource CardBorder}"/>
+										</StackPanel>
+
+										<Grid ColumnDefinitions="Auto,*,Auto">
+											<Button Grid.Column="0"
+                                                    Command="{Binding OpenYandexDevCommand}"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="0"
+                                                    Foreground="{DynamicResource AccentBrush}">
+												<TextBlock Text="{Binding Loc[Maps_GetKeysLink]}"
+                                                           TextDecorations="Underline"
+                                                           FontSize="12"/>
+											</Button>
+											<TextBlock Grid.Column="1"
+                                                       Text="{Binding ApiKeysSavedMsg}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource SuccessBrush}"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
+											<Button Grid.Column="2"
+                                                    Command="{Binding SaveApiKeysCommand}"
+                                                    Content="{Binding Loc[Maps_SaveKeys]}"
+                                                    Background="{DynamicResource AccentBackground}"
+                                                    Foreground="White"
+                                                    CornerRadius="6"
+                                                    Padding="14,6" FontSize="12"/>
+										</Grid>
+									</StackPanel>
+								</Border>
+							</StackPanel>
+
 						</StackPanel>
 					</ScrollViewer>
 

@@ -87,4 +87,12 @@ public class TaskItem : ISyncableEntity
 
     [BsonIgnore]
     public bool CanStartTimer => HasDuration && !IsCompleted;
+
+    public PlaceLocation? Location { get; set; }
+
+    [BsonIgnore]
+    public bool HasLocation => Location != null && !string.IsNullOrEmpty(Location.DisplayName);
+
+    [BsonIgnore]
+    public string LocationShort => Location?.ShortDisplay ?? string.Empty;
 }

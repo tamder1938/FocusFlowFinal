@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.SoundManagePopup"
+        x:CompileBindings="False"
+        x:Name="PopupRoot"
+        Title="{Binding Loc[Sound_ManageSounds]}"
+        Width="340" Height="460"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Border Background="{DynamicResource WindowBackgroundBrush}" Padding="16">
+        <StackPanel Spacing="12">
+
+            <TextBlock Text="{Binding Loc[Sound_ManageSounds]}"
+                       FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+            <ScrollViewer MaxHeight="330" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Chips}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SoundChipItem">
+                            <Border Padding="6,4" Margin="0,2"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    CornerRadius="8">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Icon}"
+                                               FontSize="18"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                        <TextBlock Text="{Binding Label}"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                   IsVisible="{Binding !IsPreset}">
+                                            <Run Text="👤 пользовательский"/>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding DataContext.Loc[Sound_NoFile], ElementName=PopupRoot}"
+                                                   FontSize="10"
+                                                   Foreground="#DC4F4F"
+                                                   IsVisible="{Binding !IsAvailable}"/>
+                                    </StackPanel>
+                                    <!-- Кнопка удаления (только для пользовательских) -->
+                                    <Button Grid.Column="3"
+                                            IsVisible="{Binding !IsPreset}"
+                                            Content="🗑"
+                                            FontSize="13"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="4"
+                                            ToolTip.Tip="{Binding DataContext.Loc[Sound_Delete], ElementName=PopupRoot}"
+                                            Command="{Binding DataContext.DeleteUserSoundCommand, ElementName=PopupRoot}"
+                                            CommandParameter="{Binding}"
+                                            Foreground="#DC4F4F"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Button Content="{Binding Loc[Sound_AddOwn]}"
+                    Command="{Binding AddUserSoundCommand}"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource AccentBackground}"
+                    Foreground="White"
+                    CornerRadius="8"
+                    Padding="0,8"
+                    FontSize="13"/>
+
+        </StackPanel>
+    </Border>
+</Window>

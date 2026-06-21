@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using LiteDB;
 
@@ -71,6 +72,19 @@ public class AppSettings
     // ── Цветовая схема (Промпт 3) ────────────────────────────────
     public bool   UseSystemAccent { get; set; } = false;
     public string CustomAccentHex { get; set; } = "#2F6FED";
+
+    // ── Яндекс.Карты (Промпт 6) ──────────────────────────────────
+    public string? YandexSuggestApiKey  { get; set; }
+    public string? YandexGeocoderApiKey { get; set; }
+    public string? YandexStaticApiKey   { get; set; }
+
+    // ── Фоновые звуки (Промпт 7) ─────────────────────────────────
+    public float              MasterSoundVolume      { get; set; } = 0.7f;
+    public bool               MixSoundsWithPomodoro  { get; set; } = false;
+    public List<string>       ActiveSoundIds         { get; set; } = new();
+    public Dictionary<string,float> SoundVolumes     { get; set; } = new();
+    public List<string>       PomodoroSoundIds       { get; set; } = new();
+    public Dictionary<string,float> PomodoroSoundVolumes { get; set; } = new();
 
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

@@ -3,6 +3,7 @@ using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
 using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
+using FocusFlowFinal.Models.Sound;
 using System;
 using System.Collections.Generic;
 
@@ -132,4 +133,9 @@ public interface IDatabaseService
     HashSet<DateTime> GetNoteDates(DateTime from, DateTime to);
     IEnumerable<string> GetAllNoteTags();
     IEnumerable<Note> SearchNotes(string? query, string? tag, DateTime? from, DateTime? to);
+
+    // ── Пользовательские звуки ───────────────────────────────────────
+    IEnumerable<UserSound> GetAllUserSounds();
+    int                    UpsertUserSound(UserSound sound);
+    void                   DeleteUserSound(int id);
 }

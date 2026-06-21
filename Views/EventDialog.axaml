@@ -2,9 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FocusFlowFinal.ViewModels"
         xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
         x:Class="FocusFlowFinal.Views.EventDialog"
         x:CompileBindings="False"
-        Title="{Binding Loc[EventTitle]}" Width="400" Height="840"
+        Title="{Binding Loc[EventTitle]}" Width="400" Height="920"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
@@ -202,6 +203,14 @@
                     Background="{Binding Color, Converter={StaticResource StringToBrushConverter}}"/>
 
 			<!-- ComboBox типов повторения -->
+			<!-- Место -->
+			<CheckBox Content="{Binding Loc[Loc_AddPlace]}" IsChecked="{Binding HasLocation}"
+			          Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+			<controls:AddressPickerControl
+			    IsVisible="{Binding HasLocation}"
+			    SelectedLocation="{Binding SelectedLocation, Mode=TwoWay}"
+			    Margin="0,0,0,12"/>
+
 			<TextBlock Text="{Binding Loc[RecurrenceLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 			<ComboBox SelectedIndex="{Binding RecurrenceIndex}"
                       ItemsSource="{Binding RecurrenceItems}"

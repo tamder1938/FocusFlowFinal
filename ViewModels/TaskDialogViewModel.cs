@@ -63,6 +63,10 @@ public partial class TaskDialogViewModel : ObservableObject
     // ── Подзадачи ──────────────────────────────────────────────────────
     [ObservableProperty] private ObservableCollection<SubtaskEditItem> _subtasks = new();
 
+    // ── Место ───────────────────────────────────────────────────────────
+    [ObservableProperty] private bool _hasLocation;
+    [ObservableProperty] private PlaceLocation? _selectedLocation;
+
     public event Action<int>? TaskDeleted;
 
     // Флаг для предотвращения рекурсии при пересчёте времени
@@ -179,6 +183,10 @@ public partial class TaskDialogViewModel : ObservableObject
         // Загружаем подзадачи
         foreach (var sub in task.Subtasks)
             AddSubtaskItem(sub.Title, sub.IsCompleted);
+
+        // Загружаем место
+        HasLocation      = task.Location != null;
+        SelectedLocation = task.Location;
 
         LoadTaskTemplates();
     }
@@ -303,6 +311,11 @@ public partial class TaskDialogViewModel : ObservableObject
             .Where(s => !string.IsNullOrWhiteSpace(s.Title))
             .Select(s => new Subtask { Title = s.Title.Trim(), IsCompleted = s.IsCompleted })
             .ToList();
+
+        // Сохраняем место
+        _task.Location = HasLocation && SelectedLocation != null &&
+                         !string.IsNullOrWhiteSpace(SelectedLocation.DisplayName)
+            ? SelectedLocation : null;
 
         // Автовыполнение основной задачи если все подзадачи выполнены
         if (_task.Subtasks.Count > 0 && _task.Subtasks.All(s => s.IsCompleted))
