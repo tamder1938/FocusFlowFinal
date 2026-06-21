@@ -21,11 +21,8 @@
                 BorderThickness="0,0,1,0">
             <Grid RowDefinitions="Auto,*">
 
-                <!-- Заголовок -->
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto"
-                      Margin="14,14,14,10">
-                    <TextBlock Grid.Column="0"
-                               Text="Мои программы"
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="14,14,14,10">
+                    <TextBlock Grid.Column="0" Text="Мои программы"
                                FontSize="15" FontWeight="SemiBold"
                                Foreground="{DynamicResource PrimaryTextBrush}"
                                VerticalAlignment="Center"/>
@@ -37,17 +34,13 @@
                             Padding="10,5" FontSize="12"/>
                 </Grid>
 
-                <!-- Список программ -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="8,0,8,8">
 
-                        <!-- Пусто -->
                         <StackPanel IsVisible="{Binding !ProgramListVm.Programs.Count}"
-                                    Margin="8,40" Spacing="10"
-                                    HorizontalAlignment="Center">
+                                    Margin="8,40" Spacing="10" HorizontalAlignment="Center">
                             <TextBlock Text="🏋️" FontSize="40" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Нет программ"
-                                       FontSize="13"
+                            <TextBlock Text="Нет программ" FontSize="13"
                                        Foreground="{DynamicResource SecondaryTextBrush}"
                                        HorizontalAlignment="Center"/>
                             <Button Command="{Binding ProgramListVm.AddProgramCommand}"
@@ -60,37 +53,28 @@
                                     CornerRadius="8" Padding="14,7" FontSize="12"/>
                         </StackPanel>
 
-                        <!-- Карточки программ -->
                         <ItemsControl ItemsSource="{Binding ProgramListVm.Programs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,0,0,6"
-                                            CornerRadius="10"
-                                            BorderThickness="1"
+                                    <Border Margin="0,0,0,6" CornerRadius="10"
+                                            BorderThickness="2"
                                             Cursor="Hand"
                                             Tapped="ProgramCard_Tapped">
-                                        <!-- Динамический фон: выделенная / обычная -->
-                                        <Border.Background>
-                                            <SolidColorBrush Color="{DynamicResource CardBackgroundBrush}"/>
-                                        </Border.Background>
                                         <Border.BorderBrush>
                                             <SolidColorBrush Color="{DynamicResource BorderBrush}"/>
                                         </Border.BorderBrush>
-
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{DynamicResource WindowBackgroundBrush}"/>
+                                        </Border.Background>
                                         <Grid ColumnDefinitions="Auto,*,Auto" Margin="10,10">
-
-                                            <!-- Иконка с цветом программы -->
-                                            <Border Grid.Column="0"
-                                                    Width="40" Height="40" CornerRadius="10"
+                                            <Border Grid.Column="0" Width="40" Height="40"
+                                                    CornerRadius="10"
                                                     Background="{Binding Color}"
                                                     Margin="0,0,10,0">
-                                                <TextBlock Text="{Binding Icon}"
-                                                           FontSize="18"
+                                                <TextBlock Text="{Binding Icon}" FontSize="18"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
                                             </Border>
-
-                                            <!-- Инфо -->
                                             <StackPanel Grid.Column="1" Spacing="2"
                                                         VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -99,13 +83,10 @@
                                                                Foreground="{DynamicResource PrimaryTextBrush}"
                                                                TextTrimming="CharacterEllipsis"
                                                                MaxWidth="120"/>
-                                                    <!-- Активная метка -->
                                                     <Border IsVisible="{Binding IsActive}"
                                                             Background="#1A10B981"
-                                                            CornerRadius="4"
-                                                            Padding="5,2">
-                                                        <TextBlock Text="✓ Активна"
-                                                                   FontSize="10"
+                                                            CornerRadius="4" Padding="5,2">
+                                                        <TextBlock Text="✓" FontSize="10"
                                                                    Foreground="#10B981"
                                                                    FontWeight="Medium"/>
                                                     </Border>
@@ -114,10 +95,8 @@
                                                            FontSize="11"
                                                            Foreground="{DynamicResource SecondaryTextBrush}"/>
                                             </StackPanel>
-
-                                            <!-- Кнопки действий -->
                                             <StackPanel Grid.Column="2" Orientation="Horizontal"
-                                                        Spacing="2" VerticalAlignment="Center">
+                                                        Spacing="0" VerticalAlignment="Center">
                                                 <Button Content="✏️"
                                                         Command="{Binding DataContext.ProgramListVm.EditProgramCommand, ElementName=WndRoot}"
                                                         CommandParameter="{Binding}"
@@ -131,7 +110,6 @@
                                                         Padding="4" FontSize="13"
                                                         ToolTip.Tip="Удалить"/>
                                             </StackPanel>
-
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -140,86 +118,63 @@
 
                     </StackPanel>
                 </ScrollViewer>
-
             </Grid>
         </Border>
 
         <!-- ════════════════════════════════════════════════════
-             ЦЕНТРАЛЬНАЯ КОЛОНКА — детали программы
+             ЦЕНТРАЛЬНАЯ КОЛОНКА
         ════════════════════════════════════════════════════ -->
-        <Border Grid.Column="1"
-                Background="{DynamicResource WindowBackgroundBrush}">
+        <Border Grid.Column="1" Background="{DynamicResource WindowBackgroundBrush}">
             <Grid>
 
-                <!-- Заглушка: нет выбранной программы -->
-                <StackPanel IsVisible="{Binding !HasSelectedProgram}"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
+                <!-- 1. Нет выбранной программы -->
+                <StackPanel IsVisible="{Binding ShowProgramPlaceholder}"
+                            VerticalAlignment="Center" HorizontalAlignment="Center"
                             Spacing="12">
                     <TextBlock Text="🏋️" FontSize="64" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Выберите программу слева"
-                               FontSize="16"
+                    <TextBlock Text="Выберите программу слева" FontSize="16"
                                Foreground="{DynamicResource SecondaryTextBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="или создайте новую"
-                               FontSize="13"
+                    <TextBlock Text="или создайте новую" FontSize="13"
                                Foreground="{DynamicResource SecondaryTextBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Детали программы -->
-                <Grid IsVisible="{Binding HasSelectedProgram}"
-                      RowDefinitions="Auto,*"
-                      DataContext="{Binding ProgramListVm.SelectedProgram}">
+                <!-- 2. Детали программы -->
+                <Grid IsVisible="{Binding ShowProgramDetail}"
+                      DataContext="{Binding ProgramListVm.SelectedProgram}"
+                      RowDefinitions="Auto,*">
 
-                    <!-- Шапка программы -->
                     <Border Grid.Row="0"
                             Background="{DynamicResource CardBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
-                            BorderThickness="0,0,0,1"
-                            Padding="20,16">
+                            BorderThickness="0,0,0,1" Padding="20,16">
                         <Grid ColumnDefinitions="Auto,*,Auto">
-
-                            <!-- Иконка -->
-                            <Border Grid.Column="0"
-                                    Width="52" Height="52" CornerRadius="14"
-                                    Background="{Binding Color}"
-                                    Margin="0,0,14,0">
+                            <Border Grid.Column="0" Width="52" Height="52" CornerRadius="14"
+                                    Background="{Binding Color}" Margin="0,0,14,0">
                                 <TextBlock Text="{Binding Icon}" FontSize="24"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>
-
-                            <!-- Название + мета -->
                             <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Name}"
                                            FontSize="18" FontWeight="Bold"
                                            Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <TextBlock Text="{Binding DaysLabel}"
-                                               FontSize="12"
+                                    <TextBlock Text="{Binding DaysLabel}" FontSize="12"
                                                Foreground="{DynamicResource SecondaryTextBrush}"/>
                                     <Border IsVisible="{Binding IsActive}"
-                                            Background="#1A10B981"
-                                            CornerRadius="4" Padding="6,2">
-                                        <TextBlock Text="✓ Активная программа"
-                                                   FontSize="11" Foreground="#10B981"
-                                                   FontWeight="Medium"/>
+                                            Background="#1A10B981" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="✓ Активная" FontSize="11"
+                                                   Foreground="#10B981" FontWeight="Medium"/>
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Notes}"
-                                           IsVisible="{Binding Notes}"
+                                <TextBlock Text="{Binding Notes}" IsVisible="{Binding Notes}"
                                            FontSize="12"
                                            Foreground="{DynamicResource SecondaryTextBrush}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-
-                            <!-- Кнопки -->
                             <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
-                                <Button Content="▶ Начать тренировку"
-                                        Background="{DynamicResource AccentBrush}"
-                                        Foreground="White" CornerRadius="8"
-                                        Padding="14,8" FontSize="13"/>
                                 <Button Content="⭐ Сделать активной"
                                         IsVisible="{Binding !IsActive}"
                                         Command="{Binding DataContext.ProgramListVm.SetActiveProgramCommand, ElementName=WndRoot}"
@@ -228,23 +183,17 @@
                                         BorderBrush="{DynamicResource BorderBrush}"
                                         BorderThickness="1"
                                         Foreground="{DynamicResource PrimaryTextBrush}"
-                                        CornerRadius="8" Padding="14,7" FontSize="12"/>
+                                        CornerRadius="8" Padding="12,7" FontSize="12"/>
                             </StackPanel>
-
                         </Grid>
                     </Border>
 
-                    <!-- Список дней -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                                  Padding="20,16,20,16">
-                        <StackPanel Spacing="10">
-
+                    <ScrollViewer Grid.Row="1" Padding="20,16">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Дни тренировок"
                                        FontSize="14" FontWeight="SemiBold"
                                        Foreground="{DynamicResource PrimaryTextBrush}"
                                        Margin="0,0,0,6"/>
-
-                            <!-- Дни -->
                             <ItemsControl ItemsSource="{Binding Days}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -254,10 +203,8 @@
                                                 BorderThickness="1" CornerRadius="12"
                                                 Padding="16,14">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
-
-                                                <!-- Номер дня -->
-                                                <Border Grid.Column="0"
-                                                        Width="36" Height="36" CornerRadius="10"
+                                                <Border Grid.Column="0" Width="36" Height="36"
+                                                        CornerRadius="10"
                                                         Background="{DynamicResource AccentBrush}"
                                                         Margin="0,0,12,0">
                                                     <TextBlock Text="{Binding DayNumber}"
@@ -266,9 +213,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"/>
                                                 </Border>
-
-                                                <!-- Инфо -->
-                                                <StackPanel Grid.Column="1" Spacing="4"
+                                                <StackPanel Grid.Column="1" Spacing="3"
                                                             VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Name}"
                                                                FontSize="14" FontWeight="Medium"
@@ -280,43 +225,319 @@
                                                                FontSize="11"
                                                                Foreground="{DynamicResource SecondaryTextBrush}"/>
                                                 </StackPanel>
-
-                                                <!-- Стрелка / старт дня -->
                                                 <Button Grid.Column="2"
-                                                        Content="▶"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Foreground="{DynamicResource AccentBrush}"
-                                                        FontSize="18" Padding="8"
-                                                        VerticalAlignment="Center"
-                                                        ToolTip.Tip="Начать этот день"/>
-
+                                                        Content="▶ Начать"
+                                                        Command="{Binding DataContext.StartSessionCommand, ElementName=WndRoot}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="{DynamicResource AccentBrush}"
+                                                        Foreground="White"
+                                                        CornerRadius="8" Padding="12,7"
+                                                        FontSize="12" FontWeight="Medium"
+                                                        VerticalAlignment="Center"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-
-                            <!-- Нет дней -->
                             <StackPanel IsVisible="{Binding !Days.Count}"
-                                        HorizontalAlignment="Center" Spacing="6"
-                                        Margin="0,30">
+                                        HorizontalAlignment="Center" Spacing="6" Margin="0,30">
                                 <TextBlock Text="📅" FontSize="32" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Дни не добавлены"
-                                           FontSize="13"
+                                <TextBlock Text="Дни не добавлены" FontSize="13"
                                            Foreground="{DynamicResource SecondaryTextBrush}"
                                            HorizontalAlignment="Center"/>
                             </StackPanel>
-
                         </StackPanel>
                     </ScrollViewer>
 
                 </Grid>
+
+                <!-- 3. Активная тренировка -->
+                <Grid IsVisible="{Binding IsSessionActive}"
+                      DataContext="{Binding ActiveSessionVm}"
+                      RowDefinitions="Auto,*,Auto">
+
+                    <!-- Шапка сессии -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,0,0,1" Padding="16,14">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Иконка -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding ProgramIcon}"
+                                       FontSize="28" Margin="0,0,12,0"
+                                       VerticalAlignment="Center"/>
+                            <!-- Инфо -->
+                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DayName}"
+                                           FontSize="16" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⏱" FontSize="12"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="{Binding ElapsedLabel}"
+                                               FontSize="12" FontFamily="Consolas"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <!-- Кнопки -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                                        VerticalAlignment="Center">
+                                <Button Content="Бросить"
+                                        Command="{Binding AbandonCommand}"
+                                        Background="Transparent"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        CornerRadius="8" Padding="10,7" FontSize="12"/>
+                                <Button Content="✓ Завершить"
+                                        Command="{Binding FinishCommand}"
+                                        Background="{DynamicResource AccentBrush}"
+                                        Foreground="White"
+                                        CornerRadius="8" Padding="12,7"
+                                        FontSize="12" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Список упражнений -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="0" Margin="16,12,16,0">
+
+                            <!-- Подсказка: нет упражнений -->
+                            <Border IsVisible="{Binding !Exercises.Count}"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="12"
+                                    Padding="24" Margin="0,0,0,12">
+                                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                    <TextBlock Text="➕" FontSize="32" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Нажмите ➕ на упражнение справа"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="чтобы добавить его в тренировку"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ItemsControl ItemsSource="{Binding Exercises}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,10"
+                                                Background="{DynamicResource CardBackgroundBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1" CornerRadius="12"
+                                                Padding="14,12">
+                                            <StackPanel Spacing="8">
+
+                                                <!-- Заголовок упражнения -->
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding ImageEmoji}"
+                                                               FontSize="22"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,10,0"/>
+                                                    <StackPanel Grid.Column="1"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ExerciseName}"
+                                                                   FontSize="14" FontWeight="Medium"
+                                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                        <TextBlock Text="{Binding CompletedSetsLabel}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                    </StackPanel>
+                                                    <!-- Свернуть / развернуть -->
+                                                    <Button Grid.Column="2"
+                                                            Command="{Binding ToggleExpandedCommand}"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Foreground="{DynamicResource SecondaryTextBrush}"
+                                                            FontSize="16" Padding="6">
+                                                        <StackPanel>
+                                                            <TextBlock Text="▲" IsVisible="{Binding IsExpanded}"/>
+                                                            <TextBlock Text="▼" IsVisible="{Binding !IsExpanded}"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+
+                                                <!-- Подходы -->
+                                                <StackPanel IsVisible="{Binding IsExpanded}"
+                                                            Spacing="4">
+                                                    <ItemsControl ItemsSource="{Binding Sets}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid ColumnDefinitions="24,*,Auto,*,Auto,Auto"
+                                                                      Margin="0,2">
+                                                                    <!-- № -->
+                                                                    <TextBlock Grid.Column="0"
+                                                                               Text="{Binding SetNumber}"
+                                                                               FontSize="12" FontWeight="Medium"
+                                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                               VerticalAlignment="Center"
+                                                                               HorizontalAlignment="Center"/>
+                                                                    <!-- Вес -->
+                                                                    <NumericUpDown Grid.Column="1"
+                                                                                   Value="{Binding WeightKg}"
+                                                                                   Minimum="0" Maximum="999"
+                                                                                   Increment="2.5"
+                                                                                   FormatString="0.##"
+                                                                                   Background="{DynamicResource WindowBackgroundBrush}"
+                                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                   BorderBrush="{DynamicResource BorderBrush}"
+                                                                                   CornerRadius="6"
+                                                                                   FontSize="13"
+                                                                                   Height="34"/>
+                                                                    <TextBlock Grid.Column="2"
+                                                                               Text="кг"
+                                                                               FontSize="12"
+                                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                               VerticalAlignment="Center"
+                                                                               Margin="6,0"/>
+                                                                    <!-- Повторения -->
+                                                                    <NumericUpDown Grid.Column="3"
+                                                                                   Value="{Binding Reps}"
+                                                                                   Minimum="1" Maximum="200"
+                                                                                   Increment="1"
+                                                                                   FormatString="0"
+                                                                                   Background="{DynamicResource WindowBackgroundBrush}"
+                                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                   BorderBrush="{DynamicResource BorderBrush}"
+                                                                                   CornerRadius="6"
+                                                                                   FontSize="13"
+                                                                                   Height="34"/>
+                                                                    <TextBlock Grid.Column="4"
+                                                                               Text="повт."
+                                                                               FontSize="12"
+                                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                               VerticalAlignment="Center"
+                                                                               Margin="6,0"/>
+                                                                    <!-- Кнопка выполнить -->
+                                                                    <Grid Grid.Column="5" Width="80">
+                                                                        <Button IsVisible="{Binding !IsCompleted}"
+                                                                                Command="{Binding CompleteCommand}"
+                                                                                Background="{DynamicResource AccentBrush}"
+                                                                                Foreground="White"
+                                                                                CornerRadius="8"
+                                                                                Padding="6,5"
+                                                                                FontSize="11"
+                                                                                Content="Готово"
+                                                                                HorizontalAlignment="Stretch"
+                                                                                HorizontalContentAlignment="Center"/>
+                                                                        <Border IsVisible="{Binding IsCompleted}"
+                                                                                Background="#1A10B981"
+                                                                                CornerRadius="8"
+                                                                                Padding="6,5">
+                                                                            <TextBlock Text="✓ Готово"
+                                                                                       FontSize="11"
+                                                                                       Foreground="#10B981"
+                                                                                       FontWeight="Medium"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Center"/>
+                                                                        </Border>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+
+                                                    <!-- + Подход / − последний -->
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Spacing="6" Margin="0,4,0,0">
+                                                        <Button Content="+ Подход"
+                                                                Command="{Binding AddSetCommand}"
+                                                                Background="Transparent"
+                                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                                BorderThickness="1"
+                                                                Foreground="{DynamicResource AccentBrush}"
+                                                                CornerRadius="8" Padding="10,5"
+                                                                FontSize="12"/>
+                                                        <Button Content="✕"
+                                                                Command="{Binding RemoveLastSetCommand}"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                Padding="6,5" FontSize="13"
+                                                                ToolTip.Tip="Удалить последний подход"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Таймер отдыха (прилипший снизу) -->
+                    <Border Grid.Row="2"
+                            IsVisible="{Binding RestTimer.IsRunning}"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,1,0,0"
+                            Padding="16,12">
+                        <Grid RowDefinitions="Auto,Auto,Auto">
+                            <!-- Метка + время -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                <TextBlock Grid.Column="0"
+                                           Text="Отдых"
+                                           FontSize="13" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding RestTimer.RemainingLabel}"
+                                           FontSize="22" FontWeight="Bold"
+                                           FontFamily="Consolas"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                            </Grid>
+                            <!-- Прогресс -->
+                            <ProgressBar Grid.Row="1"
+                                         Value="{Binding RestTimer.Progress}"
+                                         Maximum="1.0"
+                                         Height="6" CornerRadius="3"
+                                         Foreground="{DynamicResource AccentBrush}"
+                                         Background="{DynamicResource BorderBrush}"
+                                         Margin="0,0,0,10"/>
+                            <!-- Кнопки -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                                <Button Content="Пропустить"
+                                        Command="{Binding RestTimer.SkipCommand}"
+                                        Background="Transparent"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        CornerRadius="8" Padding="10,6" FontSize="12"/>
+                                <Button Content="+30с"
+                                        Command="{Binding RestTimer.AdjustTimeCommand}"
+                                        CommandParameter="30"
+                                        Background="Transparent"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        CornerRadius="8" Padding="10,6" FontSize="12"/>
+                                <Button Content="−15с"
+                                        Command="{Binding RestTimer.AdjustTimeCommand}"
+                                        CommandParameter="-15"
+                                        Background="Transparent"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        CornerRadius="8" Padding="10,6" FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+
             </Grid>
         </Border>
 
         <!-- ════════════════════════════════════════════════════
-             ПРАВАЯ КОЛОНКА — вкладки (упражнения / аналитика / уровень)
+             ПРАВАЯ КОЛОНКА — вкладки
         ════════════════════════════════════════════════════ -->
         <Border Grid.Column="2"
                 Background="{DynamicResource CardBackgroundBrush}"
@@ -324,7 +545,6 @@
                 BorderThickness="1,0,0,0">
             <Grid RowDefinitions="Auto,*">
 
-                <!-- Вкладки -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="0"
                             Background="{DynamicResource WindowBackgroundBrush}">
                     <Button Content="Упражнения" Classes="right-tab"
@@ -335,14 +555,24 @@
                             Tag="2" Click="RightTab_Click" x:Name="TabStrength"/>
                 </StackPanel>
 
-                <!-- Содержимое вкладок -->
                 <Grid Grid.Row="1">
 
                     <!-- Вкладка: Упражнения -->
                     <Grid x:Name="PanelExercises" RowDefinitions="Auto,Auto,*,Auto"
                           Margin="8,8,8,8">
 
-                        <TextBox Grid.Row="0"
+                        <!-- Подсказка во время сессии -->
+                        <Border Grid.Row="0"
+                                IsVisible="{Binding IsSessionActive}"
+                                Background="#1A3B82F6"
+                                CornerRadius="8" Padding="10,7" Margin="0,0,0,8">
+                            <TextBlock Text="➕ Нажмите на упражнение, чтобы добавить в тренировку"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       TextWrapping="Wrap"/>
+                        </Border>
+
+                        <TextBox Grid.Row="1"
                                  Text="{Binding ExerciseListVm.SearchQuery}"
                                  Watermark="🔍 Поиск упражнений…"
                                  Background="{DynamicResource WindowBackgroundBrush}"
@@ -351,79 +581,94 @@
                                  CornerRadius="8" Padding="10,7"
                                  Margin="0,0,0,6"/>
 
-                        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,0,0,8">
-                            <ComboBox Grid.Column="0"
-                                      ItemsSource="{Binding ExerciseListVm.MuscleOptions}"
-                                      SelectedIndex="{Binding ExerciseListVm.MuscleFilterIndex}"
-                                      Margin="0,0,4,0" FontSize="12"
-                                      Background="{DynamicResource WindowBackgroundBrush}"
-                                      Foreground="{DynamicResource PrimaryTextBrush}"
-                                      BorderBrush="{DynamicResource BorderBrush}"
-                                      HorizontalAlignment="Stretch"/>
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding ExerciseListVm.EquipmentOptions}"
-                                      SelectedIndex="{Binding ExerciseListVm.EquipmentFilterIndex}"
-                                      Margin="4,0,0,0" FontSize="12"
-                                      Background="{DynamicResource WindowBackgroundBrush}"
-                                      Foreground="{DynamicResource PrimaryTextBrush}"
-                                      BorderBrush="{DynamicResource BorderBrush}"
-                                      HorizontalAlignment="Stretch"/>
+                        <Grid Grid.Row="2" RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="0,0,0,8">
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding ExerciseListVm.MuscleOptions}"
+                                          SelectedIndex="{Binding ExerciseListVm.MuscleFilterIndex}"
+                                          Margin="0,0,4,0" FontSize="12"
+                                          Background="{DynamicResource WindowBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          HorizontalAlignment="Stretch"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ExerciseListVm.EquipmentOptions}"
+                                          SelectedIndex="{Binding ExerciseListVm.EquipmentFilterIndex}"
+                                          Margin="4,0,0,0" FontSize="12"
+                                          Background="{DynamicResource WindowBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          HorizontalAlignment="Stretch"/>
+                            </Grid>
+
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Упражнения не найдены"
+                                               IsVisible="{Binding !ExerciseListVm.Items.Count}"
+                                               Margin="12,20" FontSize="13" TextAlignment="Center"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <ItemsControl ItemsSource="{Binding ExerciseListVm.Items}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,2" CornerRadius="8"
+                                                        Background="{DynamicResource WindowBackgroundBrush}"
+                                                        BorderBrush="{DynamicResource BorderBrush}"
+                                                        BorderThickness="1" Padding="8,6">
+                                                    <Grid ColumnDefinitions="40,*,Auto">
+                                                        <Border Grid.Column="0" Width="36" Height="36"
+                                                                CornerRadius="8"
+                                                                Background="{DynamicResource CardBackgroundBrush}">
+                                                            <TextBlock Text="{Binding ImageEmoji}"
+                                                                       FontSize="18"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" Spacing="1"
+                                                                    Margin="8,0,6,0"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="13" FontWeight="Medium"
+                                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock FontSize="11"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                       TextTrimming="CharacterEllipsis">
+                                                                <Run Text="{Binding PrimaryMusclesLabel}"/>
+                                                                <Run Text=" · "/>
+                                                                <Run Text="{Binding EquipmentLabel}"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                        <!-- Кнопка: в сессию (при активной) -->
+                                                        <Button Grid.Column="2"
+                                                                Content="➕"
+                                                                IsVisible="{Binding DataContext.IsSessionActive, ElementName=WndRoot}"
+                                                                Command="{Binding DataContext.AddExerciseToSessionCommand, ElementName=WndRoot}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="Transparent"
+                                                                BorderThickness="0" Padding="4"
+                                                                FontSize="15"
+                                                                ToolTip.Tip="Добавить в тренировку"/>
+                                                        <!-- Кнопка: история (без сессии) -->
+                                                        <Button Grid.Column="2"
+                                                                Content="📊"
+                                                                IsVisible="{Binding DataContext.IsNotSessionActive, ElementName=WndRoot}"
+                                                                Command="{Binding DataContext.ExerciseListVm.ShowHistoryCommand, ElementName=WndRoot}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="Transparent"
+                                                                BorderThickness="0" Padding="4"
+                                                                FontSize="14"
+                                                                ToolTip.Tip="История подходов"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
                         </Grid>
 
-                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                            <StackPanel>
-                                <TextBlock Text="Упражнения не найдены"
-                                           IsVisible="{Binding !ExerciseListVm.Items.Count}"
-                                           Margin="12,20" FontSize="13" TextAlignment="Center"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                <ItemsControl ItemsSource="{Binding ExerciseListVm.Items}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Margin="0,2" CornerRadius="8"
-                                                    Background="{DynamicResource WindowBackgroundBrush}"
-                                                    BorderBrush="{DynamicResource BorderBrush}"
-                                                    BorderThickness="1" Padding="8,6">
-                                                <Grid ColumnDefinitions="40,*,Auto">
-                                                    <Border Grid.Column="0" Width="36" Height="36"
-                                                            CornerRadius="8"
-                                                            Background="{DynamicResource CardBackgroundBrush}">
-                                                        <TextBlock Text="{Binding ImageEmoji}"
-                                                                   FontSize="18"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" Spacing="1"
-                                                                Margin="8,0,6,0"
-                                                                VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Name}"
-                                                                   FontSize="13" FontWeight="Medium"
-                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                   TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock FontSize="11"
-                                                                   Foreground="{DynamicResource SecondaryTextBrush}"
-                                                                   TextTrimming="CharacterEllipsis">
-                                                            <Run Text="{Binding PrimaryMusclesLabel}"/>
-                                                            <Run Text=" · "/>
-                                                            <Run Text="{Binding EquipmentLabel}"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                    <Button Grid.Column="2"
-                                                            Content="📊"
-                                                            Command="{Binding DataContext.ExerciseListVm.ShowHistoryCommand, ElementName=WndRoot}"
-                                                            CommandParameter="{Binding}"
-                                                            Background="Transparent"
-                                                            BorderThickness="0" Padding="4"
-                                                            FontSize="14"
-                                                            ToolTip.Tip="История подходов"/>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ScrollViewer>
-
                         <Button Grid.Row="3"
+                                IsVisible="{Binding IsNotSessionActive}"
                                 Command="{Binding ExerciseListVm.AddExerciseCommand}"
                                 Content="+ Своё упражнение"
                                 HorizontalAlignment="Stretch"
