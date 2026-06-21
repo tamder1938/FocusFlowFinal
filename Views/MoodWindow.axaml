@@ -1,0 +1,577 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
+        xmlns:converters="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.MoodWindow"
+        x:CompileBindings="False"
+        x:Name="MoodWindowRoot"
+        Width="1100" Height="740"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding Loc[Mood_Title]}"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Window.Resources>
+        <converters:PathToBitmapConverter x:Key="PathToBitmapConverter"/>
+        <converters:BoolToExpandArrowConverter x:Key="BoolToExpandArrow"/>
+    </Window.Resources>
+
+    <!-- Root grid: 3 columns -->
+    <Grid ColumnDefinitions="300,*,300">
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- Колонка 1: Список записей                                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SidebarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+                <!-- Заголовок + кнопка добавить -->
+                <Border Grid.Row="0" Padding="16,14,16,10"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Loc[Mood_Title]}"
+                                   FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                Command="{Binding NewEntryCommand}"
+                                Content="{Binding Loc[Mood_NewBtn]}"
+                                Background="{DynamicResource AccentBrush}"
+                                Foreground="White"
+                                CornerRadius="6" Padding="10,5"
+                                FontSize="12"/>
+                    </Grid>
+                </Border>
+
+                <!-- Поиск -->
+                <Border Grid.Row="1" Padding="12,8">
+                    <TextBox Text="{Binding SearchQuery}"
+                             Watermark="{Binding Loc[Mood_SearchWatermark]}"
+                             CornerRadius="6"
+                             Background="{DynamicResource CardBackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             FontSize="12"/>
+                </Border>
+
+                <!-- Фильтр периода -->
+                <Border Grid.Row="2" Padding="12,0,12,8">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Button x:Name="FilterAllBtn"
+                                Content="{Binding Loc[Mood_FilterAll]}"
+                                Click="FilterAll_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource AccentLightBrush}"
+                                Foreground="{DynamicResource AccentBrush}"/>
+                        <Button x:Name="FilterMonthBtn"
+                                Content="{Binding Loc[Mood_FilterMonth]}"
+                                Click="FilterMonth_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <Button x:Name="FilterYearBtn"
+                                Content="{Binding Loc[Mood_FilterYear]}"
+                                Click="FilterYear_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Список -->
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Пустое состояние -->
+                        <TextBlock IsVisible="{Binding HasNoEntries}"
+                                   Text="{Binding Loc[Mood_EmptyHint]}"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   FontSize="13" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   Margin="20,30"/>
+
+                        <!-- Элементы -->
+                        <ItemsControl ItemsSource="{Binding EntryList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="8,3"
+                                            CornerRadius="8"
+                                            Cursor="Hand"
+                                            Background="{DynamicResource CardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            Padding="12,10"
+                                            PointerPressed="EntryItem_PointerPressed">
+                                        <Grid RowDefinitions="Auto,Auto,Auto">
+                                            <!-- Дата + уровень -->
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Text="{Binding DateLabel}"
+                                                           FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource ForegroundBrush}"/>
+                                                <Border Grid.Column="1"
+                                                        Background="{Binding LevelColor}"
+                                                        CornerRadius="12" Padding="7,2">
+                                                    <TextBlock Text="{Binding LevelEmoji}"
+                                                               FontSize="12"/>
+                                                </Border>
+                                            </Grid>
+                                            <!-- Название + время -->
+                                            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,3,0,0">
+                                                <TextBlock Text="{Binding LevelName}"
+                                                           FontSize="11"
+                                                           Foreground="{Binding LevelColor}"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding TimeStr}"
+                                                           FontSize="10"
+                                                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                            </Grid>
+                                            <!-- Комментарий -->
+                                            <TextBlock Grid.Row="2"
+                                                       Text="{Binding ShortComment}"
+                                                       IsVisible="{Binding HasComment}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                       TextWrapping="Wrap"
+                                                       MaxLines="2"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,4,0,0"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- Колонка 2: Форма                                           -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <ScrollViewer Grid.Column="1"
+                      VerticalScrollBarVisibility="Auto"
+                      Background="{DynamicResource BackgroundBrush}">
+            <Grid>
+                <!-- Подсказка -->
+                <TextBlock IsVisible="{Binding !IsFormVisible}"
+                           Text="{Binding Loc[Mood_SelectHint]}"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,60"/>
+
+                <!-- Форма -->
+                <StackPanel IsVisible="{Binding IsFormVisible}"
+                            Spacing="0" Margin="20,16">
+
+                    <!-- Тулбар -->
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,14">
+                        <TextBlock Text="{Binding Loc[Mood_LevelLbl]}"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                IsVisible="{Binding IsReadOnly}"
+                                Command="{Binding EditEntryCommand}"
+                                Content="{Binding Loc[Mood_EditBtn]}"
+                                Background="{DynamicResource AccentLightBrush}"
+                                Foreground="{DynamicResource AccentBrush}"
+                                CornerRadius="6" Padding="10,5" FontSize="12" Margin="0,0,6,0"/>
+                        <Button Grid.Column="2"
+                                IsVisible="{Binding IsReadOnly}"
+                                Command="{Binding DeleteEntryCommand}"
+                                Content="{Binding Loc[Mood_DeleteBtn]}"
+                                Background="#FEE2E2"
+                                Foreground="#DC2626"
+                                CornerRadius="6" Padding="10,5" FontSize="12" Margin="0,0,6,0"/>
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6"
+                                    IsVisible="{Binding !IsReadOnly}">
+                            <Button Command="{Binding CancelEditCommand}"
+                                    Content="{Binding Loc[Mood_CancelBtn]}"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    CornerRadius="6" Padding="10,5" FontSize="12"/>
+                            <Button Command="{Binding SaveEntryCommand}"
+                                    Content="{Binding Loc[Mood_SaveBtn]}"
+                                    Background="{DynamicResource AccentBrush}"
+                                    Foreground="White"
+                                    CornerRadius="6" Padding="10,5" FontSize="12"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Дата -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="{Binding Loc[Mood_DateLbl]}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,4"/>
+                        <DatePicker SelectedDate="{Binding EditDate}"
+                                    IsEnabled="{Binding !IsReadOnly}"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    Foreground="{DynamicResource ForegroundBrush}"/>
+                    </StackPanel>
+
+                    <!-- Уровень настроения (кружки) -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="{Binding Loc[Mood_LevelLbl]}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding MoodLevels}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="10"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Width="44" Height="44"
+                                            CornerRadius="22"
+                                            Background="{Binding TintBrush}"
+                                            BorderBrush="{Binding Color}"
+                                            BorderThickness="2"
+                                            ToolTip.Tip="{Binding Name}"
+                                            Padding="0"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            IsEnabled="{Binding DataContext.IsReadOnly, ElementName=MoodWindowRoot, Converter={x:Static BoolConverters.Not}}"
+                                            Click="MoodLevel_Click">
+                                        <TextBlock Text="{Binding Emoji}" FontSize="18"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Активности -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="{Binding Loc[Mood_ActivitiesLbl]}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding ActivityGroups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,4"
+                                            CornerRadius="8"
+                                            Background="{DynamicResource CardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <!-- Заголовок категории -->
+                                            <Button Background="Transparent"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    Padding="10,8" CornerRadius="8,8,0,0"
+                                                    Click="CategoryHeader_Click">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <TextBlock Text="{Binding CategoryIcon}"
+                                                               FontSize="14" VerticalAlignment="Center"
+                                                               Margin="0,0,6,0"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Category}"
+                                                               FontSize="13" FontWeight="Medium"
+                                                               Foreground="{DynamicResource ForegroundBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding IsExpanded, Converter={StaticResource BoolToExpandArrow}}"
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                               FontSize="12"/>
+                                                </Grid>
+                                            </Button>
+
+                                            <!-- Активности -->
+                                            <WrapPanel IsVisible="{Binding IsExpanded}"
+                                                       Margin="10,4,10,6">
+                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Button Margin="3"
+                                                                    Padding="8,4"
+                                                                    CornerRadius="16"
+                                                                    Background="{Binding SelectedBackground}"
+                                                                    IsEnabled="{Binding DataContext.IsReadOnly, ElementName=MoodWindowRoot, Converter={x:Static BoolConverters.Not}}"
+                                                                    Click="Activity_Click">
+                                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                    <TextBlock Text="{Binding Icon}"
+                                                                               Foreground="{Binding IconForeground}"
+                                                                               FontSize="12"/>
+                                                                    <TextBlock Text="{Binding Name}"
+                                                                               Foreground="{Binding IconForeground}"
+                                                                               FontSize="11"/>
+                                                                </StackPanel>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </WrapPanel>
+
+                                            <!-- Добавить своё -->
+                                            <StackPanel IsVisible="{Binding IsExpanded}"
+                                                        Orientation="Horizontal" Spacing="6"
+                                                        Margin="10,0,10,8">
+                                                <Button IsVisible="{Binding !IsAddingCustom}"
+                                                        Content="{Binding DataContext.Loc[Mood_AddCustom], ElementName=MoodWindowRoot}"
+                                                        Background="Transparent"
+                                                        Foreground="{DynamicResource AccentBrush}"
+                                                        FontSize="11" Padding="0"
+                                                        Click="ShowAddCustom_Click"/>
+                                                <TextBox IsVisible="{Binding IsAddingCustom}"
+                                                         Text="{Binding NewCustomName}"
+                                                         Watermark="{Binding DataContext.Loc[Mood_CustomNameLbl], ElementName=MoodWindowRoot}"
+                                                         Width="120" FontSize="11"/>
+                                                <Button IsVisible="{Binding IsAddingCustom}"
+                                                        Content="{Binding DataContext.Loc[Mood_ConfirmCustom], ElementName=MoodWindowRoot}"
+                                                        Background="{DynamicResource AccentBrush}"
+                                                        Foreground="White"
+                                                        FontSize="11" Padding="6,2" CornerRadius="4"
+                                                        Click="ConfirmCustom_Click"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Комментарий -->
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock Text="{Binding Loc[Mood_CommentLbl]}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding EditComment}"
+                                 Watermark="{Binding Loc[Mood_CommentWatermark]}"
+                                 IsReadOnly="{Binding IsReadOnly}"
+                                 AcceptsReturn="True"
+                                 Height="80"
+                                 TextWrapping="Wrap"
+                                 VerticalContentAlignment="Top"
+                                 Background="{DynamicResource CardBackgroundBrush}"
+                                 Foreground="{DynamicResource ForegroundBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 CornerRadius="6" Padding="8"/>
+                    </StackPanel>
+
+                    <!-- Фото -->
+                    <StackPanel Margin="0,0,0,14">
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                            <TextBlock Text="{Binding Loc[Mood_PhotosLbl]}"
+                                       FontSize="12" FontWeight="Medium"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    IsVisible="{Binding !IsReadOnly}"
+                                    Content="{Binding Loc[Mood_AddPhotoBtn]}"
+                                    Click="AddPhoto_Click"
+                                    Background="{DynamicResource AccentLightBrush}"
+                                    Foreground="{DynamicResource AccentBrush}"
+                                    FontSize="11" Padding="8,3" CornerRadius="6"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding EditPhotoPaths}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="4">
+                                        <Border CornerRadius="6" ClipToBounds="True"
+                                                Width="80" Height="80">
+                                            <Image Source="{Binding Converter={StaticResource PathToBitmapConverter}}"
+                                                   Stretch="UniformToFill"/>
+                                        </Border>
+                                        <Button IsVisible="{Binding DataContext.IsReadOnly, ElementName=MoodWindowRoot, Converter={x:Static BoolConverters.Not}}"
+                                                Width="18" Height="18"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Margin="2"
+                                                CornerRadius="9"
+                                                Background="#CC000000"
+                                                Foreground="White"
+                                                FontSize="9"
+                                                Padding="0"
+                                                Content="✕"
+                                                Click="RemovePhoto_Click"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- Колонка 3: Аналитика                                       -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="2"
+                Background="{DynamicResource SidebarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1,0,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="14,14,14,14" Spacing="14">
+
+                    <TextBlock Text="{Binding Loc[Mood_AnalyticsTitle]}"
+                               FontSize="14" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}"/>
+
+                    <!-- Период -->
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button x:Name="ChartWeekBtn"
+                                Content="{Binding Loc[Mood_PeriodWeek]}"
+                                Click="ChartWeek_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource AccentLightBrush}"
+                                Foreground="{DynamicResource AccentBrush}"/>
+                        <Button x:Name="ChartMonthBtn"
+                                Content="{Binding Loc[Mood_PeriodMonth]}"
+                                Click="ChartMonth_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <Button x:Name="ChartYearBtn"
+                                Content="{Binding Loc[Mood_PeriodYear]}"
+                                Click="ChartYear_Click"
+                                FontSize="11" Padding="8,3" CornerRadius="12"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    </StackPanel>
+
+                    <!-- Среднее + кол-во -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Border CornerRadius="8"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="12,10">
+                            <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="{Binding AverageMoodStr}"
+                                           FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Mood_AvgLabel]}"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" CornerRadius="8"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="12,10">
+                            <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="{Binding TotalEntriesStr}"
+                                           FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Mood_TotalLabel]}"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Линейный график -->
+                    <Border CornerRadius="8"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="8">
+                        <controls:MoodLineChartControl
+                            Points="{Binding ChartPoints}"
+                            Height="130"/>
+                    </Border>
+
+                    <!-- Донат + легенда -->
+                    <Border CornerRadius="8"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Loc[Mood_DistribLabel]}"
+                                       FontSize="12" FontWeight="Medium"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       Margin="0,0,0,8"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <controls:MoodDonutControl
+                                    Items="{Binding Distribution}"
+                                    Width="110" Height="110"
+                                    HorizontalAlignment="Left"/>
+                                <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0"
+                                            VerticalAlignment="Center">
+                                    <ItemsControl ItemsSource="{Binding Distribution}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                                    <Border Width="10" Height="10"
+                                                            CornerRadius="5"
+                                                            Background="{Binding Color}"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock FontSize="11"
+                                                               Foreground="{DynamicResource ForegroundBrush}">
+                                                        <Run Text="{Binding LevelName}"/>
+                                                        <Run Text=" "/>
+                                                        <Run Text="{Binding Count}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Год в точках -->
+                    <Border IsVisible="{Binding ShowYearGrid}"
+                            CornerRadius="8"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Loc[Mood_YearGrid]}"
+                                       FontSize="12" FontWeight="Medium"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       Margin="0,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding YearDots}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Rows="31" Columns="12"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="14" Height="14"
+                                                Margin="1"
+                                                CornerRadius="3"
+                                                Background="{Binding Color}"
+                                                ToolTip.Tip="{Binding Tooltip}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+    </Grid>
+</Window>

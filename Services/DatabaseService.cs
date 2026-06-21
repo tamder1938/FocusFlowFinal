@@ -6,6 +6,7 @@ using LiteDB;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
+using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
 
 namespace FocusFlowFinal.Services
@@ -29,7 +30,9 @@ namespace FocusFlowFinal.Services
         private const string HabitCompletionsCollection = "habit_completions";
         private const string HabitCategoriesCollection  = "habit_categories";
         private const string HabitTemplatesCollection   = "habit_templates";
-        private const string NotesCollection            = "notes";
+        private const string NotesCollection             = "notes";
+        private const string MoodEntriesCollection       = "mood_entries";
+        private const string MoodActivitiesCollection    = "mood_activities";
 
         public DatabaseService()
         {
@@ -46,6 +49,7 @@ namespace FocusFlowFinal.Services
             _db.GetCollection<FocusSession>(SessionsCollection).EnsureIndex(s => s.StartTime);
             _db.GetCollection<Note>(NotesCollection).EnsureIndex(n => n.Date);
             _db.GetCollection<Note>(NotesCollection).EnsureIndex(n => n.UpdatedAt);
+            _db.GetCollection<MoodEntry>(MoodEntriesCollection).EnsureIndex(e => e.Date);
 
             var templates = _db.GetCollection<TimerTemplate>(TemplatesCollection);
             templates.EnsureIndex(t => t.Name);
@@ -849,6 +853,81 @@ namespace FocusFlowFinal.Services
                 all = all.Where(n => n.Date.Date <= to.Value.Date);
 
             return all.OrderByDescending(n => n.UpdatedAt).ToList();
+        }
+
+        // ── Трекер настроения ────────────────────────────────────────────
+
+        public IEnumerable<MoodEntry> GetAllMoodEntries() =>
+            _db.GetCollection<MoodEntry>(MoodEntriesCollection)
+               .FindAll().OrderByDescending(e => e.Date).ToList();
+
+        public IEnumerable<MoodEntry> GetMoodEntriesForPeriod(DateTime from, DateTime to)
+        {
+            var f = from.Date; var t = to.Date;
+            return _db.GetCollection<MoodEntry>(MoodEntriesCollection)
+                .FindAll().Where(e => e.Date.Date >= f && e.Date.Date <= t)
+                .OrderByDescending(e => e.Date).ToList();
+        }
+
+        public MoodEntry? GetMoodEntryById(int id) =>
+            _db.GetCollection<MoodEntry>(MoodEntriesCollection).FindById(id);
+
+        public int UpsertMoodEntry(MoodEntry entry)
+        {
+            var col = _db.GetCollection<MoodEntry>(MoodEntriesCollection);
+            if (entry.Id == 0) { entry.CreatedAt = DateTime.Now; return col.Insert(entry).AsInt32; }
+            col.Update(entry); return entry.Id;
+        }
+
+        public void DeleteMoodEntry(int id) =>
+            _db.GetCollection<MoodEntry>(MoodEntriesCollection).Delete(id);
+
+        public IEnumerable<MoodActivity> GetAllMoodActivities()
+        {
+            var col = _db.GetCollection<MoodActivity>(MoodActivitiesCollection);
+            if (col.Count() == 0) SeedMoodActivities(col);
+            return col.FindAll().OrderBy(a => a.Category).ThenBy(a => a.Name).ToList();
+        }
+
+        public int UpsertMoodActivity(MoodActivity activity)
+        {
+            var col = _db.GetCollection<MoodActivity>(MoodActivitiesCollection);
+            if (activity.Id == 0) { activity.CreatedAt = DateTime.Now; return col.Insert(activity).AsInt32; }
+            col.Update(activity); return activity.Id;
+        }
+
+        public void DeleteMoodActivity(int id) =>
+            _db.GetCollection<MoodActivity>(MoodActivitiesCollection).Delete(id);
+
+        private static void SeedMoodActivities(ILiteCollection<MoodActivity> col)
+        {
+            var seed = new[]
+            {
+                ("Сон",         "Долгий сон",          "😴"), ("Сон",         "Тихий вечер",       "🌙"),
+                ("Сон",         "Дремота",             "💤"), ("Сон",         "Ранний подъём",      "⏰"),
+                ("Совместные",  "Друзья",              "👥"), ("Совместные",  "Семья",              "👨‍👩‍👧"),
+                ("Совместные",  "Свидание",            "❤️"), ("Совместные",  "Вечеринка",          "🎉"),
+                ("Совместные",  "Видеозвонок",         "💻"),
+                ("Хобби",       "Музыка",              "🎵"), ("Хобби",       "Кино",               "🎬"),
+                ("Хобби",       "Игры",                "🎮"), ("Хобби",       "Чтение",             "📚"),
+                ("Хобби",       "Рисование",           "🎨"), ("Хобби",       "Кулинария",          "👨‍🍳"),
+                ("Еда",         "Домашняя еда",        "🍲"), ("Еда",         "Ресторан",           "🍽️"),
+                ("Еда",         "Фастфуд",             "🍔"), ("Еда",         "Вегетарианское",     "🥗"),
+                ("Спорт",       "Бег",                 "🏃"), ("Спорт",       "Зал",                "💪"),
+                ("Спорт",       "Йога",                "🧘"), ("Спорт",       "Велосипед",          "🚴"),
+                ("Спорт",       "Плавание",            "🏊"), ("Спорт",       "Прогулка",           "🚶"),
+                ("Работа",      "Продуктивный день",   "⚡"), ("Работа",      "Дедлайн",            "⏰"),
+                ("Работа",      "Встречи",             "🤝"), ("Работа",      "Удалёнка",           "🏠"),
+                ("Здоровье",    "Болезнь",             "🤒"), ("Здоровье",    "Хорошее самочувствие","💪"),
+                ("Здоровье",    "Врач",                "🏥"), ("Здоровье",    "Медитация",          "🧘"),
+                ("Другое",      "Путешествие",         "✈️"), ("Другое",      "Покупки",            "🛍️"),
+                ("Другое",      "Уборка",              "🧹"), ("Другое",      "Природа",            "🌿"),
+            };
+            col.InsertBulk(seed.Select(s => new MoodActivity
+            {
+                Category = s.Item1, Name = s.Item2, Icon = s.Item3, IsCustom = false,
+                CreatedAt = DateTime.Now
+            }));
         }
     }
 }

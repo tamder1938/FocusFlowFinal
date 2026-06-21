@@ -222,6 +222,19 @@ public partial class MainViewModel : ObservableObject
         if (CurrentCalendarView is MonthViewModel mv) mv.RefreshMonth();
     }
 
+    [RelayCommand]
+    private async void OpenMood()
+    {
+        var repo     = _services.GetRequiredService<IMoodRepository>();
+        var photoSvc = _services.GetRequiredService<IMoodPhotoService>();
+        var stats    = _services.GetRequiredService<IMoodStatisticsService>();
+        var vm       = new MoodViewModel(repo, photoSvc, stats);
+        var win      = new Views.MoodWindow { DataContext = vm };
+        var owner    = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
     private Window? GetMainWindow() =>
         (App.Current?.ApplicationLifetime as
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;

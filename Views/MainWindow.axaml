@@ -208,6 +208,7 @@
 					</Button>
 					<!-- Трекер настроения -->
 					<Button IsVisible="{Binding IsMoodTrackerEnabled}"
+                            Command="{Binding OpenMoodCommand}"
                             Background="{DynamicResource ButtonBackgroundBrush}"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             BorderBrush="{DynamicResource ButtonBorderBrush}"

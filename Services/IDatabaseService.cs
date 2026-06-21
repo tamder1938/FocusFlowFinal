@@ -1,6 +1,7 @@
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
+using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
 using System;
 using System.Collections.Generic;
@@ -112,6 +113,16 @@ public interface IDatabaseService
     IEnumerable<HabitTemplate> GetAllHabitTemplates();
     void UpsertHabitTemplate(HabitTemplate template);
     void DeleteHabitTemplate(int id);
+
+    // ── Трекер настроения ────────────────────────────────────────────
+    IEnumerable<MoodEntry>    GetAllMoodEntries();
+    IEnumerable<MoodEntry>    GetMoodEntriesForPeriod(DateTime from, DateTime to);
+    MoodEntry?                GetMoodEntryById(int id);
+    int                       UpsertMoodEntry(MoodEntry entry);
+    void                      DeleteMoodEntry(int id);
+    IEnumerable<MoodActivity> GetAllMoodActivities();
+    int                       UpsertMoodActivity(MoodActivity activity);
+    void                      DeleteMoodActivity(int id);
 
     // ── Заметки и дневник ───────────────────────────────────────────
     IEnumerable<Note> GetAllNotes();

@@ -273,5 +273,10 @@ public partial class App : Application
         // Заметки и дневник
         s.AddSingleton<INoteRepository, NoteRepository>();
         s.AddSingleton<NoteExportService>();
+
+        // Трекер настроения
+        s.AddSingleton<IMoodRepository, MoodRepository>();
+        s.AddSingleton<IMoodPhotoService, MoodPhotoService>();
+        s.AddSingleton<IMoodStatisticsService, MoodStatisticsService>();
     }
 }
