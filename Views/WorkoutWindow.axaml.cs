@@ -28,6 +28,40 @@ public partial class WorkoutWindow : Window
         await Vm.InitializeAsync();
 
         SetActiveTab(0);
+        SetLeftTab(0);
+    }
+
+    // ── Вкладки левой колонки ──────────────────────────────────────────
+
+    private void LeftTab_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn) return;
+        if (int.TryParse(btn.Tag?.ToString(), out var idx))
+            SetLeftTab(idx);
+    }
+
+    private void SetLeftTab(int idx)
+    {
+        if (PanelPrograms != null) PanelPrograms.IsVisible = idx == 0;
+        if (PanelHistory  != null) PanelHistory.IsVisible  = idx == 1;
+
+        SetTabActive2(LeftTabPrograms, idx == 0);
+        SetTabActive2(LeftTabHistory,  idx == 1);
+    }
+
+    private static void SetTabActive2(Button? btn, bool active)
+    {
+        if (btn == null) return;
+        if (active) btn.Classes.Add("left-tab-active");
+        else        btn.Classes.Remove("left-tab-active");
+    }
+
+    // ── Карточка истории — клик (раскрыть/свернуть) ───────────────────
+
+    private void HistoryCard_Tapped(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Border { DataContext: SessionHistoryItemViewModel vm })
+            vm.ToggleExpandedCommand.Execute(null);
     }
 
     // ── Вкладки правой колонки ─────────────────────────────────────────

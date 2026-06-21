@@ -30,14 +30,38 @@ public class WorkoutSession
 
     [BsonIgnore]
     public double TotalTonnage =>
-        Exercises.Sum(e => e.Sets.Sum(s => s.WeightKg * s.Reps));
+        Exercises.Sum(e => e.Sets.Where(s => s.IsCompleted).Sum(s => s.WeightKg * s.Reps));
+
+    [BsonIgnore]
+    public int CompletedSets =>
+        Exercises.Sum(e => e.Sets.Count(s => s.IsCompleted));
+
+    [BsonIgnore]
+    public int TotalSets =>
+        Exercises.Sum(e => e.Sets.Count);
+
+    [BsonIgnore]
+    public string TonnageLabel
+    {
+        get
+        {
+            var t = TotalTonnage;
+            return t >= 1000 ? $"{t / 1000:0.#} т" : $"{t:0.#} кг";
+        }
+    }
 }
 
 public class PerformedExercise
 {
-    public string              ExerciseKey { get; set; } = string.Empty;
+    public string              ExerciseKey  { get; set; } = string.Empty;
     public string              ExerciseName { get; set; } = string.Empty;
-    public List<PerformedSet>  Sets        { get; set; } = new();
+    public List<PerformedSet>  Sets         { get; set; } = new();
+
+    [BsonIgnore]
+    public string SetsCompact =>
+        Sets.Count == 0 ? "—"
+        : string.Join("  ", Sets.Where(s => s.IsCompleted)
+                                .Select(s => $"{s.WeightKg:0.##}×{s.Reps}"));
 }
 
 public class PerformedSet
