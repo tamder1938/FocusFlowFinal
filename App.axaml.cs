@@ -290,5 +290,10 @@ public partial class App : Application
         s.AddSingleton<IMediaRepository, MediaRepository>();
         s.AddSingleton<IMediaPosterService, MediaPosterService>();
         s.AddSingleton<IMediaMetadataProvider, NullMediaMetadataProvider>();
+
+        // Трекер тренировок
+        s.AddSingleton<IExerciseRepository, ExerciseRepository>();
+        s.AddSingleton<IWorkoutRepository, WorkoutRepository>();
+        s.AddSingleton<IWorkoutInitService, WorkoutInitService>();
     }
 }

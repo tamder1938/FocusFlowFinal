@@ -233,6 +233,19 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async void OpenWorkout()
+    {
+        var exercises = _services.GetRequiredService<IExerciseRepository>();
+        var workouts  = _services.GetRequiredService<IWorkoutRepository>();
+        var initSvc   = _services.GetRequiredService<IWorkoutInitService>();
+        var vm        = new WorkoutViewModel(exercises, workouts, initSvc);
+        var win       = new Views.WorkoutWindow { DataContext = vm };
+        var owner     = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
     private async void OpenMedia()
     {
         var repo    = _services.GetRequiredService<IMediaRepository>();

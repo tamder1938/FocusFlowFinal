@@ -233,6 +233,7 @@
 					</Button>
 					<!-- Трекер тренировок -->
 					<Button IsVisible="{Binding IsWorkoutTrackerEnabled}"
+                            Command="{Binding OpenWorkoutCommand}"
                             Background="{DynamicResource ButtonBackgroundBrush}"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             BorderBrush="{DynamicResource ButtonBorderBrush}"

@@ -1,0 +1,293 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.WorkoutWindow"
+        x:CompileBindings="False"
+        x:Name="WndRoot"
+        Title="Тренировки"
+        Width="1200" Height="820"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Grid ColumnDefinitions="260,*,300">
+
+        <!-- ════════════════════════════════════════════════════
+             ЛЕВАЯ КОЛОНКА — программы (заглушка Этап 1)
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Margin="12">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                    <TextBlock Grid.Column="0" Text="Мои программы"
+                               FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="+"
+                            Background="{DynamicResource AccentBrush}"
+                            Foreground="White" CornerRadius="8"
+                            Width="32" Height="32" Padding="0"
+                            FontSize="18" FontWeight="Bold"/>
+                </Grid>
+
+                <!-- Заглушка — появится в Этапе 2 -->
+                <Border Background="{DynamicResource WindowBackgroundBrush}"
+                        CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                    <StackPanel Spacing="8" HorizontalAlignment="Center">
+                        <TextBlock Text="🏋️" FontSize="36" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Программы появятся в следующем обновлении"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Готовые шаблоны"
+                           FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8"/>
+                <StackPanel Spacing="6">
+                    <Border Classes="template-card">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Powerlifting 5×5" FontSize="13" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Text="3 дн. · Приседания, Жим, Тяга" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Classes="template-card">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="PPL (Push/Pull/Legs)" FontSize="13" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Text="6 дн. · Жим / Тяга / Ноги" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Classes="template-card">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Full Body 3×/нед" FontSize="13" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Text="3 дн. · Всё тело" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Classes="template-card">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Upper/Lower Split" FontSize="13" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Text="4 дн. · Верх / Низ" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ════════════════════════════════════════════════════
+             ЦЕНТРАЛЬНАЯ КОЛОНКА — (заглушка Этап 1)
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource WindowBackgroundBrush}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Spacing="16">
+                <TextBlock Text="🏋️" FontSize="64"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Выберите программу в левой колонке"
+                           FontSize="16"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="или создайте новую тренировку"
+                           FontSize="14"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ════════════════════════════════════════════════════
+             ПРАВАЯ КОЛОНКА — вкладки
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="2"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1,0,0,0">
+            <Grid RowDefinitions="Auto,*">
+
+                <!-- Вкладки -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="0"
+                            Background="{DynamicResource WindowBackgroundBrush}"
+                            Margin="0">
+                    <Button Content="Упражнения" Classes="right-tab"
+                            Tag="0" Click="RightTab_Click" x:Name="TabExercises"/>
+                    <Button Content="Аналитика"  Classes="right-tab"
+                            Tag="1" Click="RightTab_Click" x:Name="TabAnalytics"/>
+                    <Button Content="Уровень"    Classes="right-tab"
+                            Tag="2" Click="RightTab_Click" x:Name="TabStrength"/>
+                </StackPanel>
+
+                <!-- Содержимое вкладок -->
+                <Grid Grid.Row="1">
+
+                    <!-- Вкладка: Упражнения -->
+                    <Grid x:Name="PanelExercises" RowDefinitions="Auto,Auto,*,Auto"
+                          Margin="8,8,8,8">
+
+                        <!-- Поиск -->
+                        <TextBox Grid.Row="0"
+                                 Text="{Binding ExerciseListVm.SearchQuery}"
+                                 Watermark="🔍 Поиск упражнений…"
+                                 Background="{DynamicResource WindowBackgroundBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 CornerRadius="8" Padding="10,7"
+                                 Margin="0,0,0,6"/>
+
+                        <!-- Фильтры -->
+                        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,0,0,8">
+                            <ComboBox Grid.Column="0"
+                                      ItemsSource="{Binding ExerciseListVm.MuscleOptions}"
+                                      SelectedIndex="{Binding ExerciseListVm.MuscleFilterIndex}"
+                                      Margin="0,0,4,0" FontSize="12"
+                                      Background="{DynamicResource WindowBackgroundBrush}"
+                                      Foreground="{DynamicResource PrimaryTextBrush}"
+                                      BorderBrush="{DynamicResource BorderBrush}"
+                                      HorizontalAlignment="Stretch"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding ExerciseListVm.EquipmentOptions}"
+                                      SelectedIndex="{Binding ExerciseListVm.EquipmentFilterIndex}"
+                                      Margin="4,0,0,0" FontSize="12"
+                                      Background="{DynamicResource WindowBackgroundBrush}"
+                                      Foreground="{DynamicResource PrimaryTextBrush}"
+                                      BorderBrush="{DynamicResource BorderBrush}"
+                                      HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Список упражнений -->
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Упражнения не найдены"
+                                           IsVisible="{Binding !ExerciseListVm.Items.Count}"
+                                           Margin="12,20" FontSize="13" TextAlignment="Center"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <ItemsControl ItemsSource="{Binding ExerciseListVm.Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,2" CornerRadius="8"
+                                                    Background="{DynamicResource WindowBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                    BorderThickness="1"
+                                                    Padding="8,6">
+                                                <Grid ColumnDefinitions="40,*,Auto">
+                                                    <!-- Иконка -->
+                                                    <Border Grid.Column="0" Width="36" Height="36"
+                                                            CornerRadius="8"
+                                                            Background="{DynamicResource CardBackgroundBrush}">
+                                                        <TextBlock Text="{Binding ImageEmoji}"
+                                                                   FontSize="18"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- Мета -->
+                                                    <StackPanel Grid.Column="1" Spacing="1"
+                                                                Margin="8,0,6,0"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="13" FontWeight="Medium"
+                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock FontSize="11"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                   TextTrimming="CharacterEllipsis">
+                                                            <Run Text="{Binding PrimaryMusclesLabel}"/>
+                                                            <Run Text=" · "/>
+                                                            <Run Text="{Binding EquipmentLabel}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+
+                                                    <!-- Кнопка истории -->
+                                                    <Button Grid.Column="2"
+                                                            Content="📊"
+                                                            Command="{Binding DataContext.ExerciseListVm.ShowHistoryCommand, ElementName=WndRoot}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Padding="4"
+                                                            FontSize="14"
+                                                            ToolTip.Tip="История подходов"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Кнопка добавить -->
+                        <Button Grid.Row="3"
+                                Command="{Binding ExerciseListVm.AddExerciseCommand}"
+                                Content="+ Своё упражнение"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,8,0,0"
+                                Background="{DynamicResource AccentBrush}"
+                                Foreground="White"
+                                CornerRadius="8"
+                                Padding="0,10" FontSize="13"/>
+                    </Grid>
+
+                    <!-- Вкладка: Аналитика (заглушка) -->
+                    <StackPanel x:Name="PanelAnalytics"
+                                IsVisible="False"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Spacing="8">
+                        <TextBlock Text="📈" FontSize="48" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Аналитика — Этап 5"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    </StackPanel>
+
+                    <!-- Вкладка: Уровень силы (заглушка) -->
+                    <StackPanel x:Name="PanelStrength"
+                                IsVisible="False"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Spacing="8">
+                        <TextBlock Text="💪" FontSize="48" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Уровень силы — Этап 6"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    </StackPanel>
+
+                </Grid>
+            </Grid>
+        </Border>
+
+    </Grid>
+
+    <Window.Styles>
+        <Style Selector="Button.right-tab">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+        <Style Selector="Button.right-tab-active">
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+        <Style Selector="Border.template-card">
+            <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+    </Window.Styles>
+
+</Window>

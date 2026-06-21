@@ -72,6 +72,10 @@ namespace FocusFlowFinal.Services
 
         public void Dispose() => _db.Dispose();
 
+        // ── Общий доступ к коллекции (для специализированных репозиториев) ──
+        public ILiteCollection<T> GetCollection<T>(string name) =>
+            _db.GetCollection<T>(name);
+
         // ── Календарные события ─────────────────────────────────────────
 
         public IEnumerable<CalendarEvent> GetEvents(DateTime date)

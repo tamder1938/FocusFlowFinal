@@ -33,6 +33,7 @@
 		<AvaloniaResource Include="Assets\Sounds\presets.json"/>
 		<AvaloniaResource Include="Assets\Sounds\*.ogg"/>
 		<AvaloniaResource Include="Assets\Sounds\*.mp3"/>
+		<AvaloniaResource Include="Assets\Data\exercises.json"/>
 	</ItemGroup>
 
 </Project>
