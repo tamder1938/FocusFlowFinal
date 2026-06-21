@@ -3,6 +3,7 @@ using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
 using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
+using FocusFlowFinal.Models.Media;
 using FocusFlowFinal.Models.Sound;
 using System;
 using System.Collections.Generic;
@@ -138,4 +139,10 @@ public interface IDatabaseService
     IEnumerable<UserSound> GetAllUserSounds();
     int                    UpsertUserSound(UserSound sound);
     void                   DeleteUserSound(int id);
+
+    // ── Трекер медиа ─────────────────────────────────────────────────
+    IEnumerable<MediaItem> GetAllMediaItems();
+    MediaItem?             GetMediaItemById(int id);
+    int                    UpsertMediaItem(MediaItem item);
+    void                   DeleteMediaItem(int id);
 }

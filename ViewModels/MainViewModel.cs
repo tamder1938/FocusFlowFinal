@@ -233,6 +233,18 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async void OpenMedia()
+    {
+        var repo    = _services.GetRequiredService<IMediaRepository>();
+        var posters = _services.GetRequiredService<IMediaPosterService>();
+        var vm      = new MediaViewModel(repo, posters);
+        var win     = new Views.MediaWindow { DataContext = vm };
+        var owner   = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
     private async void OpenMood()
     {
         var repo     = _services.GetRequiredService<IMoodRepository>();

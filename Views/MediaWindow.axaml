@@ -1,0 +1,766 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        xmlns:models="clr-namespace:FocusFlowFinal.Models.Media"
+        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
+        xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
+        x:Class="FocusFlowFinal.Views.MediaWindow"
+        x:CompileBindings="False"
+        x:Name="MediaRoot"
+        Title="Трекер медиа"
+        Width="1200" Height="820"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Grid ColumnDefinitions="280,*,280" Margin="0">
+
+        <!-- ════════════════════════════════════════════════════
+             ЛЕВАЯ КОЛОНКА — каталог
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="0">
+
+                <!-- Вкладки типа -->
+                <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled" Margin="8,10,8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Button Content="Все"       Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="0"/>
+                        <Button Content="Фильмы"    Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="1"/>
+                        <Button Content="Сериалы"   Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="2"/>
+                        <Button Content="Аниме"     Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="3"/>
+                        <Button Content="Книги"     Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="4"/>
+                        <Button Content="Манга"     Classes="tab-chip" Command="{Binding SetTypeTabCommand}" CommandParameter="5"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Пилюли статуса -->
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled" Margin="8,0,8,4">
+                    <ItemsControl ItemsSource="{Binding StatusPills}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Label}"
+                                        Command="{Binding ToggleCommand}"
+                                        Background="{Binding Background}"
+                                        Foreground="{Binding Foreground}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        FontSize="11"
+                                        Padding="8,3"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Поиск + сортировка -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="8,0,8,6">
+                    <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                             Watermark="Поиск…"
+                             Background="{DynamicResource WindowBackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             CornerRadius="8" Padding="8,5" FontSize="12"/>
+                    <ComboBox Grid.Column="1" SelectedIndex="{Binding SortIndex}"
+                              Margin="6,0,0,0" FontSize="11"
+                              Background="{DynamicResource CardBackgroundBrush}"
+                              Foreground="{DynamicResource PrimaryTextBrush}"
+                              BorderBrush="{DynamicResource BorderBrush}">
+                        <ComboBoxItem Content="По дате"/>
+                        <ComboBoxItem Content="По завершению"/>
+                        <ComboBoxItem Content="По оценке"/>
+                        <ComboBoxItem Content="По названию"/>
+                        <ComboBoxItem Content="По году"/>
+                    </ComboBox>
+                </Grid>
+
+                <!-- Список -->
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Список пуст. Добавьте первый элемент!"
+                                   IsVisible="{Binding !Items.Count}"
+                                   Margin="12,20" FontSize="13"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="6,3" CornerRadius="10"
+                                            Background="{DynamicResource WindowBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            Cursor="Hand"
+                                            Tapped="ItemCard_Tapped">
+                                        <Grid ColumnDefinitions="4,68,*" MinHeight="88">
+                                            <!-- Полоска статуса -->
+                                            <Border Grid.Column="0" CornerRadius="10,0,0,10"
+                                                    Background="{Binding StatusColor}"/>
+
+                                            <!-- Постер-миниатюра -->
+                                            <Border Grid.Column="1" Margin="8,6,0,6"
+                                                    CornerRadius="6" ClipToBounds="True"
+                                                    Background="{DynamicResource CardBackgroundBrush}"
+                                                    Width="60" Height="85">
+                                                <Panel>
+                                                    <TextBlock Text="{Binding Type, Converter={x:Static conv:MediaTypeIconConverter.Instance}}"
+                                                               FontSize="24"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                    <Image Source="{Binding PosterPath, Converter={x:Static conv:PathToBitmapConverter.Instance}}"
+                                                           Stretch="UniformToFill"
+                                                           IsVisible="{Binding HasPoster}"/>
+                                                </Panel>
+                                            </Border>
+
+                                            <!-- Текст -->
+                                            <StackPanel Grid.Column="2" Margin="8,8,6,8"
+                                                        VerticalAlignment="Center" Spacing="3">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="13" FontWeight="Medium"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                                           TextWrapping="Wrap" MaxLines="2"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding TypeYearLabel}"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                <!-- Прогресс -->
+                                                <StackPanel IsVisible="{Binding ProgressLabel}">
+                                                    <TextBlock Text="{Binding ProgressLabel}"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                    <ProgressBar Value="{Binding ProgressFraction}"
+                                                                 Maximum="1" Height="3"
+                                                                 Margin="0,2,0,0"
+                                                                 Foreground="{DynamicResource AccentBrush}"
+                                                                 Background="{DynamicResource BorderBrush}"
+                                                                 CornerRadius="2"/>
+                                                </StackPanel>
+                                                <!-- Звёзды -->
+                                                <TextBlock Text="{Binding StarsDisplay}"
+                                                           IsVisible="{Binding StarsDisplay}"
+                                                           FontSize="12"
+                                                           Foreground="#F59E0B"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Кнопка добавить -->
+                <Button Grid.Row="4"
+                        Command="{Binding AddMediaCommand}"
+                        Content="+ Добавить"
+                        HorizontalAlignment="Stretch"
+                        Margin="8,6"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White"
+                        CornerRadius="8"
+                        Padding="0,10" FontSize="13"/>
+            </Grid>
+        </Border>
+
+        <!-- ════════════════════════════════════════════════════
+             ЦЕНТРАЛЬНАЯ КОЛОНКА — детали
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="1" Padding="0">
+            <Grid>
+                <!-- Подсказка если ничего не выбрано -->
+                <TextBlock Text="← Выберите элемент из списка"
+                           IsVisible="{Binding !HasSelectedItem}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                <ScrollViewer IsVisible="{Binding HasSelectedItem}"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="0" DataContext="{Binding SelectedItemVm}"
+                                Margin="16,12,16,16">
+
+                        <!-- ── Шапка: постер + мета ──────────────────── -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+                            <!-- Постер -->
+                            <Border Grid.Column="0" Width="120" Height="170"
+                                    CornerRadius="10" ClipToBounds="True"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    Margin="0,0,14,0">
+                                <Panel>
+                                    <TextBlock Text="{Binding Type, Converter={x:Static conv:MediaTypeIconConverter.Instance}}"
+                                               FontSize="40"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    <Image Source="{Binding PosterBitmap}"
+                                           Stretch="UniformToFill"
+                                           IsVisible="{Binding HasPoster}"/>
+                                </Panel>
+                            </Border>
+
+                            <!-- Мета -->
+                            <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="20" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding OriginalTitle}"
+                                           IsVisible="{Binding OriginalTitle}"
+                                           FontSize="13" FontStyle="Italic"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <WrapPanel>
+                                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                                            CornerRadius="6" Padding="8,3" Margin="0,2,4,2">
+                                        <TextBlock Text="{Binding TypeYearLabel}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                                            CornerRadius="6" Padding="8,3" Margin="0,2,4,2"
+                                            IsVisible="{Binding DurationMin}">
+                                        <TextBlock FontSize="11"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}">
+                                            <Run Text="{Binding DurationMin}"/>
+                                            <Run Text=" мин"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                                            CornerRadius="6" Padding="8,3" Margin="0,2,4,2"
+                                            IsVisible="{Binding Country}">
+                                        <TextBlock Text="{Binding Country}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    </Border>
+                                </WrapPanel>
+                                <TextBlock Text="{Binding GenresDisplay}"
+                                           IsVisible="{Binding GenresDisplay}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding StarsDisplay}"
+                                           IsVisible="{Binding StarsDisplay}"
+                                           FontSize="18" Foreground="#F59E0B"/>
+                            </StackPanel>
+
+                            <!-- Кнопки правого верхнего угла -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                        VerticalAlignment="Top" Spacing="6">
+                                <Button Content="Сохранить"
+                                        Command="{Binding DataContext.SaveCurrentCommand, ElementName=MediaRoot}"
+                                        Background="{DynamicResource AccentBrush}"
+                                        Foreground="White" CornerRadius="6"
+                                        Padding="12,6" FontSize="12"/>
+                                <Button Content="Удалить"
+                                        Command="{Binding DataContext.DeleteMediaCommand, ElementName=MediaRoot}"
+                                        Background="Transparent"
+                                        BorderBrush="#DC4F4F" BorderThickness="1"
+                                        Foreground="#DC4F4F" CornerRadius="6"
+                                        Padding="12,6" FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- ── Переключатель статуса ──────────────────── -->
+                        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,12">
+                            <Button Content="Запланировано" Classes="status-btn" Tag="Planned"    Click="StatusBtn_Click"/>
+                            <Button Content="Смотрю/Читаю"  Classes="status-btn" Tag="InProgress" Click="StatusBtn_Click"/>
+                            <Button Content="Завершено"     Classes="status-btn" Tag="Completed"  Click="StatusBtn_Click"/>
+                            <Button Content="Брошено"       Classes="status-btn" Tag="Dropped"    Click="StatusBtn_Click"/>
+                        </StackPanel>
+
+                        <!-- ── Описание ───────────────────────────────── -->
+                        <TextBlock Text="{Binding Description}"
+                                   IsVisible="{Binding Description}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,12"/>
+
+                        <!-- ── Поля редактирования ────────────────────── -->
+                        <Expander Header="Редактировать" Margin="0,0,0,10"
+                                  Foreground="{DynamicResource PrimaryTextBrush}">
+                            <StackPanel Spacing="8" Margin="0,8,0,0">
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                        <TextBlock Text="Название" FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBox Text="{Binding Title}"
+                                                 Background="{DynamicResource WindowBackgroundBrush}"
+                                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                                 BorderBrush="{DynamicResource BorderBrush}"
+                                                 CornerRadius="6" Padding="7,5" FontSize="12"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="Год" FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <NumericUpDown Value="{Binding Year}"
+                                                       Minimum="1900" Maximum="2099" FormatString="0"
+                                                       Background="{DynamicResource WindowBackgroundBrush}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                                       BorderBrush="{DynamicResource BorderBrush}"
+                                                       CornerRadius="6" FontSize="12"/>
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Жанры" FontSize="11"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBox Text="{Binding GenresDisplay}"
+                                             Watermark="Через запятую"
+                                             Background="{DynamicResource WindowBackgroundBrush}"
+                                             Foreground="{DynamicResource PrimaryTextBrush}"
+                                             BorderBrush="{DynamicResource BorderBrush}"
+                                             CornerRadius="6" Padding="7,5" FontSize="12"/>
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Описание" FontSize="11"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <TextBox Text="{Binding Description}"
+                                             AcceptsReturn="True" TextWrapping="Wrap" Height="60"
+                                             Background="{DynamicResource WindowBackgroundBrush}"
+                                             Foreground="{DynamicResource PrimaryTextBrush}"
+                                             BorderBrush="{DynamicResource BorderBrush}"
+                                             CornerRadius="6" Padding="7,5" FontSize="12"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- ── Эпизоды (сериалы/аниме) ────────────────── -->
+                        <StackPanel IsVisible="{Binding ShowEpisodes}" Spacing="8" Margin="0,0,0,12">
+                            <TextBlock Text="Эпизоды"
+                                       FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding Seasons}"
+                                          SelectedItem="{Binding SelectedSeason}"
+                                          DisplayMemberBinding="{Binding Title}"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          HorizontalAlignment="Stretch"/>
+                                <Button Grid.Column="1" Margin="6,0,0,0"
+                                        Command="{Binding AddSeasonCommand}"
+                                        IsVisible="{Binding IsOngoing}"
+                                        Content="+ Сезон"
+                                        Background="{DynamicResource CardBackgroundBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" CornerRadius="6"
+                                        Padding="10,6" FontSize="12"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </Grid>
+
+                            <StackPanel IsVisible="{Binding SelectedSeason}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding SeasonProgressLabel}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    <Button Grid.Column="1"
+                                            Command="{Binding MarkAllEpisodesCommand}"
+                                            Content="Отметить все"
+                                            Background="Transparent" BorderThickness="0"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource AccentBrush}"
+                                            Padding="0"/>
+                                </Grid>
+                                <ProgressBar Value="{Binding SeasonProgressFraction}"
+                                             Maximum="1" Height="4"
+                                             Margin="0,3,0,0"
+                                             Foreground="{DynamicResource AccentBrush}"
+                                             Background="{DynamicResource BorderBrush}"
+                                             CornerRadius="2"/>
+                            </StackPanel>
+
+                            <Border Background="{DynamicResource CardBackgroundBrush}"
+                                    CornerRadius="10" Padding="8">
+                                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding CurrentSeasonEpisodes}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,3">
+                                                    <CheckBox Grid.Column="0"
+                                                              IsChecked="{Binding IsWatched}"
+                                                              Margin="0,0,8,0"/>
+                                                    <StackPanel Grid.Column="1" Spacing="1"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock FontSize="12"
+                                                                   Foreground="{DynamicResource PrimaryTextBrush}">
+                                                            <Run Text="{Binding EpisodeNumber}"/><Run Text=". "/><Run Text="{Binding Title}"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding WatchedDateStr}"
+                                                                   IsVisible="{Binding IsWatched}"
+                                                                   FontSize="10"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               VerticalAlignment="Center">
+                                                        <Run Text="{Binding DurationMin}"/>
+                                                        <Run Text=" мин"/>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- ── Прогресс книги ─────────────────────────── -->
+                        <StackPanel IsVisible="{Binding ShowReadingProgress}"
+                                    Spacing="8" Margin="0,0,0,12">
+                            <TextBlock Text="Прогресс чтения"
+                                       FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding ReadingProgressLabel}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Command="{Binding FinishBookCommand}"
+                                        Content="Завершить"
+                                        Background="{DynamicResource AccentBrush}"
+                                        Foreground="White" CornerRadius="6"
+                                        Padding="12,5" FontSize="12"/>
+                            </Grid>
+                            <ProgressBar Value="{Binding ReadingProgressFraction}"
+                                         Maximum="1" Height="6"
+                                         Foreground="{DynamicResource AccentBrush}"
+                                         Background="{DynamicResource BorderBrush}"
+                                         CornerRadius="3"/>
+                            <NumericUpDown Value="{Binding CurrentPage}"
+                                           Minimum="0" Maximum="{Binding TotalPages}"
+                                           FormatString="0"
+                                           Background="{DynamicResource CardBackgroundBrush}"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           BorderBrush="{DynamicResource BorderBrush}"
+                                           CornerRadius="6" Width="160"
+                                           HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <!-- ── Оценки ─────────────────────────────────── -->
+                        <StackPanel IsVisible="{Binding ShowRatings}"
+                                    Spacing="10" Margin="0,0,0,12">
+                            <TextBlock Text="Оценки"
+                                       FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                            <Grid ColumnDefinitions="120,*,Auto">
+                                <TextBlock Grid.Column="0" Text="Сюжет"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="1" Maximum="10"
+                                        Value="{Binding ScorePlot}"
+                                        TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Margin="0,0,8,0"/>
+                                <TextBlock Grid.Column="2" FontSize="13" Width="24"
+                                           TextAlignment="Right"
+                                           Text="{Binding ScorePlot, StringFormat='{}{0:0}'}"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="120,*,Auto">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding ScoreVisualLabel}"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="1" Maximum="10"
+                                        Value="{Binding ScoreVisual}"
+                                        TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Margin="0,0,8,0"/>
+                                <TextBlock Grid.Column="2" FontSize="13" Width="24"
+                                           TextAlignment="Right"
+                                           Text="{Binding ScoreVisual, StringFormat='{}{0:0}'}"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="120,*,Auto">
+                                <TextBlock Grid.Column="0" Text="Понравилось"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="1" Maximum="10"
+                                        Value="{Binding ScorePersonal}"
+                                        TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Margin="0,0,8,0"/>
+                                <TextBlock Grid.Column="2" FontSize="13" Width="24"
+                                           TextAlignment="Right"
+                                           Text="{Binding ScorePersonal, StringFormat='{}{0:0}'}"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Итоговая оценка -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Итог"
+                                           FontSize="13" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding OverallScoreDisplay}"
+                                               IsVisible="{Binding !IsEditingOverall}"
+                                               FontSize="22" FontWeight="Bold"
+                                               Foreground="{DynamicResource AccentBrush}"
+                                               Cursor="Hand"
+                                               Tapped="OverallScore_Tapped"/>
+                                    <NumericUpDown Value="{Binding OverallScore}"
+                                                   IsVisible="{Binding IsEditingOverall}"
+                                                   Minimum="1" Maximum="10"
+                                                   FormatString="F1" Width="90"
+                                                   Background="{DynamicResource CardBackgroundBrush}"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   BorderBrush="{DynamicResource BorderBrush}"
+                                                   CornerRadius="6"/>
+                                    <TextBlock Text="ручная"
+                                               IsVisible="{Binding IsOverallManual}"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Дата завершения -->
+                            <Grid ColumnDefinitions="120,*">
+                                <TextBlock Grid.Column="0" Text="Завершено"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <DatePicker Grid.Column="1"
+                                            SelectedDate="{Binding CompletedAt}"
+                                            Background="{DynamicResource CardBackgroundBrush}"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"/>
+                            </Grid>
+
+                            <!-- Впечатление -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Впечатление" FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBox Text="{Binding PersonalNote}"
+                                         AcceptsReturn="True" TextWrapping="Wrap" Height="80"
+                                         Background="{DynamicResource CardBackgroundBrush}"
+                                         Foreground="{DynamicResource PrimaryTextBrush}"
+                                         BorderBrush="{DynamicResource BorderBrush}"
+                                         CornerRadius="8" Padding="8,6" FontSize="12"
+                                         Watermark="Впечатления, мысли…"/>
+                            </StackPanel>
+
+                            <!-- Источник -->
+                            <Grid ColumnDefinitions="120,*">
+                                <TextBlock Grid.Column="0" Text="Источник"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           VerticalAlignment="Center"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding SourceOptions}"
+                                          SelectedItem="{Binding ViewingSource}"
+                                          IsEditable="True"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          HorizontalAlignment="Stretch"/>
+                            </Grid>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ════════════════════════════════════════════════════
+             ПРАВАЯ КОЛОНКА — статистика
+        ════════════════════════════════════════════════════ -->
+        <Border Grid.Column="2"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1,0,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="10" Margin="12,12,12,12"
+                            DataContext="{Binding Statistics}">
+
+                    <TextBlock Text="Статистика" FontSize="14" FontWeight="Medium"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               Margin="0,0,0,4"/>
+
+                    <!-- Числа -->
+                    <Border Background="{DynamicResource WindowBackgroundBrush}"
+                            CornerRadius="10" Padding="12">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Всего"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" FontSize="12" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Text="{Binding TotalCount}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="В этом году"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" FontSize="12" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Text="{Binding CompletedThisYear}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Запланировано"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" FontSize="12" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Text="{Binding PlannedCount}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Брошено"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" FontSize="12" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Text="{Binding DroppedCount}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Часов"
+                                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" FontSize="12" FontWeight="Medium"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Text="{Binding TotalHours, StringFormat='{}{0:F0} ч'}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Топ оценок -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Топ по оценке" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <ItemsControl ItemsSource="{Binding TopRated}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="36,*,Auto" Margin="0,2">
+                                        <Border Grid.Column="0" Width="30" Height="42"
+                                                CornerRadius="4" ClipToBounds="True"
+                                                Background="{DynamicResource CardBackgroundBrush}">
+                                            <Panel>
+                                                <TextBlock Text="{Binding Type, Converter={x:Static conv:MediaTypeIconConverter.Instance}}"
+                                                           FontSize="14"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                <Image Source="{Binding PosterPath, Converter={x:Static conv:PathToBitmapConverter.Instance}}"
+                                                       Stretch="UniformToFill"
+                                                       IsVisible="{Binding HasPoster}"/>
+                                            </Panel>
+                                        </Border>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Title}" FontSize="12"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"
+                                                   Margin="6,0"/>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding OverallScore, StringFormat='{}{0:F1}'}"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="#F59E0B"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- По типам — донат -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="По типам" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <controls:MediaDonutControl Grid.Column="0"
+                                                        Data="{Binding ByType}"
+                                                        Height="110" Width="110"/>
+                            <StackPanel Grid.Column="1" Spacing="4"
+                                        VerticalAlignment="Center" Margin="8,0,0,0">
+                                <ItemsControl ItemsSource="{Binding ByType}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2">
+                                                <Ellipse Width="8" Height="8"
+                                                         Fill="{Binding Color}"
+                                                         VerticalAlignment="Center"/>
+                                                <TextBlock FontSize="11"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                                           VerticalAlignment="Center">
+                                                    <Run Text="{Binding Label}"/>
+                                                    <Run Text=" "/>
+                                                    <Run Text="{Binding Count}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Жанры -->
+                    <StackPanel Spacing="6" IsVisible="{Binding TopGenres.Count}">
+                        <TextBlock Text="Топ жанры" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <ItemsControl ItemsSource="{Binding TopGenres}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="2" Margin="0,3">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Genre}" FontSize="12"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Count}" FontSize="12"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </Grid>
+                                        <ProgressBar Value="{Binding Count}"
+                                                     Maximum="20" Height="3"
+                                                     Foreground="{DynamicResource AccentBrush}"
+                                                     Background="{DynamicResource BorderBrush}"
+                                                     CornerRadius="2"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+    </Grid>
+
+    <Window.Styles>
+        <Style Selector="Button.tab-chip">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+        <Style Selector="Button.status-btn">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+    </Window.Styles>
+
+</Window>

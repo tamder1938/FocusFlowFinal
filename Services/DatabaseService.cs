@@ -8,6 +8,7 @@ using FocusFlowFinal.Models.Finance;
 using FocusFlowFinal.Models.Habits;
 using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
+using FocusFlowFinal.Models.Media;
 using FocusFlowFinal.Models.Sound;
 
 namespace FocusFlowFinal.Services
@@ -35,6 +36,7 @@ namespace FocusFlowFinal.Services
         private const string MoodEntriesCollection       = "mood_entries";
         private const string MoodActivitiesCollection    = "mood_activities";
         private const string UserSoundsCollection        = "userSounds";
+        private const string MediaItemsCollection        = "media_items";
 
         public DatabaseService()
         {
@@ -947,6 +949,28 @@ namespace FocusFlowFinal.Services
 
         public void DeleteUserSound(int id) =>
             _db.GetCollection<UserSound>(UserSoundsCollection).Delete(id);
+
+        // ── Трекер медиа ────────────────────────────────────────────────
+
+        public IEnumerable<MediaItem> GetAllMediaItems() =>
+            _db.GetCollection<MediaItem>(MediaItemsCollection)
+               .FindAll()
+               .OrderByDescending(x => x.CreatedAt)
+               .ToList();
+
+        public MediaItem? GetMediaItemById(int id) =>
+            _db.GetCollection<MediaItem>(MediaItemsCollection).FindById(id);
+
+        public int UpsertMediaItem(MediaItem item)
+        {
+            var col = _db.GetCollection<MediaItem>(MediaItemsCollection);
+            if (item.Id == 0) return col.Insert(item).AsInt32;
+            col.Update(item);
+            return item.Id;
+        }
+
+        public void DeleteMediaItem(int id) =>
+            _db.GetCollection<MediaItem>(MediaItemsCollection).Delete(id);
     }
 }
 

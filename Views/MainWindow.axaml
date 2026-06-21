@@ -244,6 +244,7 @@
 					</Button>
 					<!-- Трекер медиа -->
 					<Button IsVisible="{Binding IsMediaTrackerEnabled}"
+                            Command="{Binding OpenMediaCommand}"
                             Background="{DynamicResource ButtonBackgroundBrush}"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             BorderBrush="{DynamicResource ButtonBorderBrush}"

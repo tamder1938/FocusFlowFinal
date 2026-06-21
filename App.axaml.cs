@@ -285,5 +285,10 @@ public partial class App : Application
         // Фоновые звуки
         s.AddSingleton<ISoundService, SoundService>();
         s.AddSingleton<ISoundRepository, SoundRepository>();
+
+        // Трекер медиа
+        s.AddSingleton<IMediaRepository, MediaRepository>();
+        s.AddSingleton<IMediaPosterService, MediaPosterService>();
+        s.AddSingleton<IMediaMetadataProvider, NullMediaMetadataProvider>();
     }
 }

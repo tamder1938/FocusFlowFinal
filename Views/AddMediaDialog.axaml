@@ -1,0 +1,379 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.AddMediaDialog"
+        x:CompileBindings="False"
+        Title="{Binding Loc[Media_AddBtn]}"
+        Width="540" Height="680"
+        MinWidth="480" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Border Padding="20">
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <!-- ── Шапка ──────────────────────────────────────────── -->
+            <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+                <TextBlock FontSize="18" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="Шаг 1: Тип медиа"
+                           IsVisible="{Binding IsStep1}"/>
+                <TextBlock FontSize="18" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="Шаг 2: Информация"
+                           IsVisible="{Binding IsStep2}"/>
+                <!-- Хлебные крошки -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="24" Height="24" Fill="{DynamicResource AccentBrush}"/>
+                    <TextBlock Text="1" Foreground="White"
+                               FontSize="12" FontWeight="Bold"
+                               VerticalAlignment="Center" Margin="-28,0,8,0"/>
+                    <Rectangle Width="40" Height="2"
+                               Fill="{DynamicResource BorderBrush}"
+                               VerticalAlignment="Center"/>
+                    <!-- Шаг 2: серый круг -->
+                    <Ellipse Width="24" Height="24" Fill="#CCCCCC" IsVisible="{Binding IsStep1}"/>
+                    <!-- Шаг 2: синий круг -->
+                    <Ellipse Width="24" Height="24" Fill="{DynamicResource AccentBrush}" IsVisible="{Binding IsStep2}"/>
+                    <TextBlock Text="2" Foreground="White"
+                               FontSize="12" FontWeight="Bold"
+                               VerticalAlignment="Center" Margin="-28,0,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ── Шаг 1: выбор типа ──────────────────────────────── -->
+            <ScrollViewer Grid.Row="1" IsVisible="{Binding IsStep1}"
+                          VerticalScrollBarVisibility="Auto">
+                <UniformGrid Rows="2" Columns="3" Margin="0,8">
+                    <Button Command="{Binding SelectTypeCommand}" CommandParameter="Movie"
+                            Margin="6" Height="100" CornerRadius="12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="🎬" FontSize="32" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[Media_Movie]}" FontSize="13"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SelectTypeCommand}" CommandParameter="Series"
+                            Margin="6" Height="100" CornerRadius="12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="📺" FontSize="32" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[Media_Series]}" FontSize="13"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SelectTypeCommand}" CommandParameter="Anime"
+                            Margin="6" Height="100" CornerRadius="12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="🍿" FontSize="32" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[Media_Anime]}" FontSize="13"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SelectTypeCommand}" CommandParameter="Book"
+                            Margin="6" Height="100" CornerRadius="12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="📖" FontSize="32" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[Media_Book]}" FontSize="13"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SelectTypeCommand}" CommandParameter="Manga"
+                            Margin="6" Height="100" CornerRadius="12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="📚" FontSize="32" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[Media_Manga]}" FontSize="13"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+            </ScrollViewer>
+
+            <!-- ── Шаг 2: поля ────────────────────────────────────── -->
+            <ScrollViewer Grid.Row="1" IsVisible="{Binding IsStep2}"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="10" Margin="0,4,0,0">
+
+                    <!-- Название -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding Loc[Media_Title]}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBox Text="{Binding Title}"
+                                 Watermark="Обязательное поле"
+                                 Background="{DynamicResource CardBackgroundBrush}"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 CornerRadius="6" Padding="8,6"/>
+                    </StackPanel>
+
+                    <!-- Оригинальное название + год -->
+                    <Grid ColumnDefinitions="*,120" HorizontalAlignment="Stretch">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="{Binding Loc[Media_OrigTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBox Text="{Binding OriginalTitle}"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="6" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding Loc[Media_YearTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <NumericUpDown Value="{Binding Year}"
+                                          Minimum="1900" Maximum="2099"
+                                          FormatString="0"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          CornerRadius="6"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Жанры -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding Loc[Media_GenresTitle]}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBox Text="{Binding GenresText}"
+                                 Watermark="Через запятую: Драма, Триллер"
+                                 Background="{DynamicResource CardBackgroundBrush}"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 CornerRadius="6" Padding="8,6"/>
+                        <ItemsControl ItemsSource="{Binding GenreSuggestions}"
+                                      IsVisible="{Binding GenreSuggestions.Count}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}"
+                                            Command="{Binding DataContext.AddGenreSuggestionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Background="{DynamicResource CardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="10"
+                                            FontSize="11" Padding="8,3" Margin="2"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Поля фильма -->
+                    <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShowMovieFields}">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="{Binding Loc[Media_DirectorTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBox Text="{Binding Director}"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="6" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding Loc[Media_DurationTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <NumericUpDown Value="{Binding DurationMin}"
+                                          Minimum="1" Maximum="600" FormatString="0"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          CornerRadius="6"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Поля сериала/аниме -->
+                    <StackPanel Spacing="8" IsVisible="{Binding ShowSeriesFields}">
+                        <Grid ColumnDefinitions="*,*,*">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding Loc[Media_SeasonsTitle]}" FontSize="12"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                <NumericUpDown Value="{Binding SeasonCount}"
+                                              Minimum="1" Maximum="50" FormatString="0"
+                                              Background="{DynamicResource CardBackgroundBrush}"
+                                              Foreground="{DynamicResource PrimaryTextBrush}"
+                                              BorderBrush="{DynamicResource BorderBrush}"
+                                              CornerRadius="6"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding Loc[Media_EpisodesTitle]}" FontSize="12"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                <NumericUpDown Value="{Binding EpisodesPerSeason}"
+                                              Minimum="1" Maximum="500" FormatString="0"
+                                              Background="{DynamicResource CardBackgroundBrush}"
+                                              Foreground="{DynamicResource PrimaryTextBrush}"
+                                              BorderBrush="{DynamicResource BorderBrush}"
+                                              CornerRadius="6"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="{Binding Loc[Media_DurationTitle]}" FontSize="12"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                <NumericUpDown Value="{Binding EpisodeDuration}"
+                                              Minimum="1" Maximum="180" FormatString="0"
+                                              Background="{DynamicResource CardBackgroundBrush}"
+                                              Foreground="{DynamicResource PrimaryTextBrush}"
+                                              BorderBrush="{DynamicResource BorderBrush}"
+                                              CornerRadius="6"/>
+                            </StackPanel>
+                        </Grid>
+                        <CheckBox IsChecked="{Binding IsOngoing}"
+                                  Content="{Binding Loc[Media_IsOngoing]}"
+                                  Foreground="{DynamicResource PrimaryTextBrush}"
+                                  FontSize="13"/>
+                    </StackPanel>
+
+                    <!-- Поля книги -->
+                    <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShowBookFields}">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="{Binding Loc[Media_AuthorTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBox Text="{Binding Author}"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="6" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding Loc[Media_PagesTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <NumericUpDown Value="{Binding TotalPages}"
+                                          Minimum="1" Maximum="99999" FormatString="0"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          CornerRadius="6"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Поля манги -->
+                    <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShowMangaFields}">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="{Binding Loc[Media_AuthorTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBox Text="{Binding Author}"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="6" Padding="8,6"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding Loc[Media_VolumesTitle]}" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <NumericUpDown Value="{Binding TotalVolumes}"
+                                          Minimum="0" Maximum="9999" FormatString="0"
+                                          Background="{DynamicResource CardBackgroundBrush}"
+                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                          BorderBrush="{DynamicResource BorderBrush}"
+                                          CornerRadius="6"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Постер -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Постер" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" Text="{Binding PosterUrlText}"
+                                     Watermark="https://... или оставьте пустым"
+                                     Background="{DynamicResource CardBackgroundBrush}"
+                                     Foreground="{DynamicResource PrimaryTextBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}"
+                                     CornerRadius="6" Padding="8,6"/>
+                            <Button Grid.Column="1" Margin="6,0,0,0"
+                                    Command="{Binding PickPosterFileCommand}"
+                                    Content="{Binding Loc[Media_PosterFile]}"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="6"
+                                    Padding="10,6" FontSize="12"
+                                    Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding PosterFileName}" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   IsVisible="{Binding PosterFileName}"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <!-- Описание -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding Loc[Media_DescTitle]}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBox Text="{Binding Description}"
+                                 AcceptsReturn="True" TextWrapping="Wrap" Height="72"
+                                 Background="{DynamicResource CardBackgroundBrush}"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 CornerRadius="6" Padding="8,6"/>
+                    </StackPanel>
+
+                    <!-- Статус -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding Loc[Media_StatusTitle]}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <ComboBox SelectedIndex="{Binding StatusIndex}"
+                                  Background="{DynamicResource CardBackgroundBrush}"
+                                  Foreground="{DynamicResource PrimaryTextBrush}"
+                                  BorderBrush="{DynamicResource BorderBrush}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="{Binding Loc[Media_Planned]}"/>
+                            <ComboBoxItem Content="{Binding Loc[Media_InProgress]}"/>
+                            <ComboBoxItem Content="{Binding Loc[Media_Completed]}"/>
+                            <ComboBoxItem Content="{Binding Loc[Media_Dropped]}"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Ошибка -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding ErrorMessage}"
+                               Foreground="#DC4F4F" FontSize="12"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ── Кнопки ──────────────────────────────────────────── -->
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,16,0,0">
+                <Button Grid.Column="0"
+                        IsVisible="{Binding IsStep2}"
+                        Command="{Binding BackToStep1Command}"
+                        Content="← Назад"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        CornerRadius="8" Padding="14,8"
+                        Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Button Grid.Column="2"
+                        Command="{Binding CancelCommand}"
+                        Content="{Binding Loc[Media_CancelBtn]}"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        CornerRadius="8" Padding="14,8"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Margin="0,0,8,0"/>
+                <Button Grid.Column="3"
+                        IsVisible="{Binding IsStep2}"
+                        Command="{Binding SaveCommand}"
+                        Content="{Binding Loc[Media_SaveBtn]}"
+                        IsEnabled="{Binding !IsBusy}"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White"
+                        CornerRadius="8" Padding="18,8"/>
+            </Grid>
+
+        </Grid>
+    </Border>
+</Window>
