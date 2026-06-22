@@ -67,8 +67,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             foreach (var t in ThemeTiles)
                 t.IsSelected = t.Theme == value;
             OnPropertyChanged();
-            // Живой превью: применяем тему сразу
-            ThemeService.Instance.ApplyTheme(value);
         }
     }
 
@@ -250,8 +248,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Cancel()
     {
-        // Откатываем живой превью к сохранённой теме
-        ThemeService.Instance.ApplyTheme(_savedTheme);
         CloseWindow();
     }
 

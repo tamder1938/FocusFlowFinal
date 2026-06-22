@@ -230,7 +230,7 @@
 							<!-- ── Цветовая схема (палитра тем) ──────────────── -->
 							<StackPanel>
 								<TextBlock Classes="SectionHeader" Text="Цветовая схема"/>
-								<TextBlock Text="Изменения видны сразу. «Сохранить» фиксирует выбор."
+								<TextBlock Text="Применяется после нажатия «Сохранить»."
                                            Classes="SubLabel" FontSize="11" Margin="0,0,0,10"/>
 								<ItemsControl ItemsSource="{Binding ThemeTiles}">
 									<ItemsControl.ItemsPanel>
