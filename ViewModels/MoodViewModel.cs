@@ -156,16 +156,16 @@ public partial class MoodViewModel : ObservableObject
     // ── Entry list ──────────────────────────────────────────────────
     [ObservableProperty] private ObservableCollection<MoodListDisplayItem> _entryList = new();
     [ObservableProperty] private MoodListDisplayItem? _selectedListItem;
-    [ObservableProperty] private int      _periodFilter  = 0;   // 0=Все 1=Месяц 2=Год 3=Период
-    [ObservableProperty] private DateTime? _filterFrom   = null;
-    [ObservableProperty] private DateTime? _filterTo     = null;
+    [ObservableProperty] private int            _periodFilter  = 0;   // 0=Все 1=Месяц 2=Год 3=Период
+    [ObservableProperty] private DateTimeOffset? _filterFrom   = null;
+    [ObservableProperty] private DateTimeOffset? _filterTo     = null;
     [ObservableProperty] private string    _searchQuery  = string.Empty;
 
     // ── Form ────────────────────────────────────────────────────────
     [ObservableProperty] private bool     _isFormVisible = false;
     [ObservableProperty] private bool     _isReadOnly    = false;
     [ObservableProperty] private int      _editLevel     = 3;
-    [ObservableProperty] private DateTime _editDate      = DateTime.Today;
+    [ObservableProperty] private DateTimeOffset _editDate = DateTimeOffset.Now;
     [ObservableProperty] private string   _editComment   = string.Empty;
     [ObservableProperty] private ObservableCollection<string> _editPhotoPaths = new();
 
@@ -215,8 +215,8 @@ public partial class MoodViewModel : ObservableObject
     // ── Filter reactions ─────────────────────────────────────────────
 
     partial void OnPeriodFilterChanged(int v)    => LoadEntries();
-    partial void OnFilterFromChanged(DateTime? v) => LoadEntries();
-    partial void OnFilterToChanged(DateTime? v)   => LoadEntries();
+    partial void OnFilterFromChanged(DateTimeOffset? v) => LoadEntries();
+    partial void OnFilterToChanged(DateTimeOffset? v)   => LoadEntries();
     partial void OnSearchQueryChanged(string v)   => LoadEntries();
     partial void OnChartPeriodChanged(int v)      => RefreshAnalytics();
 
@@ -230,7 +230,7 @@ public partial class MoodViewModel : ObservableObject
             1 => _repo.GetEntriesForPeriod(new DateTime(today.Year, today.Month, 1), today),
             2 => _repo.GetEntriesForPeriod(new DateTime(today.Year, 1, 1), today),
             3 when FilterFrom.HasValue && FilterTo.HasValue =>
-                _repo.GetEntriesForPeriod(FilterFrom.Value, FilterTo.Value),
+                _repo.GetEntriesForPeriod(FilterFrom.Value.LocalDateTime, FilterTo.Value.LocalDateTime),
             _ => _repo.GetAllEntries()
         };
 
@@ -303,7 +303,7 @@ public partial class MoodViewModel : ObservableObject
     private void NewEntry()
     {
         _currentEntry = null;
-        EditDate      = DateTime.Today;
+        EditDate      = DateTimeOffset.Now;
         EditComment   = string.Empty;
         EditPhotoPaths.Clear();
         SelectMoodLevel(3);
@@ -327,7 +327,7 @@ public partial class MoodViewModel : ObservableObject
 
     private void LoadEntryIntoForm(MoodEntry e, bool readOnly)
     {
-        EditDate    = e.Date;
+        EditDate    = new DateTimeOffset(e.Date, DateTimeOffset.Now.Offset);
         EditComment = e.Comment ?? string.Empty;
         SelectMoodLevel(e.Level);
 

@@ -145,8 +145,8 @@ public partial class MediaItemViewModel : ObservableObject
 
     [ObservableProperty] private bool   _isOverallManual;
     [ObservableProperty] private bool   _isEditingOverall;
-    [ObservableProperty] private DateTime? _startedAt;
-    [ObservableProperty] private DateTime? _completedAt;
+    [ObservableProperty] private DateTime?       _startedAt;
+    [ObservableProperty] private DateTimeOffset? _completedAt;
 
     // ── Постер ────────────────────────────────────────────────────────
 
@@ -254,7 +254,7 @@ public partial class MediaItemViewModel : ObservableObject
         OverallScore   = _item.OverallScore;
         IsOverallManual = _item.IsOverallManual;
         StartedAt      = _item.StartedAt;
-        CompletedAt    = _item.CompletedAt;
+        CompletedAt    = _item.CompletedAt == null ? null : (DateTimeOffset?)_item.CompletedAt.Value;
 
         _suppressScoreRecalc = false;
 
@@ -303,7 +303,7 @@ public partial class MediaItemViewModel : ObservableObject
         if (v == MediaStatus.InProgress && _item.StartedAt == null)
             StartedAt = DateTime.Today;
         if (v == MediaStatus.Completed  && _item.CompletedAt == null)
-            CompletedAt = DateTime.Today;
+            CompletedAt = DateTimeOffset.Now;
     }
 
     // ── Команды ───────────────────────────────────────────────────────
@@ -380,7 +380,7 @@ public partial class MediaItemViewModel : ObservableObject
         _item.OverallScore   = OverallScore;
         _item.IsOverallManual = IsOverallManual;
         _item.StartedAt      = StartedAt;
-        _item.CompletedAt    = CompletedAt;
+        _item.CompletedAt    = CompletedAt?.LocalDateTime;
         _item.Seasons        = Seasons.Select(s => s.Source).ToList();
 
         _repo.Upsert(_item);

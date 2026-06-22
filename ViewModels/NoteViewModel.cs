@@ -25,7 +25,7 @@ public partial class NoteViewModel : ObservableObject
     // ── Поля редактора (связаны с выбранной заметкой) ───────────────
     [ObservableProperty] private string _editTitle   = string.Empty;
     [ObservableProperty] private string _editContent = string.Empty;
-    [ObservableProperty] private DateTime _editDate  = DateTime.Today;
+    [ObservableProperty] private DateTimeOffset _editDate = DateTimeOffset.Now;
     [ObservableProperty] private ObservableCollection<string> _editTags = new();
 
     // ── Тег-инпут ───────────────────────────────────────────────────
@@ -34,8 +34,8 @@ public partial class NoteViewModel : ObservableObject
     // ── Строка поиска/фильтров ──────────────────────────────────────
     [ObservableProperty] private string   _searchQuery   = string.Empty;
     [ObservableProperty] private string?  _selectedTag   = null;
-    [ObservableProperty] private DateTime? _filterFrom   = null;
-    [ObservableProperty] private DateTime? _filterTo     = null;
+    [ObservableProperty] private DateTimeOffset? _filterFrom = null;
+    [ObservableProperty] private DateTimeOffset? _filterTo   = null;
 
     // ── Все теги (для фильтра) ───────────────────────────────────────
     [ObservableProperty] private ObservableCollection<string> _allTags = new();
@@ -70,8 +70,8 @@ public partial class NoteViewModel : ObservableObject
         var results = _repo.Search(
             string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery,
             SelectedTag,
-            FilterFrom,
-            FilterTo);
+            FilterFrom?.LocalDateTime,
+            FilterTo?.LocalDateTime);
 
         NoteList.Clear();
         foreach (var n in results) NoteList.Add(n);
@@ -89,8 +89,8 @@ public partial class NoteViewModel : ObservableObject
 
     partial void OnSearchQueryChanged(string value)   => LoadNotes();
     partial void OnSelectedTagChanged(string? value)  => LoadNotes();
-    partial void OnFilterFromChanged(DateTime? value) => LoadNotes();
-    partial void OnFilterToChanged(DateTime? value)   => LoadNotes();
+    partial void OnFilterFromChanged(DateTimeOffset? value) => LoadNotes();
+    partial void OnFilterToChanged(DateTimeOffset? value)   => LoadNotes();
 
     // ── Выбор заметки ───────────────────────────────────────────────
 
@@ -103,14 +103,14 @@ public partial class NoteViewModel : ObservableObject
         {
             EditTitle   = string.Empty;
             EditContent = string.Empty;
-            EditDate    = DateTime.Today;
+            EditDate    = DateTimeOffset.Now;
             EditTags.Clear();
         }
         else
         {
             EditTitle   = value.Title ?? string.Empty;
             EditContent = value.MarkdownContent ?? string.Empty;
-            EditDate    = value.Date;
+            EditDate    = new DateTimeOffset(value.Date, DateTimeOffset.Now.Offset);
             EditTags.Clear();
             foreach (var t in value.Tags) EditTags.Add(t);
         }
@@ -125,7 +125,7 @@ public partial class NoteViewModel : ObservableObject
 
     partial void OnEditTitleChanged(string value)   => ScheduleAutosave();
     partial void OnEditContentChanged(string value) => ScheduleAutosave();
-    partial void OnEditDateChanged(DateTime value)  => ScheduleAutosave();
+    partial void OnEditDateChanged(DateTimeOffset value) => ScheduleAutosave();
 
     private void ScheduleAutosave()
     {
