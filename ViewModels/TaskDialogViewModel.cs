@@ -65,7 +65,7 @@ public partial class TaskDialogViewModel : ObservableObject
 
     // ── Место ───────────────────────────────────────────────────────────
     [ObservableProperty] private bool _hasLocation;
-    [ObservableProperty] private PlaceLocation? _selectedLocation;
+    [ObservableProperty] private string _locationText = string.Empty;
 
     public event Action<int>? TaskDeleted;
 
@@ -185,8 +185,8 @@ public partial class TaskDialogViewModel : ObservableObject
             AddSubtaskItem(sub.Title, sub.IsCompleted);
 
         // Загружаем место
-        HasLocation      = task.Location != null;
-        SelectedLocation = task.Location;
+        HasLocation  = task.Location != null;
+        LocationText = task.Location?.DisplayName ?? string.Empty;
 
         LoadTaskTemplates();
     }
@@ -313,9 +313,9 @@ public partial class TaskDialogViewModel : ObservableObject
             .ToList();
 
         // Сохраняем место
-        _task.Location = HasLocation && SelectedLocation != null &&
-                         !string.IsNullOrWhiteSpace(SelectedLocation.DisplayName)
-            ? SelectedLocation : null;
+        _task.Location = HasLocation && !string.IsNullOrWhiteSpace(LocationText)
+            ? new PlaceLocation { DisplayName = LocationText.Trim() }
+            : null;
 
         // Автовыполнение основной задачи если все подзадачи выполнены
         if (_task.Subtasks.Count > 0 && _task.Subtasks.All(s => s.IsCompleted))

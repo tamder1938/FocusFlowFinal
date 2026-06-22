@@ -123,7 +123,7 @@ public partial class EventDialogViewModel : ObservableObject
 
     // ── Место ───────────────────────────────────────────────────────────
     [ObservableProperty] private bool _hasLocation;
-    [ObservableProperty] private PlaceLocation? _selectedLocation;
+    [ObservableProperty] private string _locationText = string.Empty;
 
     public string SelectedDeleteMode { get; private set; } = "Cancel";
     public List<DateTime> DatesToRemove { get; private set; } = new List<DateTime>();
@@ -201,8 +201,8 @@ public partial class EventDialogViewModel : ObservableObject
         _notificationUnitIndex  = unitIdx;
 
         // Загружаем место
-        HasLocation      = evt.Location != null;
-        SelectedLocation = evt.Location;
+        HasLocation  = evt.Location != null;
+        LocationText = evt.Location?.DisplayName ?? string.Empty;
 
         LoadEventTemplates();
     }
@@ -414,9 +414,9 @@ public partial class EventDialogViewModel : ObservableObject
             DaysOfWeek  = new List<DayOfWeek>(),
             RecurrenceEndDate = RecurrenceEndDate?.DateTime.Date,
             NotificationOffsetMinutes = offsetMins,
-            Location    = HasLocation && SelectedLocation != null &&
-                          !string.IsNullOrWhiteSpace(SelectedLocation.DisplayName)
-                ? SelectedLocation : null
+            Location    = HasLocation && !string.IsNullOrWhiteSpace(LocationText)
+                ? new PlaceLocation { DisplayName = LocationText.Trim() }
+                : null
         };
 
         // Сохраняем день начала повторения для Monthly/Yearly

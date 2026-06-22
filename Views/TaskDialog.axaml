@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FocusFlowFinal.ViewModels"
         xmlns:models="using:FocusFlowFinal.Models"
-        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
         x:Class="FocusFlowFinal.Views.TaskDialog"
         x:DataType="vm:TaskDialogViewModel"
         Title="{Binding Loc[TaskTitle]}" Width="420" Height="820"
@@ -253,10 +252,16 @@
 			<!-- Место -->
 			<CheckBox Content="{Binding Loc[Loc_AddPlace]}" IsChecked="{Binding HasLocation}"
 			          Foreground="{DynamicResource PrimaryTextBrush}"/>
-			<controls:AddressPickerControl
-			    IsVisible="{Binding HasLocation}"
-			    SelectedLocation="{Binding SelectedLocation, Mode=TwoWay}"
-			    Margin="0,4,0,12"/>
+			<TextBox IsVisible="{Binding HasLocation}"
+			         Text="{Binding LocationText}"
+			         Watermark="{Binding Loc[Loc_EnterAddress]}"
+			         Background="{DynamicResource CardBackgroundBrush}"
+			         Foreground="{DynamicResource ForegroundBrush}"
+			         BorderBrush="{DynamicResource BorderBrush}"
+			         CornerRadius="6"
+			         FontSize="13"
+			         Padding="8,6"
+			         Margin="0,4,0,12"/>
 
 			<!-- Приоритет -->
 			<TextBlock Classes="field-label" Text="{Binding Loc[PriorityLabel]}" Margin="0,4,0,8"/>

@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FocusFlowFinal.ViewModels"
         xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
-        xmlns:controls="clr-namespace:FocusFlowFinal.Views.Controls"
         x:Class="FocusFlowFinal.Views.EventDialog"
         x:CompileBindings="False"
         Title="{Binding Loc[EventTitle]}" Width="400" Height="920"
@@ -206,10 +205,16 @@
 			<!-- Место -->
 			<CheckBox Content="{Binding Loc[Loc_AddPlace]}" IsChecked="{Binding HasLocation}"
 			          Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
-			<controls:AddressPickerControl
-			    IsVisible="{Binding HasLocation}"
-			    SelectedLocation="{Binding SelectedLocation, Mode=TwoWay}"
-			    Margin="0,0,0,12"/>
+			<TextBox IsVisible="{Binding HasLocation}"
+			         Text="{Binding LocationText}"
+			         Watermark="{Binding Loc[Loc_EnterAddress]}"
+			         Background="{DynamicResource CardBackgroundBrush}"
+			         Foreground="{DynamicResource ForegroundBrush}"
+			         BorderBrush="{DynamicResource BorderBrush}"
+			         CornerRadius="6"
+			         FontSize="13"
+			         Padding="8,6"
+			         Margin="0,0,0,12"/>
 
 			<TextBlock Text="{Binding Loc[RecurrenceLbl]}" Foreground="{DynamicResource PrimaryTextBrush}"/>
 			<ComboBox SelectedIndex="{Binding RecurrenceIndex}"
