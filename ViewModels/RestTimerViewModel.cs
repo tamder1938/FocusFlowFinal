@@ -29,6 +29,7 @@ public partial class RestTimerViewModel : ObservableObject, IDisposable
 
     public void Start(int seconds)
     {
+        _timer.Stop();
         TotalSeconds = Math.Max(1, seconds);
         Remaining    = TotalSeconds;
         IsRunning    = true;

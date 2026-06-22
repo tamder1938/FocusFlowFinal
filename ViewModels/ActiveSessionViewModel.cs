@@ -53,7 +53,6 @@ public partial class ActiveSessionViewModel : ObservableObject, IDisposable
 
     public void AddExercise(Exercise exercise)
     {
-        if (Exercises.Any(e => e.ExerciseKey == exercise.Key)) return;
         AddExerciseCore(exercise, 3, 10, 90);
     }
 
