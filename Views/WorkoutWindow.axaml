@@ -317,7 +317,7 @@
                 </StackPanel>
 
                 <!-- 2. Детали программы -->
-                <Grid IsVisible="{Binding ShowProgramDetail}"
+                <Grid IsVisible="{Binding DataContext.ShowProgramDetail, ElementName=WndRoot}"
                       DataContext="{Binding ProgramListVm.SelectedProgram}"
                       RowDefinitions="Auto,*">
 
@@ -427,7 +427,7 @@
                 </Grid>
 
                 <!-- 3. Активная тренировка -->
-                <Grid IsVisible="{Binding IsSessionActive}"
+                <Grid IsVisible="{Binding DataContext.IsSessionActive, ElementName=WndRoot}"
                       DataContext="{Binding ActiveSessionVm}"
                       RowDefinitions="Auto,*,Auto">
 
