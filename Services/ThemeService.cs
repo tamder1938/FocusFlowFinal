@@ -58,11 +58,14 @@ public sealed class ThemeService
         Set(r, "PrimaryActionBrush",            accent);
         Set(r, "PrimaryActionHoverBrush",       dark);
 
-        // Мягкие акцентные подложки
+        // Мягкие акцентные подложки (в тёмном режиме — полупрозрачный тинт, не яркий пастель)
+        var tint = isDark
+            ? Color.FromArgb(0x33, accent.R, accent.G, accent.B)
+            : light;
         Set(r, "AccentSoftBrush",  Color.FromArgb(0x47, main.R, main.G, main.B));
-        Set(r, "AccentMutedBrush", light);
-        Set(r, "AccentLightBrush",  light);
-        Set(r, "AccentLightBrush2", light);
+        Set(r, "AccentMutedBrush",  tint);
+        Set(r, "AccentLightBrush",  tint);
+        Set(r, "AccentLightBrush2", tint);
         Set(r, "CardBorderBrush",  Color.FromArgb(0x66, main.R, main.G, main.B));
 
         // Текст с акцентом и служебные цвета

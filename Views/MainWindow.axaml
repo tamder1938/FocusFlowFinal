@@ -189,10 +189,9 @@
 					<Button IsEnabled="{Binding IsFinanceModuleEnabled}"
                             Command="{Binding OpenFinanceCommand}"
                             Content="{Binding Loc[Finance]}"
-                            Background="{DynamicResource AccentLightBrush}"
-                            Foreground="{DynamicResource AccentTextBrush}"
-                            BorderBrush="{DynamicResource AccentBackground}"
-                            BorderThickness="1"
+                            Background="{DynamicResource AccentBrush}"
+                            Foreground="{DynamicResource OnAccentBrush}"
+                            BorderThickness="0"
                             CornerRadius="6" Padding="12,5" FontSize="13"
                             FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>

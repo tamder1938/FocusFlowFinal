@@ -62,24 +62,26 @@
 			<Setter Property="Background" Value="#FFFFFF50"/>
 		</Style>
 		<Style Selector="Button.tab-nav">
-			<Setter Property="Background"      Value="#FFFFFF22"/>
+			<Setter Property="Background"      Value="#33FFFFFF"/>
 			<Setter Property="Foreground"      Value="{DynamicResource OnAccentBrush}"/>
-			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="BorderBrush"     Value="#55FFFFFF"/>
 			<Setter Property="CornerRadius"    Value="6"/>
 			<Setter Property="Padding"         Value="10,4"/>
 			<Setter Property="FontSize"        Value="12"/>
 			<Setter Property="FontWeight"      Value="Medium"/>
-			<Setter Property="Opacity"         Value="0.8"/>
+			<Setter Property="Opacity"         Value="0.9"/>
 			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 		<Style Selector="Button.tab-nav.active">
-			<Setter Property="Background" Value="#FFFFFF44"/>
-			<Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
-			<Setter Property="FontWeight" Value="SemiBold"/>
-			<Setter Property="Opacity"    Value="1"/>
+			<Setter Property="Background"      Value="{DynamicResource OnAccentBrush}"/>
+			<Setter Property="Foreground"      Value="{DynamicResource AccentBrush}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="FontWeight"      Value="SemiBold"/>
+			<Setter Property="Opacity"         Value="1"/>
 		</Style>
 		<Style Selector="Button.tab-nav:pointerover">
-			<Setter Property="Background" Value="#FFFFFF33"/>
+			<Setter Property="Background" Value="#55FFFFFF"/>
 			<Setter Property="Opacity"    Value="1"/>
 		</Style>
 	</Window.Styles>

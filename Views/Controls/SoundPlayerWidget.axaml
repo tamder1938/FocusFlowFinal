@@ -75,7 +75,7 @@
                                                TextWrapping="NoWrap"
                                                TextTrimming="CharacterEllipsis"
                                                MaxWidth="68"
-                                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                               Foreground="{Binding LabelForeground}"/>
                                 </StackPanel>
                             </Button>
                         </DataTemplate>

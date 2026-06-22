@@ -48,8 +48,8 @@
 			<Setter Property="Cursor" Value="Hand"/>
 		</Style>
 		<Style Selector="Border.ThemeCard.active">
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentBackground}"/>
-			<Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource AccentBrush}"/>
+			<Setter Property="BorderThickness" Value="2"/>
 		</Style>
 
 		<Style Selector="TextBlock.ThemeCardText">
@@ -125,8 +125,8 @@
 			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 		<Style Selector="Border.PaletteTile.active">
-			<Setter Property="BorderBrush" Value="{DynamicResource AccentBackground}"/>
-			<Setter Property="Background"  Value="{DynamicResource AccentLightBrush}"/>
+			<Setter Property="BorderBrush"     Value="{DynamicResource AccentBrush}"/>
+			<Setter Property="BorderThickness" Value="2.5"/>
 		</Style>
 
 		<!-- ИСПРАВЛЕНО (Проблема 13): кнопка экспорта компактная, не растягивается -->

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -41,12 +42,25 @@ public partial class SoundChipItem : ObservableObject
         ? Brushes.White
         : new SolidColorBrush(Avalonia.Media.Color.FromRgb(140, 140, 160));
 
+    public IBrush LabelForeground => IsActive
+        ? new SolidColorBrush(Avalonia.Media.Color.Parse(Color))
+        : ResolveResource("SecondaryTextBrush",
+              Avalonia.Media.Color.FromRgb(107, 114, 128));
+
+    private static IBrush ResolveResource(string key, Avalonia.Media.Color fallback)
+    {
+        if (Application.Current?.Resources.TryGetValue(key, out var v) == true && v is IBrush b)
+            return b;
+        return new SolidColorBrush(fallback);
+    }
+
     public double PulseOpacity => IsActive ? 0.25 : 0;
 
     partial void OnIsActiveChanged(bool v)
     {
         OnPropertyChanged(nameof(ChipBackground));
         OnPropertyChanged(nameof(IconForeground));
+        OnPropertyChanged(nameof(LabelForeground));
         OnPropertyChanged(nameof(PulseOpacity));
     }
 }

@@ -146,10 +146,11 @@ public partial class App : Application
         Set(r, "DangerButtonBackground",        "#EF4444");
 
         // ── Primary / Secondary action buttons (диалоги) ────────────
-        Set(r, "PrimaryActionBrush",      "#4F6EF5");
-        Set(r, "PrimaryActionHoverBrush", "#3B5BDB");
-        Set(r, "SecondaryActionBrush",     d ? "#222638" : "#E9EDF5");
-        Set(r, "SecondaryActionFgBrush",   d ? "#C8CCE8" : "#475569");
+        Set(r, "PrimaryActionBrush",        "#4F6EF5");
+        Set(r, "PrimaryActionHoverBrush",   "#3B5BDB");
+        Set(r, "SecondaryActionBrush",      d ? "#222638" : "#E9EDF5");
+        Set(r, "SecondaryActionFgBrush",    d ? "#C8CCE8" : "#475569");
+        Set(r, "SecondaryForegroundBrush",  d ? "#8B90B8" : "#6B7280");
 
         // ── Цвета приоритета (для pill-кнопок) ───────────────────────
         Set(r, "PriorityHighBg",    d ? "#3A1F22" : "#FEE2E2");

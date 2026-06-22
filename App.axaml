@@ -66,6 +66,7 @@
 			<!-- Neutral/fixed brushes (not themed) -->
 			<SolidColorBrush x:Key="SecondaryActionBrush"         Color="#E9EDF5"/>
 			<SolidColorBrush x:Key="SecondaryActionFgBrush"       Color="#475569"/>
+			<SolidColorBrush x:Key="SecondaryForegroundBrush"     Color="#6B7280"/>
 
 			<!-- КОНВЕРТЕРЫ (ОБЯЗАТЕЛЬНО) -->
 			<converters:CollectionCountToBoolConverter x:Key="CollectionCountToBoolConverter"/>
