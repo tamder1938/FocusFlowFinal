@@ -100,21 +100,23 @@
 									<StackPanel Spacing="3"
                                 Opacity="{Binding IsCurrentMonth, Converter={x:Static conv:BoolToOpacityConverter.Instance}}">
 
-										<!-- Число дня: синий кружок если IsToday -->
+										<!-- Число дня: акцентный кружок если IsToday -->
 										<Grid HorizontalAlignment="Left">
 											<Border Width="24" Height="24" CornerRadius="12"
-                                                    Background="{DynamicResource AccentBackground}"
+                                                    Background="{DynamicResource AccentBrush}"
                                                     IsVisible="{Binding IsToday}"/>
 											<TextBlock Text="{Binding DayNumber}"
                                                        FontSize="13" FontWeight="Bold"
                                                        HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center">
-												<TextBlock.Styles>
-													<Style Selector="TextBlock">
-														<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-													</Style>
-												</TextBlock.Styles>
-											</TextBlock>
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding !IsToday}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+											<TextBlock Text="{Binding DayNumber}"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsToday}"
+                                                       Foreground="{DynamicResource OnAccentBrush}"/>
 										</Grid>
 
 										<!-- Список событий: цветные капсулы -->
