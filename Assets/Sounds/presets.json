@@ -2,56 +2,56 @@
   {
     "id": "rain",
     "nameKey": "sound.rain",
-    "fileName": "rain.ogg",
+    "fileName": "rain.mp3",
     "icon": "🌧",
     "color": "#5C8FD9"
   },
   {
     "id": "forest",
     "nameKey": "sound.forest",
-    "fileName": "forest.ogg",
+    "fileName": "forest.mp3",
     "icon": "🌲",
     "color": "#3B6D11"
   },
   {
     "id": "ocean",
     "nameKey": "sound.ocean",
-    "fileName": "ocean.ogg",
+    "fileName": "ocean.mp3",
     "icon": "🌊",
     "color": "#2E86AB"
   },
   {
     "id": "fire",
     "nameKey": "sound.fire",
-    "fileName": "fire.ogg",
+    "fileName": "fire.mp3",
     "icon": "🔥",
     "color": "#E05C2C"
   },
   {
     "id": "white-noise",
     "nameKey": "sound.white_noise",
-    "fileName": "white-noise.ogg",
+    "fileName": "white-noise.mp3",
     "icon": "〰",
     "color": "#8B8B9E"
   },
   {
     "id": "cafe",
     "nameKey": "sound.cafe",
-    "fileName": "cafe.ogg",
+    "fileName": "cafe.mp3",
     "icon": "☕",
     "color": "#9B6B3B"
   },
   {
     "id": "keyboard",
     "nameKey": "sound.keyboard",
-    "fileName": "keyboard.ogg",
+    "fileName": "keyboard.mp3",
     "icon": "⌨",
     "color": "#4A4E69"
   },
   {
     "id": "night",
     "nameKey": "sound.night",
-    "fileName": "night.ogg",
+    "fileName": "night.mp3",
     "icon": "🌙",
     "color": "#2D3059"
   }

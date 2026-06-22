@@ -196,17 +196,6 @@
                             CornerRadius="6" Padding="12,5" FontSize="13"
                             FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
-					<!-- Фоновые звуки — появляется только при включении -->
-					<Button IsVisible="{Binding IsBackgroundSoundsEnabled}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            BorderBrush="{DynamicResource ButtonBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
-                            ToolTip.Tip="{Binding Loc[Feat_BackgroundSoundsLbl]}">
-						<TextBlock Text="🎵" FontSize="14"/>
-					</Button>
 					<!-- Трекер настроения -->
 					<Button IsVisible="{Binding IsMoodTrackerEnabled}"
                             Command="{Binding OpenMoodCommand}"
