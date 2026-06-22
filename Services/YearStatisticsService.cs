@@ -316,11 +316,13 @@ public class YearStatisticsService : IYearStatisticsService
         double tonnageKg = sessions.Sum(s => s.TotalTonnage);
         double hours     = sessions.Sum(s => s.Duration.TotalHours);
 
-        var fav = sessions
+        var exerciseGroups = sessions
             .SelectMany(s => s.Exercises)
             .GroupBy(e => e.ExerciseName)
             .Select(g => (Name: g.Key, Sets: g.Sum(e => e.Sets.Count(s => s.IsCompleted))))
-            .MaxBy(x => x.Sets);
+            .ToList();
+
+        var fav = exerciseGroups.Count > 0 ? exerciseGroups.MaxBy(x => x.Sets) : default;
 
         return new WorkoutYearStats
         {
