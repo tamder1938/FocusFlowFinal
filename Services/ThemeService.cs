@@ -42,21 +42,22 @@ public sealed class ThemeService
         var accent   = Color.Parse(p.Accent);
         var main     = Color.Parse(p.Main);
         var light    = Color.Parse(p.Light);
+        var hover    = Color.Parse(p.Hover);
         var dark     = Color.Parse(p.Dark);
         var onAccent = Color.Parse(p.OnAccent);
 
         // ── Accent brushes (всегда, независимо от light/dark) ───────────────
         Set(r, "AccentBrush",                   accent);
         Set(r, "AccentBackground",              accent);
-        Set(r, "AccentHoverBrush",              dark);
-        Set(r, "AccentHoverBrush2",             dark);
-        Set(r, "AccentPressedBrush",            dark);
+        Set(r, "AccentHoverBrush",              hover);
+        Set(r, "AccentHoverBrush2",             hover);
+        Set(r, "AccentPressedBrush",            hover);
         Set(r, "OnAccentBrush",                 onAccent);
         Set(r, "NavActiveBg",                   accent);
         Set(r, "NavActiveFg",                   onAccent);
         Set(r, "SideNavButtonActiveBackground", accent);
         Set(r, "PrimaryActionBrush",            accent);
-        Set(r, "PrimaryActionHoverBrush",       dark);
+        Set(r, "PrimaryActionHoverBrush",       hover);
 
         // Мягкие акцентные подложки (в тёмном режиме — полупрозрачный тинт, не яркий пастель)
         var tint = isDark

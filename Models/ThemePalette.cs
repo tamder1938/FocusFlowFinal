@@ -5,5 +5,6 @@ public record ThemePalette(
     string Light,
     string Main,
     string Accent,
+    string Hover,
     string Dark,
     string OnAccent);
