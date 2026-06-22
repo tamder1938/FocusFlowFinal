@@ -14,6 +14,7 @@ public class Exercise
     public List<MuscleGroup> SecondaryMuscles { get; set; } = new();
     public List<Equipment>  Equipment        { get; set; } = new();
     public ExerciseType     Type             { get; set; } = ExerciseType.Strength;
+    public ExerciseMetric   Metric           { get; set; } = ExerciseMetric.WeightReps;
     public string           Description      { get; set; } = string.Empty;
     public string           ImageEmoji       { get; set; } = "💪";
     public string           ImagePath        { get; set; } = string.Empty;

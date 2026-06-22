@@ -15,6 +15,8 @@ public partial class SessionExerciseViewModel : ObservableObject
     public string ImageEmoji         { get; }
     public int    DefaultRestSeconds { get; }
 
+    private readonly ExerciseMetric _metric;
+
     [ObservableProperty] private bool _isExpanded = true;
 
     public ObservableCollection<SetInputViewModel> Sets { get; } = new();
@@ -31,6 +33,7 @@ public partial class SessionExerciseViewModel : ObservableObject
         ExerciseName       = exercise.Name;
         ImageEmoji         = exercise.ImageEmoji;
         DefaultRestSeconds = restSec;
+        _metric            = exercise.Metric;
 
         for (int i = 0; i < Math.Max(1, defaultSets); i++)
             AddSetCore(defaultReps);
@@ -53,12 +56,15 @@ public partial class SessionExerciseViewModel : ObservableObject
 
     private void AddSetCore(int reps)
     {
-        var weight = Sets.LastOrDefault()?.WeightKg ?? 20m;
-        var set    = new SetInputViewModel
+        var defaultWeight   = _metric == ExerciseMetric.WeightReps ? 20m : 0m;
+        var weight          = Sets.LastOrDefault()?.WeightKg ?? defaultWeight;
+        var durationSec     = Sets.LastOrDefault()?.DurationSec ?? 60;
+        var set             = new SetInputViewModel(_metric)
         {
-            SetNumber = Sets.Count + 1,
-            Reps      = reps,
-            WeightKg  = weight
+            SetNumber   = Sets.Count + 1,
+            Reps        = reps,
+            WeightKg    = weight,
+            DurationSec = durationSec
         };
         set.PropertyChanged   += OnSetPropertyChanged;
         set.CompleteRequested += OnSetCompleteRequested;

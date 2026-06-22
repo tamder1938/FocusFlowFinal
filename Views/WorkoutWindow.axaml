@@ -536,7 +536,7 @@
                                                     <ItemsControl ItemsSource="{Binding Sets}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <Grid ColumnDefinitions="24,*,Auto,*,Auto,Auto"
+                                                                <Grid ColumnDefinitions="24,*,Auto"
                                                                       Margin="0,2">
                                                                     <TextBlock Grid.Column="0"
                                                                                Text="{Binding SetNumber}"
@@ -544,41 +544,76 @@
                                                                                Foreground="{DynamicResource SecondaryTextBrush}"
                                                                                VerticalAlignment="Center"
                                                                                HorizontalAlignment="Center"/>
-                                                                    <NumericUpDown Grid.Column="1"
-                                                                                   Value="{Binding WeightKg}"
-                                                                                   Minimum="0" Maximum="999"
-                                                                                   Increment="2.5"
-                                                                                   FormatString="0.##"
-                                                                                   Background="{DynamicResource WindowBackgroundBrush}"
-                                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                                   BorderBrush="{DynamicResource BorderBrush}"
-                                                                                   CornerRadius="6"
-                                                                                   FontSize="13"
-                                                                                   Height="34"/>
-                                                                    <TextBlock Grid.Column="2"
-                                                                               Text="кг"
-                                                                               FontSize="12"
-                                                                               Foreground="{DynamicResource SecondaryTextBrush}"
-                                                                               VerticalAlignment="Center"
-                                                                               Margin="6,0"/>
-                                                                    <NumericUpDown Grid.Column="3"
-                                                                                   Value="{Binding Reps}"
-                                                                                   Minimum="1" Maximum="200"
-                                                                                   Increment="1"
-                                                                                   FormatString="0"
-                                                                                   Background="{DynamicResource WindowBackgroundBrush}"
-                                                                                   Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                                   BorderBrush="{DynamicResource BorderBrush}"
-                                                                                   CornerRadius="6"
-                                                                                   FontSize="13"
-                                                                                   Height="34"/>
-                                                                    <TextBlock Grid.Column="4"
-                                                                               Text="повт."
-                                                                               FontSize="12"
-                                                                               Foreground="{DynamicResource SecondaryTextBrush}"
-                                                                               VerticalAlignment="Center"
-                                                                               Margin="6,0"/>
-                                                                    <Panel Grid.Column="5" Width="80">
+                                                                    <!-- Поля ввода: показываются в зависимости от метрики -->
+                                                                    <StackPanel Grid.Column="1"
+                                                                                Orientation="Horizontal"
+                                                                                Spacing="4"
+                                                                                VerticalAlignment="Center">
+                                                                        <!-- Вес (силовые) -->
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="4"
+                                                                                    IsVisible="{Binding ShowWeight}"
+                                                                                    VerticalAlignment="Center">
+                                                                            <NumericUpDown Value="{Binding WeightKg}"
+                                                                                           Minimum="0" Maximum="999"
+                                                                                           Increment="2.5"
+                                                                                           FormatString="0.##"
+                                                                                           Width="80"
+                                                                                           Background="{DynamicResource WindowBackgroundBrush}"
+                                                                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                           BorderBrush="{DynamicResource BorderBrush}"
+                                                                                           CornerRadius="6"
+                                                                                           FontSize="13"
+                                                                                           Height="34"/>
+                                                                            <TextBlock Text="кг"
+                                                                                       FontSize="12"
+                                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                                       VerticalAlignment="Center"/>
+                                                                        </StackPanel>
+                                                                        <!-- Повторения -->
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="4"
+                                                                                    IsVisible="{Binding ShowReps}"
+                                                                                    VerticalAlignment="Center">
+                                                                            <NumericUpDown Value="{Binding Reps}"
+                                                                                           Minimum="1" Maximum="200"
+                                                                                           Increment="1"
+                                                                                           FormatString="0"
+                                                                                           Width="72"
+                                                                                           Background="{DynamicResource WindowBackgroundBrush}"
+                                                                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                           BorderBrush="{DynamicResource BorderBrush}"
+                                                                                           CornerRadius="6"
+                                                                                           FontSize="13"
+                                                                                           Height="34"/>
+                                                                            <TextBlock Text="повт."
+                                                                                       FontSize="12"
+                                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                                       VerticalAlignment="Center"/>
+                                                                        </StackPanel>
+                                                                        <!-- Длительность (кардио/планка) -->
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="4"
+                                                                                    IsVisible="{Binding ShowDuration}"
+                                                                                    VerticalAlignment="Center">
+                                                                            <NumericUpDown Value="{Binding DurationSec}"
+                                                                                           Minimum="1" Maximum="7200"
+                                                                                           Increment="15"
+                                                                                           FormatString="0"
+                                                                                           Width="80"
+                                                                                           Background="{DynamicResource WindowBackgroundBrush}"
+                                                                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                           BorderBrush="{DynamicResource BorderBrush}"
+                                                                                           CornerRadius="6"
+                                                                                           FontSize="13"
+                                                                                           Height="34"/>
+                                                                            <TextBlock Text="сек"
+                                                                                       FontSize="12"
+                                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                                       VerticalAlignment="Center"/>
+                                                                        </StackPanel>
+                                                                    </StackPanel>
+                                                                    <Panel Grid.Column="2" Width="80">
                                                                         <Border IsVisible="{Binding IsCompleted}"
                                                                                 Background="#1A10B981"
                                                                                 CornerRadius="8"

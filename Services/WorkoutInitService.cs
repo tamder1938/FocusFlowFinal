@@ -44,6 +44,12 @@ public class WorkoutInitService : IWorkoutInitService
                     SecondaryMuscles = dto.SecondaryMuscles,
                     Equipment        = dto.Equipment,
                     Type             = dto.Type,
+                    Metric           = dto.Type switch
+                    {
+                        ExerciseType.Cardio     => ExerciseMetric.TimeOnly,
+                        ExerciseType.Stretching => ExerciseMetric.TimeOnly,
+                        _                       => ExerciseMetric.WeightReps
+                    },
                     Description      = dto.Description,
                     ImageEmoji       = dto.ImageEmoji,
                     IsBuiltin        = true,
