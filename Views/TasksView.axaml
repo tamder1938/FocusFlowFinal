@@ -15,7 +15,7 @@
 		<ListBox ItemsSource="{Binding Tasks}">
 			<ListBox.ItemTemplate>
 				<DataTemplate x:DataType="models:TaskItem">
-					<Border Margin="0,4" Padding="12" CornerRadius="10" Background="#F3F4F6">
+					<Border Margin="0,4" Padding="12" CornerRadius="10" Background="{DynamicResource CardSecondaryBackgroundBrush}">
 						<Grid ColumnDefinitions="Auto, *">
 							<Border Grid.Column="0" Width="6" CornerRadius="3"
                                     Background="{Binding Priority, Converter={StaticResource PriorityToBrushConverter}}"/>

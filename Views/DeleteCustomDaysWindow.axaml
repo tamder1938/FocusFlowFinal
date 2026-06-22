@@ -6,18 +6,18 @@
         Title="Выбор дней для освобождения"
         Width="360" Height="440"
         WindowStartupLocation="CenterOwner"
-        Background="#F3F4F6"
+        Background="{DynamicResource PageBackgroundBrush}"
         CanResize="False">
 
     <Window.Styles>
         <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="#DBEAFE"/>
+            <Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/>
         </Style>
         <Style Selector="ListBoxItem:selected TextBlock">
-            <Setter Property="Foreground" Value="#1E40AF"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
         </Style>
         <Style Selector="ListBoxItem TextBlock">
-            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         </Style>
     </Window.Styles>
 
@@ -26,8 +26,8 @@
         <ListBox x:Name="DateListBox"
                  Grid.Row="0"
                  SelectionMode="Multiple, Toggle"
-                 Background="White"
-                 BorderBrush="#E5E7EB"
+                 Background="{DynamicResource CardBackgroundBrush}"
+                 BorderBrush="{DynamicResource BorderBrush}"
                  BorderThickness="1"
                  CornerRadius="6"
                  Padding="4">
@@ -48,12 +48,12 @@
             <Button x:Name="BtnCancel"
                     Content="Отмена"
                     Padding="16,6"
-                    Background="#E5E7EB"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
                     CornerRadius="4"/>
             <Button x:Name="BtnConfirm"
                     Content="Применить"
                     Padding="16,6"
-                    Background="#1A73E8"
+                    Background="{DynamicResource PrimaryActionBrush}"
                     Foreground="White"
                     FontWeight="Bold"
                     CornerRadius="4"

@@ -511,7 +511,7 @@
                             <Border Grid.Column="0" Classes="stat-box" Margin="0">
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock Text="{Binding SelectedHabitItem.TotalCompletions}"
-                                               FontSize="20" FontWeight="Bold" Foreground="#3B82F6"
+                                               FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"
                                                HorizontalAlignment="Center"/>
                                     <TextBlock Text="{Binding Loc[Habit_TotalLbl]}"
                                                FontSize="9" Foreground="{DynamicResource SecondaryTextBrush}"
@@ -751,21 +751,21 @@
                                     <!-- Легенда -->
                                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#3B82F6"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="{DynamicResource AccentBrush}"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendDone]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#EFF6FF"
-                                                    BorderBrush="#BFDBFE" BorderThickness="1"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="{DynamicResource AccentLightBrush}"
+                                                    BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendPartial]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Border Width="14" Height="14" CornerRadius="3" Background="#F8FAFF"
-                                                    BorderBrush="#E5E7EB" BorderThickness="0.5"/>
+                                            <Border Width="14" Height="14" CornerRadius="3" Background="{DynamicResource MutedBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0.5"/>
                                             <TextBlock Text="{Binding Loc[Habit_LegendNone]}"
                                                        FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}"
                                                        VerticalAlignment="Center"/>

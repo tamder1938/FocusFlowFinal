@@ -185,7 +185,7 @@
                                                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_CompPct]}"/>
                                     <TextBlock Classes="BigStat"
                                                Text="{Binding TasksCompletionPct, StringFormat='{}{0:F1}%'}"
-                                               Foreground="#3B82F6"/>
+                                               Foreground="{DynamicResource AccentBrush}"/>
                                 </StackPanel>
                             </UniformGrid>
 

@@ -267,7 +267,9 @@ public partial class AnalyticsViewModel : ObservableObject
                 DayName     = dayNames[i],
                 Hours       = Math.Round(hours, 1),
                 HeightRatio = Math.Max(10, height),
-                Color       = isToday ? "#2563EB" : "#93C5FD"
+                Color       = isToday
+                    ? ThemeCatalog.Palettes[ThemeService.Instance.CurrentTheme].Accent
+                    : ThemeCatalog.Palettes[ThemeService.Instance.CurrentTheme].Main
             });
         }
     }
@@ -301,7 +303,8 @@ public partial class AnalyticsViewModel : ObservableObject
 
         double totalHoursSum = projectGroups.Sum(x => x.Value) / 60.0;
 
-        var colors = new[] { "#2563EB", "#F59E0B", "#10B981", "#8B5CF6", "#EC4899" };
+        var accentHex = ThemeCatalog.Palettes[ThemeService.Instance.CurrentTheme].Accent;
+        var colors = new[] { accentHex, "#F59E0B", "#10B981", "#8B5CF6", "#EC4899" };
         int colorIndex = 0;
 
         foreach (var group in projectGroups.OrderByDescending(g => g.Value))
