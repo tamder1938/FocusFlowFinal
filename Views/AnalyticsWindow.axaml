@@ -48,7 +48,7 @@
 			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
 		</Style>
 		<Style Selector="Button.week-nav">
-			<Setter Property="Background"      Value="#FFFFFF30"/>
+			<Setter Property="Background"      Value="Transparent"/>
 			<Setter Property="Foreground"      Value="{DynamicResource OnAccentBrush}"/>
 			<Setter Property="BorderThickness" Value="0"/>
 			<Setter Property="CornerRadius"    Value="6"/>
@@ -59,7 +59,18 @@
 			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 		<Style Selector="Button.week-nav:pointerover">
-			<Setter Property="Background" Value="#FFFFFF50"/>
+			<Setter Property="Background" Value="#22000000"/>
+		</Style>
+		<!-- Форсируем OnAccentBrush на ContentPresenter во всех состояниях,
+		     чтобы FluentTheme не перезаписывал цвет через ButtonForegroundPointerOver -->
+		<Style Selector="Button.week-nav /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+		</Style>
+		<Style Selector="Button.week-nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+		</Style>
+		<Style Selector="Button.week-nav:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
 		</Style>
 		<Style Selector="Button.tab-nav">
 			<Setter Property="Background"      Value="#33FFFFFF"/>

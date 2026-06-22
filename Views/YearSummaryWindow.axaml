@@ -46,7 +46,7 @@
 
         <!-- Кнопки шапки (поверх AccentBrush фона) -->
         <Style Selector="Button.HdrBtn">
-            <Setter Property="Background"     Value="#FFFFFF22"/>
+            <Setter Property="Background"     Value="Transparent"/>
             <Setter Property="Foreground"     Value="{DynamicResource OnAccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius"   Value="6"/>
@@ -55,10 +55,19 @@
             <Setter Property="Cursor"         Value="Hand"/>
         </Style>
         <Style Selector="Button.HdrBtn:pointerover">
-            <Setter Property="Background" Value="#FFFFFF44"/>
+            <Setter Property="Background" Value="#22000000"/>
+        </Style>
+        <Style Selector="Button.HdrBtn /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.HdrBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.HdrBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
         </Style>
         <Style Selector="Button.NavBtn">
-            <Setter Property="Background"     Value="#FFFFFF22"/>
+            <Setter Property="Background"     Value="Transparent"/>
             <Setter Property="Foreground"     Value="{DynamicResource OnAccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius"   Value="6"/>
@@ -68,7 +77,16 @@
             <Setter Property="Cursor"         Value="Hand"/>
         </Style>
         <Style Selector="Button.NavBtn:pointerover">
-            <Setter Property="Background" Value="#FFFFFF44"/>
+            <Setter Property="Background" Value="#22000000"/>
+        </Style>
+        <Style Selector="Button.NavBtn /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.NavBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+        </Style>
+        <Style Selector="Button.NavBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
         </Style>
 
         <!-- Ячейки героограммы -->
