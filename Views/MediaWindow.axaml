@@ -96,6 +96,7 @@
                                             Background="{DynamicResource WindowBackgroundBrush}"
                                             BorderBrush="{DynamicResource BorderBrush}"
                                             BorderThickness="1"
+                                            ClipToBounds="True"
                                             Cursor="Hand"
                                             Tapped="ItemCard_Tapped">
                                         <Grid ColumnDefinitions="4,68,*" MinHeight="88">
