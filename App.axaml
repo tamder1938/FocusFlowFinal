@@ -48,11 +48,24 @@
 			<SolidColorBrush x:Key="DangerText" Color="#991B1B"/>
 			<SolidColorBrush x:Key="DangerButtonBackground" Color="#EF4444"/>
 
-			<!-- Brushes used by HabitWindow -->
-			<SolidColorBrush x:Key="InputBackgroundBrush"    Color="#F9FAFB"/>
-			<SolidColorBrush x:Key="AccentLightBrush"        Color="#EFF6FF"/>
-			<SolidColorBrush x:Key="SecondaryActionBrush"    Color="#E5E7EB"/>
-			<SolidColorBrush x:Key="SecondaryActionFgBrush"  Color="#374151"/>
+			<!-- Runtime brushes with Standard-theme defaults (ThemeService overrides at startup) -->
+			<SolidColorBrush x:Key="InputBackgroundBrush"         Color="#FFFFFF"/>
+			<SolidColorBrush x:Key="AccentLightBrush"             Color="#EAF1FE"/>
+			<SolidColorBrush x:Key="AccentHoverBrush"             Color="#173A87"/>
+			<SolidColorBrush x:Key="AccentTextBrush"              Color="#173A87"/>
+			<SolidColorBrush x:Key="NavActiveBg"                  Color="#2F6FED"/>
+			<SolidColorBrush x:Key="NavActiveFg"                  Color="#FFFFFF"/>
+			<SolidColorBrush x:Key="NavInactiveFg"                Color="#6B7280"/>
+			<SolidColorBrush x:Key="NavInactiveBg"                Color="Transparent"/>
+			<SolidColorBrush x:Key="NavContainerBg"               Color="#EAF1FE"/>
+			<SolidColorBrush x:Key="PrimaryActionBrush"           Color="#2F6FED"/>
+			<SolidColorBrush x:Key="PrimaryActionHoverBrush"      Color="#173A87"/>
+			<SolidColorBrush x:Key="OnAccentBrush"                Color="#FFFFFF"/>
+			<SolidColorBrush x:Key="AccentPressedBrush"           Color="#173A87"/>
+
+			<!-- Neutral/fixed brushes (not themed) -->
+			<SolidColorBrush x:Key="SecondaryActionBrush"         Color="#E9EDF5"/>
+			<SolidColorBrush x:Key="SecondaryActionFgBrush"       Color="#475569"/>
 
 			<!-- КОНВЕРТЕРЫ (ОБЯЗАТЕЛЬНО) -->
 			<converters:CollectionCountToBoolConverter x:Key="CollectionCountToBoolConverter"/>

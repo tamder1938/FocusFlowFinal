@@ -44,10 +44,10 @@
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         </Style>
 
-        <!-- Кнопки шапки -->
+        <!-- Кнопки шапки (поверх AccentBrush фона) -->
         <Style Selector="Button.HdrBtn">
             <Setter Property="Background"     Value="#FFFFFF22"/>
-            <Setter Property="Foreground"     Value="White"/>
+            <Setter Property="Foreground"     Value="{DynamicResource OnAccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius"   Value="6"/>
             <Setter Property="Padding"        Value="12,6"/>
@@ -59,7 +59,7 @@
         </Style>
         <Style Selector="Button.NavBtn">
             <Setter Property="Background"     Value="#FFFFFF22"/>
-            <Setter Property="Foreground"     Value="White"/>
+            <Setter Property="Foreground"     Value="{DynamicResource OnAccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius"   Value="6"/>
             <Setter Property="Padding"        Value="8,4"/>
@@ -116,30 +116,26 @@
     <Grid RowDefinitions="64, *, 56">
 
         <!-- ══ Шапка ══════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="0">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                    <GradientStop Color="#3B5BDB" Offset="0"/>
-                    <GradientStop Color="#4F6EF5" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
+        <Border Grid.Row="0" Background="{DynamicResource AccentBrush}">
             <Grid ColumnDefinitions="*, Auto, *" Margin="20,0">
 
                 <!-- Заголовок -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
                     <TextBlock Text="{Binding YearTitle}"
-                               FontSize="18" FontWeight="Bold" Foreground="White"/>
+                               FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource OnAccentBrush}"/>
                     <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsSubtitle]}"
-                               FontSize="11" Foreground="#C7D2FE"/>
+                               FontSize="11" Foreground="{DynamicResource OnAccentBrush}" Opacity="0.8"/>
                 </StackPanel>
 
                 <!-- Навигация по годам -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
                             VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Button Classes="NavBtn" Content="‹" Command="{Binding PreviousYearCommand}"/>
-                    <TextBlock Text="{Binding SelectedYear}" Foreground="White" FontSize="15"
-                               FontWeight="Bold" VerticalAlignment="Center" MinWidth="40"
-                               TextAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedYear}"
+                               Foreground="{DynamicResource OnAccentBrush}"
+                               FontSize="15" FontWeight="Bold" VerticalAlignment="Center"
+                               MinWidth="40" TextAlignment="Center"/>
                     <Button Classes="NavBtn" Content="›" Command="{Binding NextYearCommand}"/>
                 </StackPanel>
 

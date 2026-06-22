@@ -69,9 +69,10 @@ public class AppSettings
     public bool MediaTrackerEnabled      { get; set; } = false;
     public bool ExtendedStatisticsEnabled{ get; set; } = false;
 
-    // ── Цветовая схема (Промпт 3) ────────────────────────────────
-    public bool   UseSystemAccent { get; set; } = false;
-    public string CustomAccentHex { get; set; } = "#2F6FED";
+    // ── Цветовая схема (Промпт 3 → Промпт 11: фиксированные темы) ──
+    public bool   UseSystemAccent { get; set; } = false;   // legacy, не используется
+    public string CustomAccentHex { get; set; } = "#2F6FED"; // legacy
+    public AppTheme SelectedTheme  { get; set; } = AppTheme.Standard;
 
     // ── Годовая статистика (Промпт 10) ───────────────────────────
     public List<int> YearSummaryShownFor { get; set; } = new();

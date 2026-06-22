@@ -2,39 +2,49 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ══════════════════════════════════════════════════════════════════
-         FocusFlow Brand Palette — default (light) values.
-         ApplyTheme() in App.axaml.cs overrides these at runtime for dark.
-         New modules should reference these keys instead of raw hex colors.
+         FocusFlow Semantic Color Tokens — default = Standard (light) theme.
+         ThemeService.ApplyTheme() overrides ALL these keys at runtime.
+         Use DynamicResource everywhere; never StaticResource for theme keys.
          ══════════════════════════════════════════════════════════════════ -->
 
     <!-- Backgrounds -->
-    <SolidColorBrush x:Key="PageBackgroundBrush"   Color="#F0F4FA"/>
-    <SolidColorBrush x:Key="SurfaceBrush"          Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="MutedBackgroundBrush"  Color="#F8FAFF"/>
+    <SolidColorBrush x:Key="PageBackgroundBrush"         Color="#EAF1FE"/>
+    <SolidColorBrush x:Key="SurfaceBrush"                Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="MutedBackgroundBrush"        Color="#EAF1FE"/>
 
     <!-- Text -->
-    <SolidColorBrush x:Key="TextPrimaryBrush"      Color="#111827"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush"    Color="#6B7280"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush"            Color="#173A87"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush"          Color="#B3173A87"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush"           Color="#7A173A87"/>
 
-    <!-- Accent -->
-    <SolidColorBrush x:Key="AccentBrush"           Color="#3B82F6"/>
-    <SolidColorBrush x:Key="AccentHoverBrush2"     Color="#2563EB"/>
-    <SolidColorBrush x:Key="AccentLightBrush2"     Color="#EFF6FF"/>
-    <SolidColorBrush x:Key="AccentTextBrush2"      Color="#2563EB"/>
+    <!-- Accent family -->
+    <SolidColorBrush x:Key="AccentBrush"                 Color="#2F6FED"/>
+    <SolidColorBrush x:Key="AccentHoverBrush2"           Color="#173A87"/>
+    <SolidColorBrush x:Key="AccentPressedBrush"          Color="#173A87"/>
+    <SolidColorBrush x:Key="OnAccentBrush"               Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="AccentLightBrush2"           Color="#EAF1FE"/>
+    <SolidColorBrush x:Key="AccentTextBrush2"            Color="#173A87"/>
+    <SolidColorBrush x:Key="AccentSoftBrush"             Color="#476E9BF0"/>
+    <SolidColorBrush x:Key="AccentMutedBrush"            Color="#EAF1FE"/>
+    <SolidColorBrush x:Key="CardBorderBrush"             Color="#666E9BF0"/>
 
-    <!-- Success -->
-    <SolidColorBrush x:Key="SuccessBrush"          Color="#10B981"/>
-    <SolidColorBrush x:Key="SuccessTextBrush"      Color="#065F46"/>
-    <SolidColorBrush x:Key="SuccessLightBrush"     Color="#D1FAE5"/>
+    <!-- Semantic success / warning / danger (fixed, not themed) -->
+    <SolidColorBrush x:Key="SuccessBrush"                Color="#10B981"/>
+    <SolidColorBrush x:Key="SuccessTextBrush"            Color="#065F46"/>
+    <SolidColorBrush x:Key="SuccessLightBrush"           Color="#D1FAE5"/>
+    <SolidColorBrush x:Key="WarningBrush"                Color="#F59E0B"/>
+    <SolidColorBrush x:Key="WarningTextBrush"            Color="#92400E"/>
+    <SolidColorBrush x:Key="WarningLightBrush"           Color="#FEF3C7"/>
+    <SolidColorBrush x:Key="DangerBrush"                 Color="#EF4444"/>
+    <SolidColorBrush x:Key="DangerTextBrush2"            Color="#991B1B"/>
+    <SolidColorBrush x:Key="DangerLightBrush"            Color="#FEE2E2"/>
 
-    <!-- Warning -->
-    <SolidColorBrush x:Key="WarningBrush"          Color="#F59E0B"/>
-    <SolidColorBrush x:Key="WarningTextBrush"      Color="#92400E"/>
-    <SolidColorBrush x:Key="WarningLightBrush"     Color="#FEF3C7"/>
-
-    <!-- Danger -->
-    <SolidColorBrush x:Key="DangerBrush"           Color="#EF4444"/>
-    <SolidColorBrush x:Key="DangerTextBrush2"      Color="#991B1B"/>
-    <SolidColorBrush x:Key="DangerLightBrush"      Color="#FEE2E2"/>
+    <!-- Fixed exception brushes — NEVER overridden by ThemeService -->
+    <SolidColorBrush x:Key="PriorityHighBrush"           Color="#E24B4A"/>
+    <SolidColorBrush x:Key="PriorityMediumBrush"         Color="#EF9F27"/>
+    <SolidColorBrush x:Key="PriorityLowBrush"            Color="#43A047"/>
+    <SolidColorBrush x:Key="StatusActiveBrush"           Color="#3B82F6"/>
+    <SolidColorBrush x:Key="StatusCompletedBrush"        Color="#7C3AED"/>
+    <SolidColorBrush x:Key="TaskDoneBrush"               Color="#22C55E"/>
 
 </ResourceDictionary>

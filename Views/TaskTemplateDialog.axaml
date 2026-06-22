@@ -8,7 +8,7 @@
         Title="Редактирование шаблона"
         Width="400" Height="580"
         WindowStartupLocation="CenterOwner"
-        Background="#F9FAFB">
+        Background="{DynamicResource WindowBackgroundBrush}">
 
 	<Window.Resources>
 		<local:PriorityToColorConverter x:Key="PriorityToColorConverter"/>
@@ -17,7 +17,7 @@
 	<ScrollViewer>
 		<StackPanel Margin="15" Spacing="10">
 			<Grid ColumnDefinitions="*, Auto">
-				<TextBlock Grid.Column="0" Text="Редактирование шаблона" FontSize="18" FontWeight="Bold" Foreground="#1E3A8A"/>
+				<TextBlock Grid.Column="0" Text="Редактирование шаблона" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource HeaderForeground}"/>
 				<Button Grid.Column="1" Content="✕" Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Foreground="Gray"/>
 			</Grid>
 
@@ -73,7 +73,7 @@
 
 			<Grid ColumnDefinitions="*, *" Margin="0,24,0,0">
 				<Button Grid.Column="0" Content="Отмена" Command="{Binding CancelCommand}" Margin="5" Height="36" CornerRadius="6"/>
-				<Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}" Margin="5" Background="#2563EB" Foreground="White" Height="36" CornerRadius="6" FontWeight="Bold"/>
+				<Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}" Margin="5" Background="{DynamicResource PrimaryActionBrush}" Foreground="White" Height="36" CornerRadius="6" FontWeight="Bold"/>
 			</Grid>
 		</StackPanel>
 	</ScrollViewer>

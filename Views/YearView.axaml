@@ -143,7 +143,7 @@
                                                                IsVisible="{Binding !IsCurrentMonth}"
                                                                Foreground="{DynamicResource SecondaryTextBrush}"/>
 													<!-- Точка-индикатор активности -->
-													<Ellipse Width="3" Height="3" Fill="#3B82F6"
+													<Ellipse Width="3" Height="3" Fill="{DynamicResource AccentBrush}"
                                                              IsVisible="{Binding HasTasks}"
                                                              HorizontalAlignment="Center"
                                                              VerticalAlignment="Bottom"

@@ -79,7 +79,7 @@
 
 				<Button Content="+ Добавить проект" Command="{Binding AddProjectCommand}"
                         HorizontalAlignment="Stretch" Height="36"
-                        Background="#2563EB" Foreground="White" FontWeight="Bold" CornerRadius="6" Margin="0,6,0,0"/>
+                        Background="{DynamicResource PrimaryActionBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Margin="0,6,0,0"/>
 			</StackPanel>
 		</Grid>
 

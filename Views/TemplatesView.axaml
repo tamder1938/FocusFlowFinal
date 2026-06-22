@@ -13,7 +13,8 @@
 				<ListBox ItemsSource="{Binding TaskTemplates}">
 					<ListBox.ItemTemplate>
 						<DataTemplate x:DataType="models:TaskTemplate">
-							<Border Margin="0,4" Padding="10" CornerRadius="8" Background="#F3F4F6">
+							<Border Margin="0,4" Padding="10" CornerRadius="8"
+                                    Background="{DynamicResource CardBackground}">
 								<Grid ColumnDefinitions="*, Auto, Auto, Auto">
 									<StackPanel Grid.Column="0" Spacing="2">
 										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
@@ -23,11 +24,16 @@
 									<Button Grid.Column="1" Content="✎"
                                             Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditTaskTemplateCommand}"
                                             CommandParameter="{Binding}"
-                                            Margin="5,0" Padding="8,4" Background="#EFF6FF" Foreground="#2563EB" CornerRadius="6"/>
+                                            Margin="5,0" Padding="8,4"
+                                            Background="{DynamicResource AccentLightBrush}"
+                                            Foreground="{DynamicResource AccentTextBrush}"
+                                            CornerRadius="6"/>
 									<Button Grid.Column="2" Content="Создать"
                                             Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateTaskFromTemplateCommand}"
                                             CommandParameter="{Binding}"
-                                            Margin="5,0" Padding="12,4" Background="#3B82F6" Foreground="White" CornerRadius="6"/>
+                                            Margin="5,0" Padding="12,4"
+                                            Background="{DynamicResource AccentBackground}"
+                                            Foreground="White" CornerRadius="6"/>
 									<Button Grid.Column="3" Content="✕"
                                             Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTaskTemplateCommand}"
                                             CommandParameter="{Binding}"
@@ -42,7 +48,8 @@
 				<ListBox ItemsSource="{Binding EventTemplates}">
 					<ListBox.ItemTemplate>
 						<DataTemplate x:DataType="models:EventTemplate">
-							<Border Margin="0,4" Padding="10" CornerRadius="8" Background="#F3F4F6">
+							<Border Margin="0,4" Padding="10" CornerRadius="8"
+                                    Background="{DynamicResource CardBackground}">
 								<Grid ColumnDefinitions="*, Auto">
 									<StackPanel Grid.Column="0" Spacing="2">
 										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>

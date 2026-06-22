@@ -40,18 +40,12 @@
     <Grid RowDefinitions="56, *, 56">
 
         <!-- Шапка -->
-        <Border Grid.Row="0">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                    <GradientStop Color="#3B5BDB" Offset="0"/>
-                    <GradientStop Color="#4F6EF5" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
+        <Border Grid.Row="0" Background="{DynamicResource AccentBrush}">
             <StackPanel VerticalAlignment="Center" Margin="18,0">
                 <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[DayStats_Title]}"
-                           FontSize="11" Foreground="#C7D2FE"/>
+                           FontSize="11" Foreground="{DynamicResource OnAccentBrush}" Opacity="0.8"/>
                 <TextBlock Text="{Binding DateTitle}"
-                           FontSize="16" FontWeight="Bold" Foreground="White"/>
+                           FontSize="16" FontWeight="Bold" Foreground="{DynamicResource OnAccentBrush}"/>
             </StackPanel>
         </Border>
 

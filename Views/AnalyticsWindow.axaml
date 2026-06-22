@@ -48,8 +48,8 @@
 			<Setter Property="Background" Value="{DynamicResource PrimaryActionHoverBrush}"/>
 		</Style>
 		<Style Selector="Button.week-nav">
-			<Setter Property="Background"      Value="#3B82F6"/>
-			<Setter Property="Foreground"      Value="White"/>
+			<Setter Property="Background"      Value="#FFFFFF30"/>
+			<Setter Property="Foreground"      Value="{DynamicResource OnAccentBrush}"/>
 			<Setter Property="BorderThickness" Value="0"/>
 			<Setter Property="CornerRadius"    Value="6"/>
 			<Setter Property="Padding"         Value="10,4"/>
@@ -59,43 +59,40 @@
 			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 		<Style Selector="Button.week-nav:pointerover">
-			<Setter Property="Background" Value="#2563EB"/>
+			<Setter Property="Background" Value="#FFFFFF50"/>
 		</Style>
 		<Style Selector="Button.tab-nav">
 			<Setter Property="Background"      Value="#FFFFFF22"/>
-			<Setter Property="Foreground"      Value="#C7D2FE"/>
+			<Setter Property="Foreground"      Value="{DynamicResource OnAccentBrush}"/>
 			<Setter Property="BorderThickness" Value="0"/>
 			<Setter Property="CornerRadius"    Value="6"/>
 			<Setter Property="Padding"         Value="10,4"/>
 			<Setter Property="FontSize"        Value="12"/>
 			<Setter Property="FontWeight"      Value="Medium"/>
+			<Setter Property="Opacity"         Value="0.8"/>
 			<Setter Property="Cursor"          Value="Hand"/>
 		</Style>
 		<Style Selector="Button.tab-nav.active">
 			<Setter Property="Background" Value="#FFFFFF44"/>
-			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
 			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Opacity"    Value="1"/>
 		</Style>
 		<Style Selector="Button.tab-nav:pointerover">
 			<Setter Property="Background" Value="#FFFFFF33"/>
-			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Opacity"    Value="1"/>
 		</Style>
 	</Window.Styles>
 
 	<Grid RowDefinitions="60, *, 65">
 
-		<!-- Шапка: градиент синий → индиго -->
-		<Border Grid.Row="0" Padding="18,0">
-			<Border.Background>
-				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-					<GradientStop Color="#3B5BDB" Offset="0"/>
-					<GradientStop Color="#4F6EF5" Offset="1"/>
-				</LinearGradientBrush>
-			</Border.Background>
+		<!-- Шапка: цвет из текущей темы -->
+		<Border Grid.Row="0" Padding="18,0"
+                Background="{DynamicResource AccentBrush}">
 			<Grid ColumnDefinitions="Auto, *, Auto">
 				<StackPanel Grid.Column="0" VerticalAlignment="Center">
 					<TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AnalyticsTitle]}"
-                               FontSize="16" FontWeight="Bold" Foreground="White"/>
+                               FontSize="16" FontWeight="Bold" Foreground="{DynamicResource OnAccentBrush}"/>
 					<StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
 						<Button Classes="tab-nav active"
                                 Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[YearSummary_TabWeek]}"/>
@@ -107,13 +104,12 @@
 				</StackPanel>
 				<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
 					<Button Classes="week-nav" Content="‹"
-                            Background="#3B82F6" Foreground="White"
                             Command="{Binding PreviousWeekCommand}"
                             ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PrevWeekTip]}"/>
-					<TextBlock Text="{Binding WeekTitle}" Foreground="White" FontSize="12" FontWeight="SemiBold"
+					<TextBlock Text="{Binding WeekTitle}" Foreground="{DynamicResource OnAccentBrush}"
+                               FontSize="12" FontWeight="SemiBold"
                                VerticalAlignment="Center" Margin="6,0"/>
 					<Button Classes="week-nav" Content="›"
-                            Background="#3B82F6" Foreground="White"
                             Command="{Binding NextWeekCommand}"
                             ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[NextWeekTip]}"/>
 				</StackPanel>

@@ -97,7 +97,7 @@
 										<!-- Число: синий круг = сегодня, иначе — просто текст -->
 										<Grid Width="26" Height="26" HorizontalAlignment="Center">
 											<Border Width="26" Height="26" CornerRadius="13"
-                                                    Background="#3B82F6"
+                                                    Background="{DynamicResource AccentBrush}"
                                                     IsVisible="{Binding IsToday}"/>
 											<TextBlock Text="{Binding DayNumber}"
                                                        FontSize="12" FontWeight="SemiBold"

@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using FocusFlowFinal.Models;
 using FocusFlowFinal.ViewModels;
 
 namespace FocusFlowFinal.Views;
@@ -15,9 +16,6 @@ public partial class SettingsWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        // Разрешаем ApplyLiveAccent только после полной инициализации биндингов.
-        // Dispatcher.UIThread.Post(Loaded) накапливался в очереди и сбрасывал флаг
-        // до binding init на 3-м открытии → вызывал App.SetColor во время layout → дедлок.
         (DataContext as SettingsViewModel)?.MarkInitialized();
     }
 
@@ -27,11 +25,6 @@ public partial class SettingsWindow : Window
         (DataContext as IDisposable)?.Dispose();
     }
 
-    /// <summary>
-    /// ИСПРАВЛЕНО (Проблема 1): клик по карточке темы вызывает SetThemeCommand,
-    /// который только обновляет CurrentThemeMode в памяти ViewModel —
-    /// сама тема приложения НЕ меняется до нажатия «Сохранить».
-    /// </summary>
     private void ThemeCard_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is Border border &&
@@ -40,6 +33,17 @@ public partial class SettingsWindow : Window
         {
             if (vm.SetThemeCommand.CanExecute(tag))
                 vm.SetThemeCommand.Execute(tag);
+        }
+    }
+
+    private void ThemeTile_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Border border &&
+            border.Tag is string tag &&
+            DataContext is SettingsViewModel vm &&
+            Enum.TryParse<AppTheme>(tag, out var theme))
+        {
+            vm.SelectedTheme = theme;
         }
     }
 }
