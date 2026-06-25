@@ -31,7 +31,8 @@ public class CloudSyncService : ISyncService
     private readonly IAuthService _auth;
     private readonly ICloudDatabaseService _cloudDb;
 
-    public DateTime? LastSyncUtc { get; private set; }
+    public DateTime? LastSyncUtc  { get; private set; }
+    public string?   LastSyncError { get; private set; }
 
     public CloudSyncService(IDatabaseService db, IAuthService auth, ICloudDatabaseService cloudDb)
     {

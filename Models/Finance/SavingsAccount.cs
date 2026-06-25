@@ -7,6 +7,7 @@ public class SavingsAccount
 {
     [BsonId]
     public int Id { get; set; }
+    public string? UserId { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;

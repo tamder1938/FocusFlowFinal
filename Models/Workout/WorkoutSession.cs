@@ -8,6 +8,7 @@ namespace FocusFlowFinal.Models.Workout;
 public class WorkoutSession
 {
     [BsonId] public int    Id                 { get; set; }
+    public string?         UserId             { get; set; }
     public int             ProgramId          { get; set; }
     public int             DayNumber          { get; set; }
     public string          DayName            { get; set; } = string.Empty;

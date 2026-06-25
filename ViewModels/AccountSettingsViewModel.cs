@@ -1,7 +1,8 @@
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
-using FocusFlowFinal.Services;   // ← добавить эту строку
+using FocusFlowFinal.Services;
 using FocusFlowFinal.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -26,6 +27,7 @@ public partial class AccountSettingsViewModel : ObservableObject
     private readonly IAuthService _auth;
     private readonly IPaymentService _payment;
     private readonly ISyncService _sync;
+    private readonly ICurrentWorkspace _workspace;
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -59,11 +61,12 @@ public partial class AccountSettingsViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _statusIsError;
 
-    public AccountSettingsViewModel(IAuthService auth, IPaymentService payment, ISyncService sync)
+    public AccountSettingsViewModel(IAuthService auth, IPaymentService payment, ISyncService sync, ICurrentWorkspace workspace)
     {
         _auth = auth;
         _payment = payment;
         _sync = sync;
+        _workspace = workspace;
 
         RefreshState();
     }
@@ -241,6 +244,98 @@ public partial class AccountSettingsViewModel : ObservableObject
         StatusIsError = false;
     }
 
+    // ── Мгновенный выход из аккаунта ────────────────────────────────────
+    [RelayCommand]
+    private async Task RequestLogout()
+    {
+        var owner = GetOwnerWindow();
+        if (owner == null) return;
+
+        bool confirmed = await ShowConfirmDialogAsync(owner,
+            "Выйти из аккаунта?\n\nДанные аккаунта останутся в нём и появятся снова при следующем входе.");
+        if (!confirmed) return;
+
+        // Запустить синхронизацию перед выходом (best-effort, без ожидания)
+        if (_sync.IsSyncAvailable)
+            _ = _sync.SyncDataAsync();
+
+        // Очистить сохранённый срок подписки, чтобы EntitlementService вернул false
+        var settings = AppSettings.Load();
+        settings.SubscriptionExpiryDate = null;
+        settings.Save();
+
+        await _auth.LogoutAsync();
+        _workspace.SetOwner(CurrentWorkspaceService.LocalOwner);
+
+        // Закрыть окно настроек
+        CloseSettingsWindow();
+    }
+
+    private async Task<bool> ShowConfirmDialogAsync(Window owner, string message)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        var yesBtn = new Button
+        {
+            Content = "Выйти", Width = 90, Margin = new Avalonia.Thickness(0, 0, 8, 0),
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#EF4444")),
+            Foreground = Avalonia.Media.Brushes.White,
+            CornerRadius = new Avalonia.CornerRadius(6)
+        };
+        var noBtn = new Button
+        {
+            Content = "Отмена", Width = 90,
+            CornerRadius = new Avalonia.CornerRadius(6)
+        };
+
+        var dialog = new Window
+        {
+            Title = "Выход из аккаунта",
+            Width = 380, Height = 190,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (Avalonia.Media.IBrush?)App.Current?.Resources["CardBackground"],
+            CanResize = false,
+            Content = new Avalonia.Controls.StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 18,
+                Children =
+                {
+                    new Avalonia.Controls.TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                        Foreground = (Avalonia.Media.IBrush?)App.Current?.Resources["PrimaryText"]
+                    },
+                    new Avalonia.Controls.StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Children = { yesBtn, noBtn }
+                    }
+                }
+            }
+        };
+
+        yesBtn.Click += (_, _) => { tcs.TrySetResult(true);  dialog.Close(); };
+        noBtn.Click  += (_, _) => { tcs.TrySetResult(false); dialog.Close(); };
+        dialog.Closed += (_, _) => tcs.TrySetResult(false);
+
+        await dialog.ShowDialog(owner);
+        return await tcs.Task;
+    }
+
+    private void CloseSettingsWindow()
+    {
+        if (App.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            // Закрыть все не-главные окна (Settings и любые другие диалоги)
+            foreach (var win in desktop.Windows.Where(w => w != desktop.MainWindow).ToList())
+                win.Close();
+        }
+    }
+
     // ── Синхронизация (Часть 2, п.3, 8) ──────────────────────────────
     partial void OnSyncEnabledChanged(bool value)
     {
@@ -275,19 +370,14 @@ public partial class AccountSettingsViewModel : ObservableObject
         bool success = await _sync.SyncDataAsync();
 
         IsSyncing = false;
-        SyncStatusMessage = success ? Loc["SyncSuccessLbl"] : Loc["SyncFailedLbl"];
+        SyncStatusMessage = success
+            ? Loc["SyncSuccessLbl"]
+            : (_sync.LastSyncError ?? Loc["SyncFailedLbl"]);
 
         var settings = AppSettings.Load();
         LastSyncText = settings.LastSyncUtc.HasValue
             ? settings.LastSyncUtc.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
             : Loc["NeverLbl"];
-    }
-
-    [RelayCommand]
-    private async Task Logout()
-    {
-        await _auth.LogoutAsync();
-        RefreshState();
     }
 
     private Avalonia.Controls.Window? GetOwnerWindow()

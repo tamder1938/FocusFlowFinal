@@ -31,5 +31,5 @@ public static class SubscriptionPlans
     public const string Yearly  = "yearly";
 
     public const decimal MonthlyPriceRub = 300m;
-    public const decimal YearlyPriceRub  = 2000m;
+    public const decimal YearlyPriceRub  = 3000m;
 }

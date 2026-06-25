@@ -1,0 +1,170 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.LimitEnforcementDialog"
+        x:CompileBindings="False"
+        Title="Бесплатный режим — приведение к лимитам"
+        Width="560" MinHeight="300" MaxHeight="660"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource SettingsWindowBackground}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+
+        <!-- Заголовок -->
+        <StackPanel Grid.Row="0" Spacing="6" Margin="0,0,0,16">
+            <TextBlock Text="Превышены лимиты бесплатной версии"
+                       FontSize="17" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryText}"/>
+            <TextBlock TextWrapping="Wrap" FontSize="13"
+                       Foreground="{DynamicResource SecondaryText}">
+                <Run Text="В бесплатной версии доступно: "/>
+                <Run Text="3 проекта, 50 задач, 50 событий." FontWeight="SemiBold"/>
+                <Run Text=" Выберите, что удалить, чтобы уложиться в лимит."/>
+            </TextBlock>
+        </StackPanel>
+
+        <!-- Прокручиваемые списки -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <!-- Задачи -->
+                <StackPanel IsVisible="{Binding HasTaskOverflow}">
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+                        <TextBlock Text="Задачи" FontWeight="SemiBold" FontSize="14"
+                                   Foreground="{DynamicResource PrimaryText}"/>
+                        <Border Background="{DynamicResource DangerLightBrush}"
+                                CornerRadius="10" Padding="8,2"
+                                IsVisible="{Binding HasTaskOverflow}">
+                            <TextBlock FontSize="12" Foreground="{DynamicResource DangerBrush}">
+                                <Run Text="Удалить ещё: "/>
+                                <Run Text="{Binding TaskDeleteNeeded}"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                    <Border Background="{DynamicResource CardBackground}"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1" CornerRadius="8" Padding="4">
+                        <ItemsControl ItemsSource="{Binding Tasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,6" CornerRadius="6">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="13"
+                                                           Foreground="{DynamicResource PrimaryText}"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryText}"
+                                                           IsVisible="{Binding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+
+                <!-- Проекты -->
+                <StackPanel IsVisible="{Binding HasProjectOverflow}">
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+                        <TextBlock Text="Проекты" FontWeight="SemiBold" FontSize="14"
+                                   Foreground="{DynamicResource PrimaryText}"/>
+                        <Border Background="{DynamicResource DangerLightBrush}"
+                                CornerRadius="10" Padding="8,2"
+                                IsVisible="{Binding HasProjectOverflow}">
+                            <TextBlock FontSize="12" Foreground="{DynamicResource DangerBrush}">
+                                <Run Text="Удалить ещё: "/>
+                                <Run Text="{Binding ProjectDeleteNeeded}"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Задачи удалённого проекта будут перенесены в &quot;Без проекта&quot;."
+                               FontSize="11" Foreground="{DynamicResource SecondaryText}"
+                               Margin="0,0,0,4"/>
+                    <Border Background="{DynamicResource CardBackground}"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1" CornerRadius="8" Padding="4">
+                        <ItemsControl ItemsSource="{Binding Projects}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,6" CornerRadius="6">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryText}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+
+                <!-- События -->
+                <StackPanel IsVisible="{Binding HasEventOverflow}">
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+                        <TextBlock Text="События" FontWeight="SemiBold" FontSize="14"
+                                   Foreground="{DynamicResource PrimaryText}"/>
+                        <Border Background="{DynamicResource DangerLightBrush}"
+                                CornerRadius="10" Padding="8,2"
+                                IsVisible="{Binding HasEventOverflow}">
+                            <TextBlock FontSize="12" Foreground="{DynamicResource DangerBrush}">
+                                <Run Text="Удалить ещё: "/>
+                                <Run Text="{Binding EventDeleteNeeded}"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                    <Border Background="{DynamicResource CardBackground}"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1" CornerRadius="8" Padding="4">
+                        <ItemsControl ItemsSource="{Binding Events}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,6" CornerRadius="6">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="13"
+                                                           Foreground="{DynamicResource PrimaryText}"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="11"
+                                                           Foreground="{DynamicResource SecondaryText}"
+                                                           IsVisible="{Binding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" Margin="0,16,0,0" Spacing="8">
+            <Button Content="Удалить выбранное и продолжить"
+                    Command="{Binding ConfirmCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    IsEnabled="{Binding CanConfirm}"
+                    Background="{DynamicResource DangerButtonBackground}"
+                    Foreground="White"
+                    CornerRadius="8" Height="40"/>
+            <Button Content="Войти снова (снять лимиты)"
+                    Command="{Binding SignInAgainCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Background="{DynamicResource SecondaryActionBrush}"
+                    Foreground="{DynamicResource SecondaryActionFgBrush}"
+                    CornerRadius="8" Height="36"/>
+        </StackPanel>
+
+    </Grid>
+</Window>

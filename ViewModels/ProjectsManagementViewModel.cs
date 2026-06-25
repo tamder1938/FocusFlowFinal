@@ -21,6 +21,7 @@ public partial class ProjectsManagementViewModel : ObservableObject
     // Свойства для создания нового проекта
     [ObservableProperty] private string _newProjectName = string.Empty;
     [ObservableProperty] private string _selectedColor = "#3B82F6"; // Цвет по умолчанию (синий)
+    [ObservableProperty] private string _limitMessage = string.Empty;
 
     // Доступные цвета для быстрого выбора в интерфейсе (палитра)
     public ObservableCollection<string> ColorPalette { get; } = new()
@@ -56,6 +57,16 @@ public partial class ProjectsManagementViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(NewProjectName))
             return;
+
+        // Лимит проектов для бесплатного тарифа
+        var services = ((App)Avalonia.Application.Current!).Services!;
+        var entitlement = services.GetRequiredService<IEntitlementService>();
+        if (!entitlement.IsPremiumActive && _db.GetAllProjects().Count() >= Services.EntitlementService.ProjectLimit)
+        {
+            LimitMessage = LocalizationService.Instance["Premium_LimitProject"];
+            return;
+        }
+        LimitMessage = string.Empty;
 
         // Проверяем, нет ли уже проекта с таким же именем
         if (Projects.Any(p => p.Name.Equals(NewProjectName.Trim(), StringComparison.OrdinalIgnoreCase)))

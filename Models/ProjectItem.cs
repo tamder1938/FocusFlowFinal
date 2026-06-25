@@ -11,8 +11,9 @@ public class ProjectItem : ISyncableEntity
     public string Name { get; set; } = string.Empty;
     public string Color { get; set; } = "#3B82F6";
 
-    // ИСПРАВЛЕНО (Часть 2-3, п.3): поля синхронизации
+    // поля синхронизации
     public Guid SyncId { get; set; } = Guid.NewGuid();
+    public string? UserId { get; set; }
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; } = false;
 }

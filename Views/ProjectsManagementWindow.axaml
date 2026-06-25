@@ -80,6 +80,10 @@
 				<Button Content="+ Добавить проект" Command="{Binding AddProjectCommand}"
                         HorizontalAlignment="Stretch" Height="36"
                         Background="{DynamicResource PrimaryActionBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Margin="0,6,0,0"/>
+				<TextBlock Text="{Binding LimitMessage}"
+                           IsVisible="{Binding LimitMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           Foreground="#EF4444" FontSize="12" TextWrapping="Wrap"
+                           Margin="0,6,0,0"/>
 			</StackPanel>
 		</Grid>
 

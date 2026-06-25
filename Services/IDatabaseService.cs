@@ -15,6 +15,7 @@ public interface IDatabaseService
     // ── Календарные события ─────────────────────────────────────────
     IEnumerable<CalendarEvent> GetEvents(DateTime date);
     IEnumerable<CalendarEvent> GetEventsForPeriod(DateTime start, DateTime end);
+    int CountBaseEvents();
     void UpsertEvent(CalendarEvent ev);
     void DeleteEvent(int id);
     CalendarEvent? GetEventById(int id);
@@ -50,6 +51,7 @@ public interface IDatabaseService
     TimerTemplate? GetTimerTemplate(int id);
     void UpsertTimerTemplate(TimerTemplate template);
     void DeleteTimerTemplate(int id);
+    void SeedDefaultTimerTemplates();
 
     // ── Проекты ─────────────────────────────────────────────────────
     IEnumerable<ProjectItem> GetAllProjects();

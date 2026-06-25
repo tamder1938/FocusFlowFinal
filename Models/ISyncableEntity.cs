@@ -14,6 +14,10 @@ public interface ISyncableEntity
     /// между устройствами — локальный int Id уникален только в рамках одной БД).</summary>
     Guid SyncId { get; set; }
 
+    /// <summary>UUID владельца записи (auth.uid() в Supabase). Null для локальных
+    /// записей до первого входа в аккаунт.</summary>
+    string? UserId { get; set; }
+
     /// <summary>Время последнего изменения записи (UTC). Используется для
     /// разрешения конфликтов синхронизации: более позднее изменение побеждает.</summary>
     DateTime LastModified { get; set; }

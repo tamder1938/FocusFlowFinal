@@ -67,6 +67,9 @@ public partial class TaskDialogViewModel : ObservableObject
     [ObservableProperty] private bool _hasLocation;
     [ObservableProperty] private string _locationText = string.Empty;
 
+    // ── Лимит бесплатного тарифа ────────────────────────────────────────
+    [ObservableProperty] private string _limitMessage = string.Empty;
+
     public event Action<int>? TaskDeleted;
 
     // Флаг для предотвращения рекурсии при пересчёте времени
@@ -277,6 +280,19 @@ public partial class TaskDialogViewModel : ObservableObject
     private void Save()
     {
         if (string.IsNullOrWhiteSpace(Title)) return;
+
+        // Лимит задач для бесплатного тарифа
+        if (!IsEditMode)
+        {
+            var services = ((App)Avalonia.Application.Current!).Services!;
+            var entitlement = services.GetRequiredService<IEntitlementService>();
+            if (!entitlement.IsPremiumActive && _db.GetAllTasks().Count() >= Services.EntitlementService.TaskLimit)
+            {
+                LimitMessage = LocalizationService.Instance["Premium_LimitTask"];
+                return;
+            }
+        }
+        LimitMessage = string.Empty;
 
         _task.Title       = Title.Trim();
         _task.Description = Description.Trim();

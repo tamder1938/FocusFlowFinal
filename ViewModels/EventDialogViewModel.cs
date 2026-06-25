@@ -71,6 +71,8 @@ public partial class EventDialogViewModel : ObservableObject
     public bool IsEditMode => _originalId != 0;
     public bool IsDeleted { get; private set; }
 
+    [ObservableProperty] private string _limitMessage = string.Empty;
+
     // === Выбор дня начала для Monthly ===
     [ObservableProperty] private int _monthlyDay = 1;
 
@@ -377,6 +379,23 @@ public partial class EventDialogViewModel : ObservableObject
     private void Save()
     {
         if (string.IsNullOrWhiteSpace(Title)) return;
+
+        // Лимит событий для бесплатного тарифа
+        if (!IsEditMode)
+        {
+            var services = ((App)Avalonia.Application.Current!).Services!;
+            var entitlement = services.GetRequiredService<IEntitlementService>();
+            if (!entitlement.IsPremiumActive)
+            {
+                var db = services.GetRequiredService<IDatabaseService>();
+                if (db.CountBaseEvents() >= Services.EntitlementService.EventLimit)
+                {
+                    LimitMessage = LocalizationService.Instance["Premium_LimitEvent"];
+                    return;
+                }
+            }
+        }
+        LimitMessage = string.Empty;
 
         // ИСПРАВЛЕНО (Часть 1, п.2): для серий повторений сохраняем исходную дату начала серии,
         // для нового или неповторяющегося события — берём дату, выбранную пользователем в DatePicker.

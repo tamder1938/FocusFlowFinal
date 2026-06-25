@@ -12,6 +12,7 @@ namespace FocusFlowFinal.ViewModels;
 public partial class TemplatesViewModel : ObservableObject
 {
     private readonly ITemplateService _templateService;
+    private readonly IDatabaseService _db;
 
     [ObservableProperty]
     private ObservableCollection<TaskTemplate> _taskTemplates = new();
@@ -19,9 +20,13 @@ public partial class TemplatesViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<EventTemplate> _eventTemplates = new();
 
-    public TemplatesViewModel(ITemplateService templateService)
+    [ObservableProperty]
+    private ObservableCollection<TimerTemplate> _timerTemplates = new();
+
+    public TemplatesViewModel(ITemplateService templateService, IDatabaseService db)
     {
         _templateService = templateService;
+        _db = db;
         LoadAllTemplates();
     }
 
@@ -29,6 +34,14 @@ public partial class TemplatesViewModel : ObservableObject
     {
         LoadTaskTemplates();
         LoadEventTemplates();
+        LoadTimerTemplates();
+    }
+
+    private void LoadTimerTemplates()
+    {
+        TimerTemplates.Clear();
+        foreach (var t in _db.GetAllTimerTemplates())
+            TimerTemplates.Add(t);
     }
 
     private void LoadTaskTemplates()
@@ -72,7 +85,7 @@ public partial class TemplatesViewModel : ObservableObject
             Title = template.Title,
             Description = template.Description,
             PlannedDurationMinutes = template.PlannedDurationMinutes,
-            Priority = template.Priority ?? 1, // приоритет по умолчанию: средний (1)
+            Priority = template.Priority ?? 1, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (1)
             ProjectId = template.ProjectId,
             DueDate = template.HasDate ? System.DateTime.Today : null,
             StartTime = template.IsTimeBound ? new System.TimeSpan(template.StartHour, template.StartMinute, 0) : null
@@ -101,5 +114,20 @@ public partial class TemplatesViewModel : ObservableObject
         else
             await dialog.ShowDialog<bool?>(owner);
         LoadTaskTemplates();
+    }
+
+    [RelayCommand]
+    private void DeleteTimerTemplate(TimerTemplate? template)
+    {
+        if (template == null) return;
+        _db.DeleteTimerTemplate(template.Id);
+        LoadTimerTemplates();
+    }
+
+    [RelayCommand]
+    private void RestoreDefaultTimerTemplates()
+    {
+        _db.SeedDefaultTimerTemplates();
+        LoadTimerTemplates();
     }
 }

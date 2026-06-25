@@ -8,6 +8,7 @@ namespace FocusFlowFinal.Models.Media;
 public class MediaItem
 {
     [BsonId] public int    Id             { get; set; }
+    public string?         UserId         { get; set; }
 
     // Основное
     public string          Title          { get; set; } = string.Empty;

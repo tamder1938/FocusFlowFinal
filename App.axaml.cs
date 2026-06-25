@@ -6,6 +6,8 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using FocusFlowFinal.Models;
 using FocusFlowFinal.Services;
+using FocusFlowFinal.Services.Security;
+using FocusFlowFinal.Services.Supabase;
 using FocusFlowFinal.ViewModels;
 using FocusFlowFinal.Views;
 using FocusFlowFinal.Models.Finance;
@@ -179,6 +181,13 @@ public partial class App : Application
         Set(r, "DangerBrush",         "#EF4444");
         Set(r, "DangerTextBrush2",    d ? "#FCA5A5" : "#991B1B");
         Set(r, "DangerLightBrush",    d ? "#2D0F0F" : "#FEE2E2");
+
+        // ── Тепловая карта — зелёная шкала, не зависит от акцентной темы ──
+        Set(r, "HeatmapLevel0", d ? "#374151" : "#D1D5DB");
+        Set(r, "HeatmapLevel1", d ? "#14532D" : "#BBF7D0");
+        Set(r, "HeatmapLevel2", d ? "#166534" : "#4ADE80");
+        Set(r, "HeatmapLevel3", d ? "#15803D" : "#16A34A");
+        Set(r, "HeatmapLevel4", d ? "#22C55E" : "#15803D");
     }
 
     private static void Set(IResourceDictionary r, string key, string hex) =>
@@ -186,6 +195,7 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection s)
     {
+        s.AddSingleton<ICurrentWorkspace, CurrentWorkspaceService>();
         s.AddSingleton<IDatabaseService, DatabaseService>();
         s.AddSingleton<ITemplateService, TemplateService>();
         s.AddSingleton<INotificationService, NotificationService>();
@@ -198,11 +208,15 @@ public partial class App : Application
         s.AddSingleton<TimerViewModel>();
         s.AddTransient<SettingsViewModel>();
 
-        // ИСПРАВЛЕНО (Часть 2-3): аккаунт, подписка, облачная синхронизация
-        s.AddSingleton<IAuthService, AuthService>();
+        // Аккаунт, подписка, облачная синхронизация (Supabase)
+        s.AddSingleton<ISecureStorage, DpapiSecureStorage>();
+        s.AddSingleton<SupabaseClientProvider>();
+        s.AddSingleton<IAuthService, SupabaseAuthService>();
+        s.AddSingleton<IEntitlementService, EntitlementService>();
         s.AddSingleton<IPaymentService, PaymentServiceStub>();
+        s.AddSingleton<ISyncService, SupabaseSyncService>();
+        // Legacy stubs kept for any remaining references; not in active use
         s.AddSingleton<ICloudDatabaseService, CloudDatabaseService>();
-        s.AddSingleton<ISyncService, CloudSyncService>();
 
         // Финансовый модуль
         s.AddTransient<FinanceViewModel>();

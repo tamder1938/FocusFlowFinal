@@ -33,6 +33,20 @@
 			<Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
 		</Style>
 
+		<!-- Кнопка-заголовок месяца -->
+		<Style Selector="Button.month-title-btn">
+			<Setter Property="Background"      Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding"         Value="0"/>
+			<Setter Property="HorizontalAlignment"        Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Left"/>
+			<Setter Property="Cursor"          Value="Hand"/>
+			<Setter Property="Margin"          Value="0,0,0,0"/>
+		</Style>
+		<Style Selector="Button.month-title-btn:pointerover TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource AccentBackground}"/>
+		</Style>
+
 		<!-- Кнопка дня -->
 		<Style Selector="Button.year-day">
 			<Setter Property="Margin"          Value="1"/>
@@ -80,8 +94,12 @@
                                 Classes.current="{Binding IsCurrentMonth}">
 							<Grid RowDefinitions="Auto, Auto, Auto, Auto">
 
-								<!-- Название месяца -->
-								<TextBlock Grid.Row="0" Classes="month-title" Text="{Binding MonthName}"/>
+								<!-- Название месяца: клик → MonthView -->
+								<Button Grid.Row="0" Classes="month-title-btn"
+                                        Command="{Binding DataContext.SelectMonthCommand, ElementName=Root}"
+                                        CommandParameter="{Binding}">
+									<TextBlock Classes="month-title" Text="{Binding MonthName}"/>
+								</Button>
 
 								<!-- Заголовки дней недели -->
 								<Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,0,0,4">

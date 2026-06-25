@@ -507,6 +507,31 @@
 						<StackPanel Spacing="16">
 							<TextBlock Classes="SectionHeader" Text="{Binding Loc[Settings_Functions]}"/>
 
+							<!-- Баннер бесплатного тарифа (скрыт при активной подписке) -->
+							<Border IsVisible="{Binding IsNotPremiumActive}"
+                                    CornerRadius="8" Padding="14,12"
+                                    Background="{DynamicResource AccentLightBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+								<Grid ColumnDefinitions="*,Auto">
+									<StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
+										<TextBlock Text="{Binding Loc[Premium_FreeBanner]}"
+                                                   FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="{DynamicResource AccentTextBrush}"/>
+										<TextBlock Text="{Binding Loc[Premium_FreeBannerSub]}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource AccentTextBrush}"
+                                                   TextWrapping="Wrap"/>
+									</StackPanel>
+									<Button Grid.Column="1"
+                                            Content="{Binding Loc[Premium_SubscribeBtn]}"
+                                            Command="{Binding GoToSubscriptionCommand}"
+                                            Background="{DynamicResource AccentBackground}"
+                                            Foreground="White" CornerRadius="6"
+                                            Padding="10,6" FontSize="12" FontWeight="SemiBold"
+                                            VerticalAlignment="Center" Margin="12,0,0,0"/>
+								</Grid>
+							</Border>
+
 							<!-- ── Базовые модули ────────────────────────────── -->
 							<TextBlock Text="{Binding Loc[Feat_BaseModulesCard]}"
                                        FontSize="11" FontWeight="SemiBold"
@@ -515,7 +540,7 @@
 							<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
                                     Padding="0" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
 								<StackPanel>
-									<!-- Финансовый модуль -->
+									<!-- Финансовый модуль (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -530,11 +555,18 @@
 											<TextBlock Text="{Binding Loc[FinanceModuleSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding FinanceModuleEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding FinanceModuleEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
-									<!-- Трекер привычек -->
+									<!-- Трекер привычек (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -549,8 +581,15 @@
 											<TextBlock Text="{Binding Loc[HabitTrackerSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding HabitTrackerEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding HabitTrackerEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 								</StackPanel>
 							</Border>
@@ -563,7 +602,7 @@
 							<Border CornerRadius="8" Background="{DynamicResource CardBackground}"
                                     Padding="0" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
 								<StackPanel>
-									<!-- Фоновые звуки -->
+									<!-- Фоновые звуки (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -578,11 +617,18 @@
 											<TextBlock Text="{Binding Loc[Feat_BackgroundSoundsSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding BackgroundSoundsEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding BackgroundSoundsEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
-									<!-- Трекер настроения -->
+									<!-- Трекер настроения (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -597,11 +643,18 @@
 											<TextBlock Text="{Binding Loc[Feat_MoodTrackerSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding MoodTrackerEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding MoodTrackerEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
-									<!-- Заметки и дневник -->
+									<!-- Заметки и дневник (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -616,11 +669,18 @@
 											<TextBlock Text="{Binding Loc[Feat_NotesAndDiarySub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding NotesAndDiaryEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding NotesAndDiaryEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
-									<!-- Трекер тренировок -->
+									<!-- Трекер тренировок (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -635,11 +695,18 @@
 											<TextBlock Text="{Binding Loc[Feat_WorkoutTrackerSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding WorkoutTrackerEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding WorkoutTrackerEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 									<Border Height="1" Background="{DynamicResource CardBorder}" Margin="16,0"/>
-									<!-- Трекер медиа -->
+									<!-- Трекер медиа (премиум) -->
 									<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,14,16,14">
 										<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
                                                 Background="{DynamicResource AccentLightBrush}"
@@ -654,8 +721,15 @@
 											<TextBlock Text="{Binding Loc[Feat_MediaTrackerSub]}"
                                                        FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
 										</StackPanel>
-										<ToggleSwitch Grid.Column="2" IsChecked="{Binding MediaTrackerEnabled}"
-                                                      VerticalAlignment="Center"/>
+										<Panel Grid.Column="2" VerticalAlignment="Center">
+											<ToggleSwitch IsChecked="{Binding MediaTrackerEnabled}"
+                                                          IsVisible="{Binding IsPremiumActive}"/>
+											<Button Content="🔒"
+                                                    IsVisible="{Binding IsNotPremiumActive}"
+                                                    Command="{Binding GoToSubscriptionCommand}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    FontSize="18" Padding="4,0" ToolTip.Tip="{Binding Loc[Premium_SubscribeBtn]}"/>
+										</Panel>
 									</Grid>
 								</StackPanel>
 							</Border>

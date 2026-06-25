@@ -53,6 +53,18 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _mediaTrackerEnabled;
     [ObservableProperty] private bool _extendedStatisticsEnabled;
 
+    // ── Статус подписки (premium gating) ────────────────────────────────
+    [ObservableProperty] private bool _isPremiumActive;
+    [ObservableProperty] private bool _isNotPremiumActive;
+
+    private void RefreshPremiumState()
+    {
+        var services = ((App)App.Current!).Services!;
+        var entitlement = services.GetRequiredService<IEntitlementService>();
+        IsPremiumActive    = entitlement.IsPremiumActive;
+        IsNotPremiumActive = !IsPremiumActive;
+    }
+
     // ── Палитра тем ──────────────────────────────────────────────────
     public ObservableCollection<ThemeTileItem> ThemeTiles { get; } = new();
 
@@ -142,9 +154,11 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         Account = new AccountSettingsViewModel(
             services.GetRequiredService<IAuthService>(),
             services.GetRequiredService<IPaymentService>(),
-            services.GetRequiredService<ISyncService>());
+            services.GetRequiredService<ISyncService>(),
+            services.GetRequiredService<ICurrentWorkspace>());
 
         Loc.PropertyChanged += OnLocChanged;
+        RefreshPremiumState();
     }
 
     // no-op: сохранено для совместимости с SettingsWindow.OnOpened
@@ -184,6 +198,13 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         IsHotkeysTab       = tabName == "Hotkeys";
         IsDataTab          = tabName == "Data";
         IsFunctionsTab     = tabName == "Functions";
+        if (tabName == "Functions") RefreshPremiumState();
+    }
+
+    [RelayCommand]
+    private void GoToSubscription()
+    {
+        SelectTab("Account");
     }
 
     [RelayCommand]
@@ -194,7 +215,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void Save()
+    private async System.Threading.Tasks.Task Save()
     {
         var settings = AppSettings.Load();
         settings.ThemeMode                       = CurrentThemeMode;

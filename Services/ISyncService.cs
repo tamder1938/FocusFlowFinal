@@ -30,4 +30,7 @@ public interface ISyncService
 
     /// <summary>Дата/время последней успешной синхронизации (UTC), либо null.</summary>
     DateTime? LastSyncUtc { get; }
+
+    /// <summary>Текст последней ошибки синхронизации; null если не было.</summary>
+    string? LastSyncError { get; }
 }

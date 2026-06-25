@@ -225,6 +225,7 @@ public class LocalizationService : ObservableObject
                 ["LastSyncLbl"] = "Последняя синхронизация",
                 ["NeverLbl"] = "никогда",
                 ["LogoutBtn"] = "Выйти из аккаунта",
+                ["LogoutPendingHint"] = "Выход из аккаунта будет выполнен после нажатия «Сохранить».",
                 ["EditProfileUsername"] = "Имя пользователя",
                 ["EditProfileEmail"] = "Email",
                 ["ChangePasswordBtn"] = "Изменить пароль",
@@ -490,6 +491,16 @@ public class LocalizationService : ObservableObject
                 ["SubExpiredLbl"]        = "Подписка истекла",
                 ["SubExpiresLbl"]        = "Активна до",
                 ["SubRenewBtn"]          = "Продлить подписку",
+
+                // Premim gating
+                ["Premium_RequiredTitle"]        = "Требуется подписка",
+                ["Premium_RequiredNotif"]        = "Этот модуль доступен только по подписке.",
+                ["Premium_SubscribeBtn"]         = "Оформить подписку",
+                ["Premium_FreeBanner"]           = "Бесплатный тариф · задачи ≤50 · проекты ≤3 · события ≤50",
+                ["Premium_FreeBannerSub"]        = "Премиум-модули разблокируются после покупки подписки.",
+                ["Premium_LimitTask"]            = "Лимит задач (50) достигнут. Оформите подписку для снятия ограничений.",
+                ["Premium_LimitProject"]         = "Лимит проектов (3) достигнут. Оформите подписку.",
+                ["Premium_LimitEvent"]           = "Лимит событий (50) достигнут. Оформите подписку для снятия ограничений.",
 
                 // Трекер привычек
                 ["HabitTrackerLbl"]      = "Трекер привычек",
@@ -1079,6 +1090,7 @@ public class LocalizationService : ObservableObject
                 ["LastSyncLbl"] = "Last sync",
                 ["NeverLbl"] = "never",
                 ["LogoutBtn"] = "Log out",
+                ["LogoutPendingHint"] = "Sign-out will happen when you click Save.",
                 ["EditProfileUsername"] = "Username",
                 ["EditProfileEmail"] = "Email",
                 ["ChangePasswordBtn"] = "Change password",
@@ -1344,6 +1356,16 @@ public class LocalizationService : ObservableObject
                 ["SubExpiredLbl"]        = "Subscription expired",
                 ["SubExpiresLbl"]        = "Active until",
                 ["SubRenewBtn"]          = "Renew subscription",
+
+                // Premium gating
+                ["Premium_RequiredTitle"]        = "Subscription Required",
+                ["Premium_RequiredNotif"]        = "This module is available for subscribers only.",
+                ["Premium_SubscribeBtn"]         = "Subscribe",
+                ["Premium_FreeBanner"]           = "Free plan · tasks ≤50 · projects ≤3 · events ≤50",
+                ["Premium_FreeBannerSub"]        = "Premium modules unlock after purchasing a subscription.",
+                ["Premium_LimitTask"]            = "Task limit (50) reached. Subscribe to remove limits.",
+                ["Premium_LimitProject"]         = "Project limit (3) reached. Subscribe to remove limits.",
+                ["Premium_LimitEvent"]           = "Event limit (50) reached. Subscribe to remove limits.",
 
                 // Habit Tracker
                 ["HabitTrackerLbl"]      = "Habit Tracker",

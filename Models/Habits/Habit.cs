@@ -34,6 +34,8 @@ public class Habit
     /// <summary>Количество раз в месяц для типа TimesPerMonth.</summary>
     public int TimesPerMonth { get; set; } = 1;
 
+    public string? UserId { get; set; }
+
     public DateTime StartDate  { get; set; } = DateTime.Today;
     public bool IsArchived     { get; set; } = false;
 

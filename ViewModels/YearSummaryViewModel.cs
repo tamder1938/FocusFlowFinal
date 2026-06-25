@@ -67,11 +67,11 @@ public partial class YearSummaryViewModel : ObservableObject
 
     private static readonly string[] HeatColors =
     {
-        "#E5E7EB", // Level 0 — нет активности
-        "#BFDBFE", // Level 1
-        "#60A5FA", // Level 2
-        "#2563EB", // Level 3
-        "#1D4ED8"  // Level 4
+        "#D1D5DB", // Level 0 — нет активности
+        "#BBF7D0", // Level 1
+        "#4ADE80", // Level 2
+        "#16A34A", // Level 3
+        "#15803D"  // Level 4
     };
 
     private static readonly string[] MonthShort =

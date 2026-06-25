@@ -4,7 +4,8 @@
         xmlns:conv="clr-namespace:FocusFlowFinal.Converters"
         x:Class="FocusFlowFinal.Views.EventDialog"
         x:CompileBindings="False"
-        Title="{Binding Loc[EventTitle]}" Width="400" Height="920"
+        Title="{Binding Loc[EventTitle]}" Width="400" Height="660"
+        MinWidth="360" MinHeight="560"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}">
 
@@ -44,8 +45,9 @@
 		</Style>
 	</Window.Styles>
 
-	<ScrollViewer>
-		<StackPanel Margin="15">
+	<Grid RowDefinitions="*, Auto">
+	<ScrollViewer Grid.Row="0">
+		<StackPanel Margin="15,15,15,0">
 
 			<!-- Загрузить шаблон -->
 			<TextBlock Text="{Binding Loc[LoadTemplateHint]}"
@@ -319,31 +321,44 @@
                     Margin="0,4,0,8"
                     FontWeight="Medium"/>
 
-			<!-- Кнопки -->
-			<Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,15,0,10">
+		</StackPanel>
+	</ScrollViewer>
+
+	<!-- Фиксированный футер: лимит + кнопки (всегда виден) -->
+	<Border Grid.Row="1"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+            Background="{DynamicResource WindowBackgroundBrush}"
+            Padding="12,10">
+		<StackPanel Spacing="8">
+			<!-- Сообщение о лимите бесплатного тарифа -->
+			<TextBlock Text="{Binding LimitMessage}"
+                       IsVisible="{Binding LimitMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="#EF4444" FontSize="12" TextWrapping="Wrap"/>
+			<!-- Кнопки действий -->
+			<Grid ColumnDefinitions="Auto, *, Auto, Auto">
 				<Button Grid.Column="0"
                         Content="{Binding Loc[DeleteBtn]}"
                         Command="{Binding DeleteCommand}"
                         IsVisible="{Binding IsEditMode}"
                         Background="#EF4444" Foreground="White"
-                        CornerRadius="8" Height="40" FontWeight="SemiBold"/>
+                        CornerRadius="8" Height="38" FontWeight="SemiBold" Padding="16,0"/>
 				<StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
 					<Button Content="{Binding Loc[CancelBtn]}"
                             Command="{Binding CancelCommand}"
                             Background="{DynamicResource SecondaryActionBrush}"
                             Foreground="{DynamicResource SecondaryActionFgBrush}"
                             BorderThickness="0"
-                            CornerRadius="8" Height="40" Width="100"
+                            CornerRadius="8" Height="38" Width="100"
                             FontWeight="SemiBold" HorizontalContentAlignment="Center"/>
 					<Button Content="{Binding Loc[SaveBtn]}"
                             Command="{Binding SaveCommand}"
                             Background="{DynamicResource PrimaryActionBrush}"
                             Foreground="White" BorderThickness="0"
-                            CornerRadius="8" Height="40" Width="120"
+                            CornerRadius="8" Height="38" Width="120"
                             FontWeight="Bold" HorizontalContentAlignment="Center"/>
 				</StackPanel>
 			</Grid>
-
 		</StackPanel>
-	</ScrollViewer>
+	</Border>
+	</Grid>
 </Window>

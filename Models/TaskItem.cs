@@ -23,6 +23,7 @@ public class TaskItem : ISyncableEntity
 
     // поля синхронизации
     public Guid SyncId { get; set; } = Guid.NewGuid();
+    public string? UserId { get; set; }
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; } = false;
 

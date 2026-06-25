@@ -112,6 +112,28 @@ public sealed class ThemeService
             Set(r, "NavInactiveFg",            textSec);
             Set(r, "ProgressBackgroundBrush",  progressC);
         }
+
+        // ── Тепловая карта — уровни из акцента текущей темы ────────────────
+        // L0 = нейтральный (нет активности), L1..L4 = нарастающий акцент.
+        // Светлый режим: light → accent → main → dark (пастель → насыщенный).
+        // Тёмный режим: обратный порядок (dark → accent → light), чтобы
+        // максимальная активность была самой яркой на тёмном фоне.
+        var neutralHeat = isDark ? Color.Parse("#2D3748") : Color.Parse("#E2E8F0");
+        Set(r, "HeatmapLevel0", neutralHeat);
+        if (!isDark)
+        {
+            Set(r, "HeatmapLevel1", light);
+            Set(r, "HeatmapLevel2", accent);
+            Set(r, "HeatmapLevel3", main);
+            Set(r, "HeatmapLevel4", dark);
+        }
+        else
+        {
+            Set(r, "HeatmapLevel1", dark);
+            Set(r, "HeatmapLevel2", main);
+            Set(r, "HeatmapLevel3", accent);
+            Set(r, "HeatmapLevel4", light);
+        }
     }
 
     private static void Set(IResourceDictionary r, string key, Color c) =>

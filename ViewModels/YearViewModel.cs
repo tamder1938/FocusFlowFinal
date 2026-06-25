@@ -23,6 +23,10 @@ public partial class YearMonthItem : ObservableObject
     /// <summary>Общее кол-во задач с дедлайном в этом месяце.</summary>
     [ObservableProperty] private int _totalTasksCount;
 
+    /// <summary>Номер месяца (1–12) и год для навигации по клику.</summary>
+    public int MonthNumber { get; set; }
+    public int Year        { get; set; }
+
     /// <summary>Текст вида "Выполнено: 2/7" для текущего месяца.</summary>
     public string ProgressText => $"{LocalizationService.Instance["Done"]}: {CompletedTasksCount}/{TotalTasksCount}";
 
@@ -54,6 +58,7 @@ public partial class YearViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<YearMonthItem> _months = new();
 
     public event Action<DateTime>? DaySelected;
+    public event Action<DateTime>? MonthSelected;
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -91,6 +96,13 @@ public partial class YearViewModel : ObservableObject
             DaySelected?.Invoke(item.Date);
     }
 
+    [RelayCommand]
+    private void SelectMonth(YearMonthItem? item)
+    {
+        if (item != null)
+            MonthSelected?.Invoke(new DateTime(item.Year, item.MonthNumber, 1));
+    }
+
     private void Reload()
     {
         Months.Clear();
@@ -118,7 +130,9 @@ public partial class YearViewModel : ObservableObject
             var monthItem = new YearMonthItem
             {
                 MonthName       = monthName,
-                IsCurrentMonth  = (CurrentYear == today.Year && monthNumber == today.Month)
+                IsCurrentMonth  = (CurrentYear == today.Year && monthNumber == today.Month),
+                MonthNumber     = monthNumber,
+                Year            = CurrentYear,
             };
 
             // Прогресс выполнения задач за месяц

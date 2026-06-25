@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# FocusFlow: local config with real Supabase/API keys (never commit)
+appsettings.local.json

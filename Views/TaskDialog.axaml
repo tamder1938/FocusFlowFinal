@@ -340,6 +340,12 @@
                            Foreground="{DynamicResource SecondaryTextBrush}"/>
 			</StackPanel>
 
+			<!-- Сообщение о лимите бесплатного тарифа -->
+			<TextBlock Text="{Binding LimitMessage}"
+                       IsVisible="{Binding LimitMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="#EF4444" FontSize="12" TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+
 			<!-- Кнопки -->
 			<Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
 				<Button Grid.Column="0" Classes="danger-action"

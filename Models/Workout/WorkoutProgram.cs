@@ -8,6 +8,7 @@ namespace FocusFlowFinal.Models.Workout;
 public class WorkoutProgram
 {
     [BsonId] public int    Id        { get; set; }
+    public string?         UserId    { get; set; }
     public string          Name      { get; set; } = string.Empty;
     public string          Icon      { get; set; } = "🏋️";
     public string          Color     { get; set; } = "#3B82F6";

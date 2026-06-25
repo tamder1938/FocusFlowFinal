@@ -10,12 +10,14 @@ using FocusFlowFinal.Models.Mood;
 using FocusFlowFinal.Models.Notes;
 using FocusFlowFinal.Models.Media;
 using FocusFlowFinal.Models.Sound;
+using FocusFlowFinal.Services.Security;
 
 namespace FocusFlowFinal.Services
 {
     public class DatabaseService : IDatabaseService, IDisposable
     {
         private readonly LiteDatabase _db;
+        private readonly ICurrentWorkspace _workspace;
         private const string EventsCollection        = "events";
         private const string TasksCollection         = "tasks";
         private const string SessionsCollection      = "sessions";
@@ -38,15 +40,18 @@ namespace FocusFlowFinal.Services
         private const string UserSoundsCollection        = "userSounds";
         private const string MediaItemsCollection        = "media_items";
 
-        public DatabaseService()
+        public DatabaseService(ICurrentWorkspace workspace)
         {
+            _workspace = workspace;
+
             var folder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "FocusFlow");
             Directory.CreateDirectory(folder);
             var dbPath = Path.Combine(folder, "FocusFlowFinal.db");
 
-            _db = new LiteDatabase(dbPath);
+            var password = LiteDbEncryption.GetOrCreateDbPassword();
+            _db = LiteDbEncryption.Open(dbPath, password);
 
             _db.GetCollection<CalendarEvent>(EventsCollection).EnsureIndex(e => e.Start);
             _db.GetCollection<TaskItem>(TasksCollection).EnsureIndex(t => t.DueDate);
@@ -57,17 +62,107 @@ namespace FocusFlowFinal.Services
 
             var templates = _db.GetCollection<TimerTemplate>(TemplatesCollection);
             templates.EnsureIndex(t => t.Name);
-            if (templates.Count() == 0)
+            DoSeedDefaultTimerTemplates(templates);
+
+            MigrateNullUserIds();
+        }
+
+        private void MigrateNullUserIds()
+        {
+            const string local = CurrentWorkspaceService.LocalOwner;
+
+            // Tasks
+            var taskCol = _db.GetCollection<TaskItem>(TasksCollection);
+            foreach (var t in taskCol.FindAll().Where(t => t.UserId == null).ToList())
+            { t.UserId = local; taskCol.Update(t); }
+
+            // Calendar events
+            var evCol = _db.GetCollection<CalendarEvent>(EventsCollection);
+            foreach (var e in evCol.FindAll().Where(e => e.UserId == null).ToList())
+            { e.UserId = local; evCol.Update(e); }
+
+            // Projects
+            var prjCol = _db.GetCollection<ProjectItem>("projects");
+            foreach (var p in prjCol.FindAll().Where(p => p.UserId == null).ToList())
+            { p.UserId = local; prjCol.Update(p); }
+
+            // Focus sessions
+            var sesCol = _db.GetCollection<FocusSession>(SessionsCollection);
+            foreach (var s in sesCol.FindAll().Where(s => s.UserId == null).ToList())
+            { s.UserId = local; sesCol.Update(s); }
+
+            // Habits
+            var habCol = _db.GetCollection<Habit>(HabitsCollection);
+            foreach (var h in habCol.FindAll().Where(h => h.UserId == null).ToList())
+            { h.UserId = local; habCol.Update(h); }
+
+            // Habit completions
+            var compCol = _db.GetCollection<HabitCompletion>(HabitCompletionsCollection);
+            foreach (var c in compCol.FindAll().Where(c => c.UserId == null).ToList())
+            { c.UserId = local; compCol.Update(c); }
+
+            // Notes
+            var noteCol = _db.GetCollection<Note>(NotesCollection);
+            foreach (var n in noteCol.FindAll().Where(n => n.UserId == null).ToList())
+            { n.UserId = local; noteCol.Update(n); }
+
+            // Mood entries
+            var moodCol = _db.GetCollection<MoodEntry>(MoodEntriesCollection);
+            foreach (var m in moodCol.FindAll().Where(m => m.UserId == null).ToList())
+            { m.UserId = local; moodCol.Update(m); }
+
+            // Finance
+            var incomeCol = _db.GetCollection<FinanceIncome>(IncomeCollection);
+            foreach (var x in incomeCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; incomeCol.Update(x); }
+
+            var expCol = _db.GetCollection<FinanceExpense>(ExpenseCollection);
+            foreach (var x in expCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; expCol.Update(x); }
+
+            var fsCol = _db.GetCollection<FinanceSubscriptionItem>(FinSubCollection);
+            foreach (var x in fsCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; fsCol.Update(x); }
+
+            var loanCol = _db.GetCollection<FinanceLoan>(LoanCollection);
+            foreach (var x in loanCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; loanCol.Update(x); }
+
+            var savCol = _db.GetCollection<SavingsAccount>(SavingsCollection);
+            foreach (var x in savCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; savCol.Update(x); }
+
+            // Media
+            var mediaCol = _db.GetCollection<MediaItem>(MediaItemsCollection);
+            foreach (var x in mediaCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; mediaCol.Update(x); }
+
+            // User sounds
+            var soundCol = _db.GetCollection<UserSound>(UserSoundsCollection);
+            foreach (var x in soundCol.FindAll().Where(x => x.UserId == null).ToList())
+            { x.UserId = local; soundCol.Update(x); }
+        }
+
+        // Идемпотентный сидинг 3 стандартных шаблонов таймера (проверка по имени)
+        private static void DoSeedDefaultTimerTemplates(LiteDB.ILiteCollection<TimerTemplate> col)
+        {
+            var defaults = new[]
             {
-                templates.Insert(new TimerTemplate
-                {
-                    Name         = LocalizationService.Instance["PomodoroDefault"],
-                    WorkMinutes  = 25,
-                    BreakMinutes = 5,
-                    Cycles       = 4,
-                    IsBuiltIn    = true
-                });
+                new TimerTemplate { Name = "Рутина 25/5",  WorkMinutes = 25, BreakMinutes = 5,  Cycles = 4, IsBuiltIn = true },
+                new TimerTemplate { Name = "Учёба 50/10",  WorkMinutes = 50, BreakMinutes = 10, Cycles = 3, IsBuiltIn = true },
+                new TimerTemplate { Name = "Код 90/20",    WorkMinutes = 90, BreakMinutes = 20, Cycles = 2, IsBuiltIn = true },
+            };
+            foreach (var d in defaults)
+            {
+                if (!col.Exists(t => t.Name == d.Name))
+                    col.Insert(d);
             }
+        }
+
+        public void SeedDefaultTimerTemplates()
+        {
+            var col = _db.GetCollection<TimerTemplate>(TemplatesCollection);
+            DoSeedDefaultTimerTemplates(col);
         }
 
         public void Dispose() => _db.Dispose();
@@ -85,10 +180,12 @@ namespace FocusFlowFinal.Services
                 var col        = _db.GetCollection<CalendarEvent>(EventsCollection);
                 var startOfDay = date.Date;
                 var endOfDay   = startOfDay.AddDays(1);
+                var owner      = _workspace.CurrentOwnerKey;
 
                 var rawEvents = col.Find(e =>
-                    (e.Start >= startOfDay && e.Start < endOfDay && e.Recurrence == RecurrenceType.None) ||
-                    (e.Recurrence != RecurrenceType.None && e.Start < endOfDay)
+                    e.UserId == owner &&
+                    ((e.Start >= startOfDay && e.Start < endOfDay && e.Recurrence == RecurrenceType.None) ||
+                     (e.Recurrence != RecurrenceType.None && e.Start < endOfDay))
                 ).ToList();
 
                 var computedEvents = new List<CalendarEvent>();
@@ -214,14 +311,29 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<CalendarEvent> GetEventsForPeriod(DateTime start, DateTime end)
         {
-            var col = _db.GetCollection<CalendarEvent>(EventsCollection);
-            return col.Find(e => e.Start >= start && e.End <= end).ToList();
+            var col   = _db.GetCollection<CalendarEvent>(EventsCollection);
+            var owner = _workspace.CurrentOwnerKey;
+            return col.Find(e => e.UserId == owner && e.Start >= start && e.End <= end).ToList();
+        }
+
+        public int CountBaseEvents()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<CalendarEvent>(EventsCollection).Count(e => e.UserId == owner);
         }
 
         public void UpsertEvent(CalendarEvent ev)
         {
             var col = _db.GetCollection<CalendarEvent>(EventsCollection);
-            if (ev.Id == 0) col.Insert(ev); else col.Update(ev);
+            if (ev.Id == 0)
+            {
+                if (ev.UserId == null) ev.UserId = _workspace.CurrentOwnerKey;
+                col.Insert(ev);
+            }
+            else
+            {
+                col.Update(ev);
+            }
         }
 
         public void DeleteEvent(int id)
@@ -336,8 +448,9 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<TaskItem> GetAllTasks()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
-                      .FindAll()
+                      .Find(t => t.UserId == owner)
                       .OrderBy(t => t.DueDate)
                       .ThenByDescending(t => t.Priority)
                       .ToList();
@@ -351,7 +464,15 @@ namespace FocusFlowFinal.Services
         public void UpsertTask(TaskItem task)
         {
             var col = _db.GetCollection<TaskItem>(TasksCollection);
-            if (task.Id == 0) col.Insert(task); else col.Update(task);
+            if (task.Id == 0)
+            {
+                if (task.UserId == null) task.UserId = _workspace.CurrentOwnerKey;
+                col.Insert(task);
+            }
+            else
+            {
+                col.Update(task);
+            }
         }
 
         public void DeleteTask(int id)
@@ -362,15 +483,17 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<TaskItem> GetTasksByDate(DateTime date)
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
-                      .Find(t => t.DueDate == date.Date)
+                      .Find(t => t.UserId == owner && t.DueDate == date.Date)
                       .ToList();
         }
 
         public IEnumerable<TaskItem> GetTasksForPeriod(DateTime start, DateTime end)
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
-                      .Find(t => t.DueDate >= start.Date && t.DueDate < end.Date)
+                      .Find(t => t.UserId == owner && t.DueDate >= start.Date && t.DueDate < end.Date)
                       .ToList();
         }
 
@@ -378,6 +501,7 @@ namespace FocusFlowFinal.Services
 
         public void AddFocusSession(FocusSession session)
         {
+            if (session.UserId == null) session.UserId = _workspace.CurrentOwnerKey;
             _db.GetCollection<FocusSession>(SessionsCollection).Insert(session);
         }
 
@@ -395,24 +519,27 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<FocusSession> GetSessionsForDate(DateTime date)
         {
+            var owner = _workspace.CurrentOwnerKey;
             var start = date.Date;
             var end   = start.AddDays(1);
             return _db.GetCollection<FocusSession>(SessionsCollection)
-                      .Find(s => s.StartTime >= start && s.StartTime < end)
+                      .Find(s => s.UserId == owner && s.StartTime >= start && s.StartTime < end)
                       .ToList();
         }
 
         public IEnumerable<FocusSession> GetSessionsForPeriod(DateTime start, DateTime end)
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FocusSession>(SessionsCollection)
-                      .Find(s => s.StartTime >= start.Date && s.StartTime < end.Date)
+                      .Find(s => s.UserId == owner && s.StartTime >= start.Date && s.StartTime < end.Date)
                       .ToList();
         }
 
         public FocusSession? GetActiveSession()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FocusSession>(SessionsCollection)
-                      .Find(s => s.EndTime == null)
+                      .Find(s => s.UserId == owner && s.EndTime == null)
                       .FirstOrDefault();
         }
 
@@ -446,13 +573,22 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<ProjectItem> GetAllProjects()
         {
-            return _db.GetCollection<ProjectItem>("projects").FindAll().ToList();
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<ProjectItem>("projects").Find(p => p.UserId == owner).ToList();
         }
 
         public void UpsertProject(ProjectItem project)
         {
             var col = _db.GetCollection<ProjectItem>("projects");
-            if (project.Id == 0) col.Insert(project); else col.Update(project);
+            if (project.Id == 0)
+            {
+                if (project.UserId == null) project.UserId = _workspace.CurrentOwnerKey;
+                col.Insert(project);
+            }
+            else
+            {
+                col.Update(project);
+            }
         }
 
         public void DeleteProject(int id)
@@ -477,14 +613,16 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<FinanceIncome> GetAllIncomes()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FinanceIncome>(IncomeCollection)
-                      .FindAll().OrderByDescending(x => x.Date).ToList();
+                      .Find(x => x.UserId == owner).OrderByDescending(x => x.Date).ToList();
         }
 
         public void UpsertIncome(FinanceIncome item)
         {
             var col = _db.GetCollection<FinanceIncome>(IncomeCollection);
-            if (item.Id == 0) col.Insert(item); else col.Update(item);
+            if (item.Id == 0) { if (item.UserId == null) item.UserId = _workspace.CurrentOwnerKey; col.Insert(item); }
+            else col.Update(item);
         }
 
         public void DeleteIncome(int id)
@@ -494,14 +632,16 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<FinanceExpense> GetAllExpenses()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FinanceExpense>(ExpenseCollection)
-                      .FindAll().OrderByDescending(x => x.Date).ToList();
+                      .Find(x => x.UserId == owner).OrderByDescending(x => x.Date).ToList();
         }
 
         public void UpsertExpense(FinanceExpense item)
         {
             var col = _db.GetCollection<FinanceExpense>(ExpenseCollection);
-            if (item.Id == 0) col.Insert(item); else col.Update(item);
+            if (item.Id == 0) { if (item.UserId == null) item.UserId = _workspace.CurrentOwnerKey; col.Insert(item); }
+            else col.Update(item);
         }
 
         public void DeleteExpense(int id)
@@ -511,14 +651,16 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<FinanceSubscriptionItem> GetAllFinanceSubscriptions()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FinanceSubscriptionItem>(FinSubCollection)
-                      .FindAll().OrderBy(x => x.Name).ToList();
+                      .Find(x => x.UserId == owner).OrderBy(x => x.Name).ToList();
         }
 
         public void UpsertFinanceSubscription(FinanceSubscriptionItem item)
         {
             var col = _db.GetCollection<FinanceSubscriptionItem>(FinSubCollection);
-            if (item.Id == 0) col.Insert(item); else col.Update(item);
+            if (item.Id == 0) { if (item.UserId == null) item.UserId = _workspace.CurrentOwnerKey; col.Insert(item); }
+            else col.Update(item);
         }
 
         public void DeleteFinanceSubscription(int id)
@@ -528,14 +670,16 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<FinanceLoan> GetAllLoans()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<FinanceLoan>(LoanCollection)
-                      .FindAll().OrderBy(x => x.Name).ToList();
+                      .Find(x => x.UserId == owner).OrderBy(x => x.Name).ToList();
         }
 
         public void UpsertLoan(FinanceLoan item)
         {
             var col = _db.GetCollection<FinanceLoan>(LoanCollection);
-            if (item.Id == 0) col.Insert(item); else col.Update(item);
+            if (item.Id == 0) { if (item.UserId == null) item.UserId = _workspace.CurrentOwnerKey; col.Insert(item); }
+            else col.Update(item);
         }
 
         public void DeleteLoan(int id)
@@ -581,14 +725,16 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<SavingsAccount> GetAllSavingsAccounts()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<SavingsAccount>(SavingsCollection)
-                      .FindAll().OrderBy(x => x.Name).ToList();
+                      .Find(x => x.UserId == owner).OrderBy(x => x.Name).ToList();
         }
 
         public void UpsertSavingsAccount(SavingsAccount account)
         {
             var col = _db.GetCollection<SavingsAccount>(SavingsCollection);
-            if (account.Id == 0) col.Insert(account); else col.Update(account);
+            if (account.Id == 0) { if (account.UserId == null) account.UserId = _workspace.CurrentOwnerKey; col.Insert(account); }
+            else col.Update(account);
         }
 
         public void DeleteSavingsAccount(int id)
@@ -635,14 +781,20 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<Habit> GetAllHabits()
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<Habit>(HabitsCollection)
-                      .FindAll().OrderBy(h => h.Name).ToList();
+                      .Find(h => h.UserId == owner).OrderBy(h => h.Name).ToList();
         }
 
         public void UpsertHabit(Habit habit)
         {
             var col = _db.GetCollection<Habit>(HabitsCollection);
-            if (habit.Id == 0) col.Insert(habit); else col.Update(habit);
+            if (habit.Id == 0)
+            {
+                if (habit.UserId == null) habit.UserId = _workspace.CurrentOwnerKey;
+                col.Insert(habit);
+            }
+            else col.Update(habit);
         }
 
         public void DeleteHabit(int id)
@@ -660,8 +812,9 @@ namespace FocusFlowFinal.Services
 
         public IEnumerable<HabitCompletion> GetCompletionsForPeriod(DateTime start, DateTime end)
         {
+            var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<HabitCompletion>(HabitCompletionsCollection)
-                      .Find(c => c.Date >= start && c.Date <= end).ToList();
+                      .Find(c => c.UserId == owner && c.Date >= start && c.Date <= end).ToList();
         }
 
         public bool HasCompletionForDate(int habitId, DateTime date)
@@ -675,7 +828,12 @@ namespace FocusFlowFinal.Services
         public void UpsertHabitCompletion(HabitCompletion completion)
         {
             var col = _db.GetCollection<HabitCompletion>(HabitCompletionsCollection);
-            if (completion.Id == 0) col.Insert(completion); else col.Update(completion);
+            if (completion.Id == 0)
+            {
+                if (completion.UserId == null) completion.UserId = _workspace.CurrentOwnerKey;
+                col.Insert(completion);
+            }
+            else col.Update(completion);
         }
 
         public HabitCompletion? GetCompletionForDate(int habitId, DateTime date)
@@ -797,11 +955,14 @@ namespace FocusFlowFinal.Services
 
         // ── Заметки и дневник ───────────────────────────────────────────
 
-        public IEnumerable<Note> GetAllNotes() =>
-            _db.GetCollection<Note>(NotesCollection)
-               .FindAll()
-               .OrderByDescending(n => n.UpdatedAt)
-               .ToList();
+        public IEnumerable<Note> GetAllNotes()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<Note>(NotesCollection)
+                      .Find(n => n.UserId == owner)
+                      .OrderByDescending(n => n.UpdatedAt)
+                      .ToList();
+        }
 
         public Note? GetNoteById(int id) =>
             _db.GetCollection<Note>(NotesCollection).FindById(id);
@@ -813,6 +974,7 @@ namespace FocusFlowFinal.Services
             if (note.Id == 0)
             {
                 note.CreatedAt = DateTime.Now;
+                if (note.UserId == null) note.UserId = _workspace.CurrentOwnerKey;
                 return col.Insert(note).AsInt32;
             }
             col.Update(note);
@@ -824,26 +986,31 @@ namespace FocusFlowFinal.Services
 
         public HashSet<DateTime> GetNoteDates(DateTime from, DateTime to)
         {
+            var owner    = _workspace.CurrentOwnerKey;
             var fromDate = from.Date;
             var toDate   = to.Date;
             var dates = _db.GetCollection<Note>(NotesCollection)
-                .FindAll()
+                .Find(n => n.UserId == owner)
                 .Where(n => n.Date.Date >= fromDate && n.Date.Date <= toDate)
                 .Select(n => n.Date.Date);
             return new HashSet<DateTime>(dates);
         }
 
-        public IEnumerable<string> GetAllNoteTags() =>
-            _db.GetCollection<Note>(NotesCollection)
-               .FindAll()
-               .SelectMany(n => n.Tags)
-               .Distinct()
-               .OrderBy(t => t)
-               .ToList();
+        public IEnumerable<string> GetAllNoteTags()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<Note>(NotesCollection)
+                      .Find(n => n.UserId == owner)
+                      .SelectMany(n => n.Tags)
+                      .Distinct()
+                      .OrderBy(t => t)
+                      .ToList();
+        }
 
         public IEnumerable<Note> SearchNotes(string? query, string? tag, DateTime? from, DateTime? to)
         {
-            var all = _db.GetCollection<Note>(NotesCollection).FindAll();
+            var owner = _workspace.CurrentOwnerKey;
+            var all = _db.GetCollection<Note>(NotesCollection).Find(n => n.UserId == owner);
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -865,15 +1032,20 @@ namespace FocusFlowFinal.Services
 
         // ── Трекер настроения ────────────────────────────────────────────
 
-        public IEnumerable<MoodEntry> GetAllMoodEntries() =>
-            _db.GetCollection<MoodEntry>(MoodEntriesCollection)
-               .FindAll().OrderByDescending(e => e.Date).ToList();
+        public IEnumerable<MoodEntry> GetAllMoodEntries()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<MoodEntry>(MoodEntriesCollection)
+                      .Find(e => e.UserId == owner).OrderByDescending(e => e.Date).ToList();
+        }
 
         public IEnumerable<MoodEntry> GetMoodEntriesForPeriod(DateTime from, DateTime to)
         {
+            var owner = _workspace.CurrentOwnerKey;
             var f = from.Date; var t = to.Date;
             return _db.GetCollection<MoodEntry>(MoodEntriesCollection)
-                .FindAll().Where(e => e.Date.Date >= f && e.Date.Date <= t)
+                .Find(e => e.UserId == owner)
+                .Where(e => e.Date.Date >= f && e.Date.Date <= t)
                 .OrderByDescending(e => e.Date).ToList();
         }
 
@@ -883,7 +1055,12 @@ namespace FocusFlowFinal.Services
         public int UpsertMoodEntry(MoodEntry entry)
         {
             var col = _db.GetCollection<MoodEntry>(MoodEntriesCollection);
-            if (entry.Id == 0) { entry.CreatedAt = DateTime.Now; return col.Insert(entry).AsInt32; }
+            if (entry.Id == 0)
+            {
+                entry.CreatedAt = DateTime.Now;
+                if (entry.UserId == null) entry.UserId = _workspace.CurrentOwnerKey;
+                return col.Insert(entry).AsInt32;
+            }
             col.Update(entry); return entry.Id;
         }
 
@@ -940,13 +1117,20 @@ namespace FocusFlowFinal.Services
 
         // ── Пользовательские звуки ───────────────────────────────────────
 
-        public IEnumerable<UserSound> GetAllUserSounds() =>
-            _db.GetCollection<UserSound>(UserSoundsCollection).FindAll().ToList();
+        public IEnumerable<UserSound> GetAllUserSounds()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<UserSound>(UserSoundsCollection).Find(x => x.UserId == owner).ToList();
+        }
 
         public int UpsertUserSound(UserSound sound)
         {
             var col = _db.GetCollection<UserSound>(UserSoundsCollection);
-            if (sound.Id == 0) return col.Insert(sound).AsInt32;
+            if (sound.Id == 0)
+            {
+                if (sound.UserId == null) sound.UserId = _workspace.CurrentOwnerKey;
+                return col.Insert(sound).AsInt32;
+            }
             col.Update(sound);
             return sound.Id;
         }
@@ -956,11 +1140,14 @@ namespace FocusFlowFinal.Services
 
         // ── Трекер медиа ────────────────────────────────────────────────
 
-        public IEnumerable<MediaItem> GetAllMediaItems() =>
-            _db.GetCollection<MediaItem>(MediaItemsCollection)
-               .FindAll()
-               .OrderByDescending(x => x.CreatedAt)
-               .ToList();
+        public IEnumerable<MediaItem> GetAllMediaItems()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<MediaItem>(MediaItemsCollection)
+                      .Find(x => x.UserId == owner)
+                      .OrderByDescending(x => x.CreatedAt)
+                      .ToList();
+        }
 
         public MediaItem? GetMediaItemById(int id) =>
             _db.GetCollection<MediaItem>(MediaItemsCollection).FindById(id);
@@ -968,7 +1155,11 @@ namespace FocusFlowFinal.Services
         public int UpsertMediaItem(MediaItem item)
         {
             var col = _db.GetCollection<MediaItem>(MediaItemsCollection);
-            if (item.Id == 0) return col.Insert(item).AsInt32;
+            if (item.Id == 0)
+            {
+                if (item.UserId == null) item.UserId = _workspace.CurrentOwnerKey;
+                return col.Insert(item).AsInt32;
+            }
             col.Update(item);
             return item.Id;
         }

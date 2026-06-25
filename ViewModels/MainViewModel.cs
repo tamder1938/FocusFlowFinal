@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -77,6 +78,10 @@ public partial class MainViewModel : ObservableObject
         SwitchToWeek();
         RefreshTodayMiniStats();
 
+        // Реакция на смену профиля (вход/выход): обновить данные и флаги фич.
+        var workspace = _services.GetRequiredService<ICurrentWorkspace>();
+        workspace.WorkspaceChanged += OnWorkspaceChanged;
+
         // ИСПРАВЛЕНО (Часть 2, п.3): периодическая синхронизация каждые 5 минут
         // (требование: "при запуске приложения и каждые 5 минут загружаем изменения с сервера").
         _syncService = _services.GetRequiredService<ISyncService>();
@@ -95,12 +100,73 @@ public partial class MainViewModel : ObservableObject
     private readonly ISyncService _syncService;
     private readonly Avalonia.Threading.DispatcherTimer _syncTimer;
 
+    private void OnWorkspaceChanged(object? sender, EventArgs e)
+    {
+        RefreshAllFeatureFlags();
+        RefreshFinanceModuleState();
+        RefreshHabitTrackerState();
+        RefreshTodayMiniStats();
+        CurrentTaskListViewModel?.RefreshTasks();
+        RefreshCurrentCalendarView();
+
+        // Если переключились в гостевой профиль — проверить лимиты
+        var workspace = _services.GetRequiredService<ICurrentWorkspace>();
+        if (workspace.CurrentOwnerKey == CurrentWorkspaceService.LocalOwner)
+            _ = CheckAndEnforceLimitsAsync();
+    }
+
+    private async Task CheckAndEnforceLimitsAsync()
+    {
+        var db = _services.GetRequiredService<IDatabaseService>();
+        int taskCount    = db.GetAllTasks().Count();
+        int projectCount = db.GetAllProjects().Count();
+        int eventCount   = db.CountBaseEvents();
+
+        bool limitsOk = taskCount    <= EntitlementService.TaskLimit
+                     && projectCount <= EntitlementService.ProjectLimit
+                     && eventCount   <= EntitlementService.EventLimit;
+        if (limitsOk) return;
+
+        var mainWindow = GetMainWindow();
+        if (mainWindow == null) return;
+
+        bool? loginAgain = null;
+        var vm     = new LimitEnforcementViewModel(db, _services.GetRequiredService<IAuthService>());
+        var dialog = new LimitEnforcementDialog { DataContext = vm };
+        vm.SetWindow(dialog);
+
+        await dialog.ShowDialog(mainWindow);
+
+        if (vm.SignInAgainRequested)
+        {
+            // Открыть окно входа
+            var authSvc = _services.GetRequiredService<IAuthService>();
+            var loginVm = new LoginViewModel(authSvc);
+            var loginWin = new LoginWindow { DataContext = loginVm };
+            await loginWin.ShowDialog(mainWindow);
+        }
+        else
+        {
+            // Обновить UI после удаления
+            RefreshAllFeatureFlags();
+            CurrentTaskListViewModel?.RefreshTasks();
+            RefreshCurrentCalendarView();
+            RefreshTodayMiniStats();
+        }
+    }
+
     // ── Переключение на дневной вид с конкретной датой ──────────────
     /// <summary>Внешняя точка входа: переключиться на DayView и показать <paramref name="date"/>.</summary>
     private void OnDaySelectedFromCalendar(DateTime date)
     {
         SelectedDate = date;
         SwitchToDay();
+    }
+
+    private void OnMonthSelectedFromYear(DateTime monthStart)
+    {
+        SelectedDate = monthStart;
+        SwitchToMonth();
     }
 
     private void OnStartTimerRequested(TaskItem task) =>
@@ -168,20 +234,22 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenTemplates()
     {
-        var win = new TemplatesWindow { DataContext = new TemplatesViewModel(_templateService) };
+        var win = new TemplatesWindow { DataContext = new TemplatesViewModel(_templateService, _db) };
         var owner = GetMainWindow();
         if (owner != null) await win.ShowDialog(owner);
         else win.Show();
     }
 
-    public bool IsFinanceModuleEnabled      => AppSettings.Load().FinanceModuleEnabled;
-    public bool IsHabitTrackerEnabled       => AppSettings.Load().IsHabitTrackerEnabled;
-    public bool IsBackgroundSoundsEnabled   => AppSettings.Load().BackgroundSoundsEnabled;
-    public bool IsMoodTrackerEnabled        => AppSettings.Load().MoodTrackerEnabled;
-    public bool IsNotesAndDiaryEnabled      => AppSettings.Load().NotesAndDiaryEnabled;
-    public bool IsWorkoutTrackerEnabled     => AppSettings.Load().WorkoutTrackerEnabled;
-    public bool IsMediaTrackerEnabled       => AppSettings.Load().MediaTrackerEnabled;
-    public bool IsExtendedStatisticsEnabled => AppSettings.Load().ExtendedStatisticsEnabled;
+    private bool IsPremium => _services.GetRequiredService<IEntitlementService>().IsPremiumActive;
+
+    public bool IsFinanceModuleEnabled      => AppSettings.Load().FinanceModuleEnabled      && IsPremium;
+    public bool IsHabitTrackerEnabled       => AppSettings.Load().IsHabitTrackerEnabled     && IsPremium;
+    public bool IsBackgroundSoundsEnabled   => AppSettings.Load().BackgroundSoundsEnabled   && IsPremium;
+    public bool IsMoodTrackerEnabled        => AppSettings.Load().MoodTrackerEnabled        && IsPremium;
+    public bool IsNotesAndDiaryEnabled      => AppSettings.Load().NotesAndDiaryEnabled      && IsPremium;
+    public bool IsWorkoutTrackerEnabled     => AppSettings.Load().WorkoutTrackerEnabled     && IsPremium;
+    public bool IsMediaTrackerEnabled       => AppSettings.Load().MediaTrackerEnabled       && IsPremium;
+    public bool IsExtendedStatisticsEnabled => AppSettings.Load().ExtendedStatisticsEnabled && IsPremium;
 
     public void RefreshFinanceModuleState() =>
         OnPropertyChanged(nameof(IsFinanceModuleEnabled));
@@ -199,9 +267,18 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(IsExtendedStatisticsEnabled));
     }
 
+    private bool RequirePremium()
+    {
+        if (IsPremium) return true;
+        var ns = _services.GetRequiredService<INotificationService>();
+        ns.Show(Loc["Premium_RequiredTitle"], Loc["Premium_RequiredNotif"], NotificationLevel.Warning);
+        return false;
+    }
+
     [RelayCommand]
     private async void OpenFinance()
     {
+        if (!RequirePremium()) return;
         var ns  = _services.GetRequiredService<INotificationService>();
         var vm  = new FinanceViewModel(_db, ns);
         var win = new Views.FinanceWindow { DataContext = vm };
@@ -213,6 +290,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenHabits()
     {
+        if (!RequirePremium()) return;
         var vm  = new HabitViewModel(_db);
         var win = new Views.HabitWindow { DataContext = vm };
         var owner = GetMainWindow();
@@ -223,6 +301,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenNotes()
     {
+        if (!RequirePremium()) return;
         var repo   = _services.GetRequiredService<INoteRepository>();
         var export = _services.GetRequiredService<NoteExportService>();
         var vm     = new NoteViewModel(repo, export);
@@ -236,6 +315,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenWorkout()
     {
+        if (!RequirePremium()) return;
         var exercises = _services.GetRequiredService<IExerciseRepository>();
         var workouts  = _services.GetRequiredService<IWorkoutRepository>();
         var initSvc   = _services.GetRequiredService<IWorkoutInitService>();
@@ -249,6 +329,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenMedia()
     {
+        if (!RequirePremium()) return;
         var repo    = _services.GetRequiredService<IMediaRepository>();
         var posters = _services.GetRequiredService<IMediaPosterService>();
         var vm      = new MediaViewModel(repo, posters);
@@ -261,6 +342,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async void OpenMood()
     {
+        if (!RequirePremium()) return;
         var repo     = _services.GetRequiredService<IMoodRepository>();
         var photoSvc = _services.GetRequiredService<IMoodPhotoService>();
         var stats    = _services.GetRequiredService<IMoodStatisticsService>();
@@ -374,6 +456,9 @@ public partial class MainViewModel : ObservableObject
 
         // Подписываемся на клик по дню в годовом виде → DayView
         vm.DaySelected += OnDaySelectedFromCalendar;
+
+        // Подписываемся на клик по карточке месяца → MonthView
+        vm.MonthSelected += OnMonthSelectedFromYear;
 
         CurrentCalendarView = vm;
         UpdateTitleTranslation();

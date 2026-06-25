@@ -9,6 +9,7 @@ public class HabitCompletion
     public int Id { get; set; }
 
     public int      HabitId { get; set; }
+    public string?  UserId  { get; set; }
     public DateTime Date    { get; set; }
     public string   Note    { get; set; } = string.Empty;
 

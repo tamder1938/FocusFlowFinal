@@ -7,6 +7,7 @@ public class FocusSession
 {
     [BsonId]
     public int Id { get; set; }
+    public string? UserId { get; set; }
     public int? TaskId { get; set; }          // Связанная задача (может быть null)
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }    // null, если сессия ещё идёт

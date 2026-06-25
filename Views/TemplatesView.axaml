@@ -65,6 +65,42 @@
 					</ListBox.ItemTemplate>
 				</ListBox>
 			</TabItem>
+			<TabItem Header="Шаблоны таймера">
+				<DockPanel>
+					<Button DockPanel.Dock="Bottom"
+                            Content="↺ Восстановить стандартные"
+                            Command="{Binding RestoreDefaultTimerTemplatesCommand}"
+                            HorizontalAlignment="Stretch" Margin="0,8,0,0"
+                            Background="{DynamicResource SecondaryActionBrush}"
+                            Foreground="{DynamicResource SecondaryActionFgBrush}"
+                            BorderThickness="0" CornerRadius="6" Padding="0,8"/>
+					<ListBox ItemsSource="{Binding TimerTemplates}">
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="models:TimerTemplate">
+								<Border Margin="0,4" Padding="10" CornerRadius="8"
+                                        Background="{DynamicResource CardBackground}">
+									<Grid ColumnDefinitions="*, Auto">
+										<StackPanel Grid.Column="0" Spacing="2">
+											<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+											<TextBlock FontSize="12" Opacity="0.7">
+												<Run Text="{Binding WorkMinutes}"/>
+												<Run Text="мин / пауза "/>
+												<Run Text="{Binding BreakMinutes}"/>
+												<Run Text="мин · циклов: "/>
+												<Run Text="{Binding Cycles}"/>
+											</TextBlock>
+										</StackPanel>
+										<Button Grid.Column="1" Content="✕"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTimerTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</DockPanel>
+			</TabItem>
 		</TabControl>
 	</DockPanel>
 </UserControl>
