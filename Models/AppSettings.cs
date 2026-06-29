@@ -13,9 +13,12 @@ public class AppSettings
     public bool SystemNotifications { get; set; } = true;
     public bool SoundNotifications { get; set; } = false;
 
-    public string HotkeyDay { get; set; } = "Ctrl+D";
-    public string HotkeyWeek { get; set; } = "Ctrl+W";
+    public string HotkeyDay     { get; set; } = "Ctrl+D";
+    public string HotkeyWeek    { get; set; } = "Ctrl+W";
+    public string HotkeyMonth   { get; set; } = "Ctrl+M";
+    public string HotkeyYear    { get; set; } = "Ctrl+Y";
     public string HotkeyNewTask { get; set; } = "Ctrl+N";
+    public string HotkeyToday   { get; set; } = "Ctrl+T";
 
     // ===================== Часть 2-3: аккаунт / синхронизация =====================
 

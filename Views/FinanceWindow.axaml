@@ -124,66 +124,77 @@
                     <StackPanel>
                         <!-- Форма добавления/редактирования -->
                         <Border Classes="form-panel" IsVisible="{Binding IsAddingIncome}">
-                            <Grid ColumnDefinitions="*,12,*,12,*">
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{Binding Loc[Finance_DateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <DatePicker SelectedDate="{Binding NewIncomeDate}"/>
-                                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,0">
-                                        <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                        <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
-                                                Command="{Binding BeginAddCategoryCommand}" CommandParameter="income"
-                                                Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="*, Auto">
-                                        <ComboBox Grid.Column="0" ItemsSource="{Binding IncomeCategoryList}" SelectedItem="{Binding NewIncomeCategory}"/>
-                                        <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
-                                                Command="{Binding BeginDeleteIncomeCategoryCommand}"
-                                                Foreground="#EF4444"
-                                                IsEnabled="{Binding NewIncomeCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                    </Grid>
-                                    <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
-                                        <TextBox Text="{Binding NewCategoryName}" Width="120"
-                                                 Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
-                                        <Button Content="✓" Classes="action-btn" Padding="8,4"
-                                                Command="{Binding SaveCategoryCommand}"/>
-                                        <Button Content="✕" Classes="small-btn" Padding="6,4"
-                                                Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                            <StackPanel Spacing="0">
+                                <!-- Строка 1: Дата | Сумма -->
+                                <Grid ColumnDefinitions="*,16,*">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_DateLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <DatePicker SelectedDate="{Binding NewIncomeDate}"/>
                                     </StackPanel>
-                                    <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
-                                            Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,4,0,0">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
-                                                       Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <Button Content="Удалить" Background="#EF4444" Foreground="White"
-                                                        Command="{Binding ConfirmDeleteCategoryCommand}"
-                                                        Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
-                                                <Button Content="Отмена" Classes="small-btn"
-                                                        Command="{Binding CancelConfirmDeleteCategoryCommand}"
-                                                        Padding="6,4" FontSize="11"/>
-                                            </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <NumericUpDown Value="{Binding NewIncomeAmount}" Minimum="0" FormatString="0.##"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!-- Строка 2: Категория | Примечание -->
+                                <Grid ColumnDefinitions="*,16,*" Margin="0,4,0,0">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
+                                                    Command="{Binding BeginAddCategoryCommand}" CommandParameter="income"
+                                                    Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <ComboBox Grid.Column="0" ItemsSource="{Binding IncomeCategoryList}" SelectedItem="{Binding NewIncomeCategory}"/>
+                                            <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
+                                                    Command="{Binding BeginDeleteIncomeCategoryCommand}"
+                                                    Foreground="#EF4444"
+                                                    IsEnabled="{Binding NewIncomeCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <TextBox Text="{Binding NewIncomeNote}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!-- Добавление категории (условно) -->
+                                <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,6,0,0">
+                                    <TextBox Text="{Binding NewCategoryName}" Width="150" Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
+                                    <Button Content="✓" Classes="action-btn" Padding="8,4" Command="{Binding SaveCategoryCommand}"/>
+                                    <Button Content="✕" Classes="small-btn" Padding="6,4" Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                                </StackPanel>
+                                <!-- Подтверждение удаления категории (условно) -->
+                                <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
+                                        Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,6,0,0">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
+                                                   Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Button Content="Удалить" Background="#EF4444" Foreground="White"
+                                                    Command="{Binding ConfirmDeleteCategoryCommand}"
+                                                    Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
+                                            <Button Content="Отмена" Classes="small-btn"
+                                                    Command="{Binding CancelConfirmDeleteCategoryCommand}"
+                                                    Padding="6,4" FontSize="11"/>
                                         </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <NumericUpDown Value="{Binding NewIncomeAmount}" Minimum="0" FormatString="0.##"/>
-                                    <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <TextBox Text="{Binding NewIncomeNote}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="4" VerticalAlignment="Bottom" Spacing="8">
-                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
-                                            Command="{Binding SaveIncomeCommand}" HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Кнопки: Отмена | Сохранить (выровнены по правому краю) -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
                                     <Button Content="{Binding Loc[Finance_CancelBtn]}"
                                             Command="{Binding CancelIncomeCommand}"
+                                            Width="110" Height="34"
                                             Background="{DynamicResource SecondaryActionBrush}"
                                             Foreground="{DynamicResource SecondaryActionFgBrush}"
-                                            BorderThickness="0" CornerRadius="6" Height="34"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                            FontWeight="SemiBold"/>
+                                            BorderThickness="0" CornerRadius="6"
+                                            HorizontalContentAlignment="Center" FontWeight="SemiBold"/>
+                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                            Command="{Binding SaveIncomeCommand}"
+                                            Width="110" Height="34"
+                                            HorizontalContentAlignment="Center"/>
                                 </StackPanel>
-                            </Grid>
+                            </StackPanel>
                         </Border>
 
                         <!-- Список доходов -->
@@ -237,66 +248,77 @@
                 <ScrollViewer Grid.Row="1">
                     <StackPanel>
                         <Border Classes="form-panel" IsVisible="{Binding IsAddingExpense}">
-                            <Grid ColumnDefinitions="*,12,*,12,*">
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{Binding Loc[Finance_DateLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <DatePicker SelectedDate="{Binding NewExpenseDate}"/>
-                                    <Grid ColumnDefinitions="*, Auto">
-                                        <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" VerticalAlignment="Center"/>
-                                        <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
-                                                Command="{Binding BeginAddCategoryCommand}" CommandParameter="expense"
-                                                Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
-                                    </Grid>
-                                    <Grid ColumnDefinitions="*, Auto">
-                                        <ComboBox Grid.Column="0" ItemsSource="{Binding ExpenseCategoryList}" SelectedItem="{Binding NewExpenseCategory}"/>
-                                        <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
-                                                Command="{Binding BeginDeleteExpenseCategoryCommand}"
-                                                Foreground="#EF4444"
-                                                IsEnabled="{Binding NewExpenseCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                    </Grid>
-                                    <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
-                                        <TextBox Text="{Binding NewCategoryName}" Width="120"
-                                                 Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
-                                        <Button Content="✓" Classes="action-btn" Padding="8,4"
-                                                Command="{Binding SaveCategoryCommand}"/>
-                                        <Button Content="✕" Classes="small-btn" Padding="6,4"
-                                                Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                            <StackPanel Spacing="0">
+                                <!-- Строка 1: Дата | Сумма -->
+                                <Grid ColumnDefinitions="*,16,*">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_DateLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <DatePicker SelectedDate="{Binding NewExpenseDate}"/>
                                     </StackPanel>
-                                    <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
-                                            Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,4,0,0">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
-                                                       Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <Button Content="Удалить" Background="#EF4444" Foreground="White"
-                                                        Command="{Binding ConfirmDeleteCategoryCommand}"
-                                                        Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
-                                                <Button Content="Отмена" Classes="small-btn"
-                                                        Command="{Binding CancelConfirmDeleteCategoryCommand}"
-                                                        Padding="6,4" FontSize="11"/>
-                                            </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <NumericUpDown Value="{Binding NewExpenseAmount}" Minimum="0" FormatString="0.##"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!-- Строка 2: Категория | Примечание -->
+                                <Grid ColumnDefinitions="*,16,*" Margin="0,4,0,0">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding Loc[Finance_CategoryLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="{Binding Loc[Finance_AddCategory]}" Classes="small-btn"
+                                                    Command="{Binding BeginAddCategoryCommand}" CommandParameter="expense"
+                                                    Foreground="{DynamicResource AccentBackground}" FontSize="11"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <ComboBox Grid.Column="0" ItemsSource="{Binding ExpenseCategoryList}" SelectedItem="{Binding NewExpenseCategory}"/>
+                                            <Button Grid.Column="1" Content="✕" Classes="small-btn" Padding="6,4" Margin="4,0,0,0"
+                                                    Command="{Binding BeginDeleteExpenseCategoryCommand}"
+                                                    Foreground="#EF4444"
+                                                    IsEnabled="{Binding NewExpenseCategory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <TextBox Text="{Binding NewExpenseNote}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!-- Добавление категории (условно) -->
+                                <StackPanel IsVisible="{Binding IsAddingCategory}" Orientation="Horizontal" Spacing="4" Margin="0,6,0,0">
+                                    <TextBox Text="{Binding NewCategoryName}" Width="150" Watermark="{Binding Loc[Finance_NewCategoryLbl]}"/>
+                                    <Button Content="✓" Classes="action-btn" Padding="8,4" Command="{Binding SaveCategoryCommand}"/>
+                                    <Button Content="✕" Classes="small-btn" Padding="6,4" Command="{Binding CancelCategoryCommand}" Foreground="#EF4444"/>
+                                </StackPanel>
+                                <!-- Подтверждение удаления категории (условно) -->
+                                <Border IsVisible="{Binding IsConfirmingCategoryDelete}"
+                                        Background="#FEF2F2" CornerRadius="6" Padding="8,6" Margin="0,6,0,0">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding DeleteCategoryMessage}" FontSize="11"
+                                                   Foreground="#991B1B" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Button Content="Удалить" Background="#EF4444" Foreground="White"
+                                                    Command="{Binding ConfirmDeleteCategoryCommand}"
+                                                    Padding="8,4" FontSize="11" CornerRadius="4" BorderThickness="0"/>
+                                            <Button Content="Отмена" Classes="small-btn"
+                                                    Command="{Binding CancelConfirmDeleteCategoryCommand}"
+                                                    Padding="6,4" FontSize="11"/>
                                         </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="{Binding Loc[Finance_AmountLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <NumericUpDown Value="{Binding NewExpenseAmount}" Minimum="0" FormatString="0.##"/>
-                                    <TextBlock Text="{Binding Loc[Finance_NoteLbl]}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12"/>
-                                    <TextBox Text="{Binding NewExpenseNote}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="4" VerticalAlignment="Bottom" Spacing="8">
-                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
-                                            Command="{Binding SaveExpenseCommand}" HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Кнопки: Отмена | Сохранить (выровнены по правому краю) -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
                                     <Button Content="{Binding Loc[Finance_CancelBtn]}"
                                             Command="{Binding CancelExpenseCommand}"
+                                            Width="110" Height="34"
                                             Background="{DynamicResource SecondaryActionBrush}"
                                             Foreground="{DynamicResource SecondaryActionFgBrush}"
-                                            BorderThickness="0" CornerRadius="6" Height="34"
-                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                            FontWeight="SemiBold"/>
+                                            BorderThickness="0" CornerRadius="6"
+                                            HorizontalContentAlignment="Center" FontWeight="SemiBold"/>
+                                    <Button Classes="action-btn" Content="{Binding Loc[Finance_SaveBtn]}"
+                                            Command="{Binding SaveExpenseCommand}"
+                                            Width="110" Height="34"
+                                            HorizontalContentAlignment="Center"/>
                                 </StackPanel>
-                            </Grid>
+                            </StackPanel>
                         </Border>
 
                         <ItemsControl ItemsSource="{Binding Expenses}">

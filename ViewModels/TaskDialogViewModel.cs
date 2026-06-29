@@ -48,6 +48,32 @@ public partial class TaskDialogViewModel : ObservableObject
 
     [ObservableProperty] private int _durationMinutes = 30;
 
+    // Строковый прокси для поля «Продолжительность» — позволяет пустой ввод без краша
+    private string _durationInputText = "30";
+    public string DurationInputText
+    {
+        get => _durationInputText;
+        set
+        {
+            if (!SetProperty(ref _durationInputText, value)) return;
+            if (int.TryParse(value, out int mins) && mins > 0)
+            {
+                DurationMinutes = mins;
+                DurationValidationMessage = string.Empty;
+            }
+            else if (!string.IsNullOrWhiteSpace(value))
+            {
+                DurationValidationMessage = Loc["Duration_EnterValidHint"];
+            }
+            else
+            {
+                DurationValidationMessage = string.Empty;
+            }
+        }
+    }
+
+    [ObservableProperty] private string _durationValidationMessage = string.Empty;
+
     [ObservableProperty] private int _priority      = 1;
     [ObservableProperty] private int _priorityIndex = 1;
 
@@ -182,6 +208,7 @@ public partial class TaskDialogViewModel : ObservableObject
 
         IsDurationSet   = task.PlannedDurationMinutes > 0;
         DurationMinutes = IsDurationSet ? task.PlannedDurationMinutes : 30;
+        _durationInputText = DurationMinutes.ToString();
 
         // Загружаем подзадачи
         foreach (var sub in task.Subtasks)
@@ -245,12 +272,14 @@ public partial class TaskDialogViewModel : ObservableObject
     partial void OnSelectedTaskTemplateChanged(TaskTemplate? value)
     {
         if (value == null) return;
-        Title           = value.Title;
-        Description     = value.Description;
+        Title           = value.Title       ?? string.Empty;
+        Description     = value.Description ?? string.Empty;
         Priority        = value.Priority ?? 1;
         PriorityIndex   = Priority;
         DurationMinutes = value.PlannedDurationMinutes;
         IsDurationSet   = value.PlannedDurationMinutes > 0;
+        _durationInputText = DurationMinutes.ToString();
+        OnPropertyChanged(nameof(DurationInputText));
         HasDate         = value.HasDate;
         IsTimeBound     = value.IsTimeBound;
         StartHour       = value.StartHour;
@@ -294,8 +323,20 @@ public partial class TaskDialogViewModel : ObservableObject
         }
         LimitMessage = string.Empty;
 
-        _task.Title       = Title.Trim();
-        _task.Description = Description.Trim();
+        // Валидация длительности
+        if (IsDurationSet)
+        {
+            if (!int.TryParse(DurationInputText, out int parsedDuration) || parsedDuration <= 0)
+            {
+                DurationValidationMessage = Loc["Duration_EnterValidHint"];
+                return;
+            }
+            DurationMinutes = parsedDuration;
+            DurationValidationMessage = string.Empty;
+        }
+
+        _task.Title       = Title?.Trim()       ?? string.Empty;
+        _task.Description = Description?.Trim() ?? string.Empty;
         _task.Priority    = PriorityIndex;
         _task.ProjectId   = (SelectedProject != null && SelectedProject.Id > 0) ? SelectedProject.Id : null;
         _task.DueDate     = HasDate ? DueDate.LocalDateTime.Date : null;
@@ -472,6 +513,14 @@ public partial class TaskDialogViewModel : ObservableObject
         {
             int? currentSelectedId = SelectedProject?.Id;
             LoadProjectsData(currentSelectedId);
+
+            // Обновляем фильтр проектов в основном списке задач
+            if (Avalonia.Application.Current?.ApplicationLifetime is
+                Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                if (desktop.MainWindow?.DataContext is MainViewModel mainVm)
+                    mainVm.CurrentTaskListViewModel?.RefreshTasks();
+            }
         });
     }
 }

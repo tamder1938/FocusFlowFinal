@@ -132,6 +132,7 @@ public class LocalizationService : ObservableObject
                 ["IsTimeBoundOpt"] = "⏰ Привязать к конкретному времени",
                 ["IsDurationOpt"] = "📊 Установить длительность",
                 ["DurationLabel"] = "Продолжительность (мин):",
+                ["Duration_EnterValidHint"] = "Введите, сколько времени будет потрачено на задачу",
                 ["FilterLow"] = "Низкий",
                 ["ProjectLabel"] = "📁 Проект:",
                 ["EventTitle"] = "Событие",
@@ -299,6 +300,14 @@ public class LocalizationService : ObservableObject
                 ["HotkeyCtrlY"] = "Ctrl + Y",
                 ["HotkeyCtrlN"] = "Ctrl + N",
                 ["HotkeyCtrlT"] = "Ctrl + T",
+
+                ["Hotkeys_PressKey"]  = "Нажмите комбинацию...",
+                ["Hotkeys_Saved"]     = "Горячие клавиши сохранены",
+                ["Hotkeys_Reset"]     = "Сбросить",
+                ["Hotkeys_Save"]      = "Сохранить",
+                ["Hotkeys_Conflict"]  = "Конфликт: клавиши не должны повторяться",
+                ["Hotkeys_Invalid"]   = "Неверный формат",
+                ["Hotkeys_HowTo"]     = "Кликните по полю и нажмите нужную комбинацию клавиш",
 
                 // Подзадачи
                 ["SubtasksLabel"]    = "Подзадачи",
@@ -997,6 +1006,7 @@ public class LocalizationService : ObservableObject
                 ["IsTimeBoundOpt"] = "⏰ Bind to specific time",
                 ["IsDurationOpt"] = "📊 Set planned duration",
                 ["DurationLabel"] = "Duration (min):",
+                ["Duration_EnterValidHint"] = "Enter how long the task will take (in minutes)",
                 ["FilterLow"] = "Low",
                 ["ProjectLabel"] = "📁 Project:",
                 ["EventTitle"] = "Event Dialog",
@@ -1164,6 +1174,14 @@ public class LocalizationService : ObservableObject
                 ["HotkeyCtrlY"] = "Ctrl + Y",
                 ["HotkeyCtrlN"] = "Ctrl + N",
                 ["HotkeyCtrlT"] = "Ctrl + T",
+
+                ["Hotkeys_PressKey"]  = "Press a combination...",
+                ["Hotkeys_Saved"]     = "Hotkeys saved",
+                ["Hotkeys_Reset"]     = "Reset",
+                ["Hotkeys_Save"]      = "Save",
+                ["Hotkeys_Conflict"]  = "Conflict: each hotkey must be unique",
+                ["Hotkeys_Invalid"]   = "Invalid format",
+                ["Hotkeys_HowTo"]     = "Click a field and press the desired key combination",
 
                 // Subtasks
                 ["SubtasksLabel"]    = "Subtasks",

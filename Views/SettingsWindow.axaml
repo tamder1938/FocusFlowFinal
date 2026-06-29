@@ -394,62 +394,88 @@
 
 					<!-- Вкладка: Горячие клавиши -->
 					<ScrollViewer IsVisible="{Binding IsHotkeysTab}">
-						<StackPanel Spacing="0">
-							<TextBlock Classes="SectionHeader" Margin="0,0,0,12" Text="{Binding Loc[Hotkeys]}"/>
+						<StackPanel Spacing="6">
+							<Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+								<TextBlock Classes="SectionHeader" Text="{Binding Loc[Hotkeys]}" VerticalAlignment="Center"/>
+								<Button Grid.Column="1" Classes="ExportBtn"
+                                        Content="{Binding Loc[Hotkeys_Reset]}"
+                                        Command="{Binding ResetHotkeysCommand}"
+                                        VerticalAlignment="Center"/>
+							</Grid>
+							<TextBlock Text="{Binding Loc[Hotkeys_HowTo]}"
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       FontSize="11" Margin="0,0,0,6" TextWrapping="Wrap"/>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyDay]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrl1]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyDay, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="Day"/>
 								</Grid>
 							</Border>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyWeek]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrl2]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyWeek, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="Week"/>
 								</Grid>
 							</Border>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyMonth]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrlM]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyMonth, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="Month"/>
 								</Grid>
 							</Border>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyYear]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrlY]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyYear, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="Year"/>
 								</Grid>
 							</Border>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyNewTask]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrlN]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyNewTask, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="NewTask"/>
 								</Grid>
 							</Border>
 							<Border Classes="HotkeyCard">
-								<Grid ColumnDefinitions="*, Auto">
+								<Grid ColumnDefinitions="*, 12, 140">
 									<TextBlock Text="{Binding Loc[HotkeyToday]}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource PrimaryText}"/>
-									<Border Grid.Column="1" Classes="HotkeyBadge">
-										<TextBlock Text="{Binding Loc[HotkeyCtrlT]}" Classes="HotkeyText"/>
-									</Border>
+									<TextBox Grid.Column="2" Text="{Binding EditHotkeyToday, Mode=TwoWay}"
+                                             IsReadOnly="True" TextAlignment="Center"
+                                             PlaceholderText="{Binding Loc[Hotkeys_PressKey]}"
+                                             KeyDown="OnHotkeyKeyDown" Tag="Today"/>
 								</Grid>
 							</Border>
+							<TextBlock Text="{Binding HotkeyStatusMessage}"
+                                       IsVisible="{Binding HotkeyStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                       FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0">
+								<TextBlock.Foreground>
+									<SolidColorBrush Color="{Binding HotkeyStatusIsError, Converter={x:Static vm:StatusColorConverters.FgConverter}}"/>
+								</TextBlock.Foreground>
+							</TextBlock>
+							<Button Classes="ExportBtn" HorizontalAlignment="Right"
+                                    Content="{Binding Loc[Hotkeys_Save]}"
+                                    Command="{Binding SaveHotkeysCommand}"
+                                    Margin="0,8,0,0"/>
 						</StackPanel>
 					</ScrollViewer>
 

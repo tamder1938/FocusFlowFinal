@@ -10,16 +10,7 @@
         MinWidth="1000" MinHeight="600"
         Background="{DynamicResource WindowBackgroundBrush}">
 
-	<Window.KeyBindings>
-		<KeyBinding Gesture="Ctrl+D" Command="{Binding SwitchToDayCommand}"/>
-		<KeyBinding Gesture="Ctrl+W" Command="{Binding SwitchToWeekCommand}"/>
-		<KeyBinding Gesture="Ctrl+M" Command="{Binding SwitchToMonthCommand}"/>
-		<KeyBinding Gesture="Ctrl+Y" Command="{Binding SwitchToYearCommand}"/>
-		<KeyBinding Gesture="Ctrl+N" Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"/>
-		<KeyBinding Gesture="Ctrl+T" Command="{Binding GoToTodayCommand}"/>
-	</Window.KeyBindings>
-
-	<Window.DataTemplates>
+<Window.DataTemplates>
 		<DataTemplate DataType="vm:DayViewModel">   <views:DayView/></DataTemplate>
 		<DataTemplate DataType="vm:WeekViewModel">  <views:WeekView/></DataTemplate>
 		<DataTemplate DataType="vm:MonthViewModel"> <views:MonthView/></DataTemplate>
@@ -131,22 +122,22 @@
                                 Classes.active="{Binding IsDayView}"
                                 Content="{Binding Loc[TitleDay]}"
                                 Command="{Binding SwitchToDayCommand}"
-                                ToolTip.Tip="Ctrl+D"/>
+                                ToolTip.Tip="{Binding HotkeyDayLabel}"/>
 						<Button Classes="nav-pill"
                                 Classes.active="{Binding IsWeekView}"
                                 Content="{Binding Loc[TitleWeek]}"
                                 Command="{Binding SwitchToWeekCommand}"
-                                ToolTip.Tip="Ctrl+W"/>
+                                ToolTip.Tip="{Binding HotkeyWeekLabel}"/>
 						<Button Classes="nav-pill"
                                 Classes.active="{Binding IsMonthView}"
                                 Content="{Binding Loc[TitleMonth]}"
                                 Command="{Binding SwitchToMonthCommand}"
-                                ToolTip.Tip="Ctrl+M"/>
+                                ToolTip.Tip="{Binding HotkeyMonthLabel}"/>
 						<Button Classes="nav-pill"
                                 Classes.active="{Binding IsYearView}"
                                 Content="{Binding Loc[TitleYear]}"
                                 Command="{Binding SwitchToYearCommand}"
-                                ToolTip.Tip="Ctrl+Y"/>
+                                ToolTip.Tip="{Binding HotkeyYearLabel}"/>
 					</StackPanel>
 				</Border>
 
@@ -160,10 +151,10 @@
 					<Button Classes="today-btn"
                             Content="{Binding Loc[TodayBtn]}"
                             Command="{Binding GoToTodayCommand}"
-                            ToolTip.Tip="Ctrl+T"/>
+                            ToolTip.Tip="{Binding HotkeyTodayLabel}"/>
 					<Button Classes="add-task-btn"
                             Command="{Binding CurrentTaskListViewModel.AddTaskCommand}"
-                            ToolTip.Tip="Ctrl+N">
+                            ToolTip.Tip="{Binding HotkeyNewTaskLabel}">
 						<StackPanel Orientation="Horizontal" Spacing="6">
 							<TextBlock Text="+" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding Loc[Tasks]}" VerticalAlignment="Center"/>

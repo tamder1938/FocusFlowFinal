@@ -243,11 +243,14 @@
 
 			<!-- Длительность -->
 			<CheckBox Content="{Binding Loc[IsDurationOpt]}" IsChecked="{Binding IsDurationSet}"/>
-			<StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,12" IsEnabled="{Binding IsDurationSet}">
+			<StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding IsDurationSet}">
 				<TextBlock Text="{Binding Loc[DurationLabel]}" VerticalAlignment="Center" FontSize="12"
                            Foreground="{DynamicResource PrimaryTextBrush}"/>
-				<TextBox Text="{Binding DurationMinutes}" Width="90" Margin="0"/>
+				<TextBox Text="{Binding DurationInputText}" Width="90" Margin="0"/>
 			</StackPanel>
+			<TextBlock Text="{Binding DurationValidationMessage}"
+			           IsVisible="{Binding DurationValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+			           Foreground="#EF4444" FontSize="11" Margin="0,2,0,10" TextWrapping="Wrap"/>
 
 			<!-- Место -->
 			<CheckBox Content="{Binding Loc[Loc_AddPlace]}" IsChecked="{Binding HasLocation}"

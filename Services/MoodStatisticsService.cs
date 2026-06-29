@@ -41,7 +41,8 @@ public class MoodStatisticsService : IMoodStatisticsService
     {
         var byDate = entries
             .Where(e => e.Date.Year == year)
-            .ToDictionary(e => e.Date.Date, e => e.Level);
+            .GroupBy(e => e.Date.Date)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.Date).First().Level);
 
         var result = new List<MoodYearDotItem>(31 * 12);
         for (int day = 1; day <= 31; day++)

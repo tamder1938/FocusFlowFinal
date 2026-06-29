@@ -48,6 +48,27 @@ public partial class MainViewModel : ObservableObject
     public bool IsNotMonthView => !IsMonthView;
     public bool IsNotYearView  => !IsYearView;
 
+    // Hotkey tooltip labels — live values from HotkeyService
+    public string HotkeyDayLabel     => Services.HotkeyService.Get("Day");
+    public string HotkeyWeekLabel    => Services.HotkeyService.Get("Week");
+    public string HotkeyMonthLabel   => Services.HotkeyService.Get("Month");
+    public string HotkeyYearLabel    => Services.HotkeyService.Get("Year");
+    public string HotkeyNewTaskLabel => Services.HotkeyService.Get("NewTask");
+    public string HotkeyTodayLabel   => Services.HotkeyService.Get("Today");
+
+    public void RefreshHotkeyLabels()
+    {
+        OnPropertyChanged(nameof(HotkeyDayLabel));
+        OnPropertyChanged(nameof(HotkeyWeekLabel));
+        OnPropertyChanged(nameof(HotkeyMonthLabel));
+        OnPropertyChanged(nameof(HotkeyYearLabel));
+        OnPropertyChanged(nameof(HotkeyNewTaskLabel));
+        OnPropertyChanged(nameof(HotkeyTodayLabel));
+    }
+
+    [RelayCommand]
+    private void AddNewTask() => CurrentTaskListViewModel?.AddTaskCommand.Execute(null);
+
     public MainViewModel(IServiceProvider services, ITemplateService templateService)
     {
         _services        = services;
@@ -77,6 +98,8 @@ public partial class MainViewModel : ObservableObject
 
         SwitchToWeek();
         RefreshTodayMiniStats();
+
+        Services.HotkeyService.Changed += (_, _) => RefreshHotkeyLabels();
 
         // Реакция на смену профиля (вход/выход): обновить данные и флаги фич.
         var workspace = _services.GetRequiredService<ICurrentWorkspace>();

@@ -100,6 +100,16 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _yandexStaticKey   = string.Empty;
     [ObservableProperty] private string _apiKeysSavedMsg   = string.Empty;
 
+    // ── Горячие клавиши ──────────────────────────────────────────────
+    [ObservableProperty] private string _editHotkeyDay     = string.Empty;
+    [ObservableProperty] private string _editHotkeyWeek    = string.Empty;
+    [ObservableProperty] private string _editHotkeyMonth   = string.Empty;
+    [ObservableProperty] private string _editHotkeyYear    = string.Empty;
+    [ObservableProperty] private string _editHotkeyNewTask = string.Empty;
+    [ObservableProperty] private string _editHotkeyToday   = string.Empty;
+    [ObservableProperty] private string _hotkeyStatusMessage = string.Empty;
+    [ObservableProperty] private bool   _hotkeyStatusIsError;
+
     // DEBUG: счётчик живых экземпляров
     private static int _aliveCount;
     internal static int AliveCount => _aliveCount;
@@ -149,6 +159,8 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             });
         }
         _selectedTheme = settings.SelectedTheme;
+
+        LoadHotkeyBindings();
 
         var services = ((App)App.Current!).Services!;
         Account = new AccountSettingsViewModel(
@@ -478,5 +490,54 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         var owner = GetOwnerWindow();
         if (owner != null) await dlg.ShowDialog(owner);
         else dlg.Show();
+    }
+
+    // ── Горячие клавиши ──────────────────────────────────────────────
+
+    private void LoadHotkeyBindings()
+    {
+        var all = Services.HotkeyService.GetAll();
+        EditHotkeyDay     = all["Day"];
+        EditHotkeyWeek    = all["Week"];
+        EditHotkeyMonth   = all["Month"];
+        EditHotkeyYear    = all["Year"];
+        EditHotkeyNewTask = all["NewTask"];
+        EditHotkeyToday   = all["Today"];
+        HotkeyStatusMessage = string.Empty;
+    }
+
+    [RelayCommand]
+    private void SaveHotkeys()
+    {
+        var bindings = new System.Collections.Generic.Dictionary<string, string>
+        {
+            ["Day"]     = EditHotkeyDay.Trim(),
+            ["Week"]    = EditHotkeyWeek.Trim(),
+            ["Month"]   = EditHotkeyMonth.Trim(),
+            ["Year"]    = EditHotkeyYear.Trim(),
+            ["NewTask"] = EditHotkeyNewTask.Trim(),
+            ["Today"]   = EditHotkeyToday.Trim(),
+        };
+
+        var error = Services.HotkeyService.Validate(bindings);
+        if (error != null)
+        {
+            HotkeyStatusMessage = error.StartsWith("Hotkeys_")
+                ? Loc[error]
+                : $"{Loc["Hotkeys_Invalid"]}: {error.Replace("Hotkeys_Invalid: ", "")}";
+            HotkeyStatusIsError = true;
+            return;
+        }
+
+        Services.HotkeyService.SaveAll(bindings);
+        HotkeyStatusMessage = $"✅ {Loc["Hotkeys_Saved"]}";
+        HotkeyStatusIsError = false;
+    }
+
+    [RelayCommand]
+    private void ResetHotkeys()
+    {
+        Services.HotkeyService.ResetToDefaults();
+        LoadHotkeyBindings();
     }
 }

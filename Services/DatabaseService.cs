@@ -106,10 +106,19 @@ namespace FocusFlowFinal.Services
             foreach (var n in noteCol.FindAll().Where(n => n.UserId == null).ToList())
             { n.UserId = local; noteCol.Update(n); }
 
-            // Mood entries
+            // Mood entries — nullUserIds + деdup по дате (оставляем последнюю запись)
             var moodCol = _db.GetCollection<MoodEntry>(MoodEntriesCollection);
             foreach (var m in moodCol.FindAll().Where(m => m.UserId == null).ToList())
             { m.UserId = local; moodCol.Update(m); }
+            var moodDuplicates = moodCol.FindAll()
+                .GroupBy(m => new { m.UserId, Date = m.Date.Date })
+                .Where(g => g.Count() > 1)
+                .ToList();
+            foreach (var g in moodDuplicates)
+            {
+                var toDelete = g.OrderByDescending(m => m.Date).Skip(1).ToList();
+                foreach (var d in toDelete) moodCol.Delete(d.Id);
+            }
 
             // Finance
             var incomeCol = _db.GetCollection<FinanceIncome>(IncomeCollection);
@@ -593,16 +602,54 @@ namespace FocusFlowFinal.Services
 
         public void DeleteProject(int id)
         {
+            var taskIds = _db.GetCollection<TaskItem>(TasksCollection)
+                .Find(t => t.ProjectId == id)
+                .Select(t => t.Id).ToList();
+            foreach (var tid in taskIds)
+                _db.GetCollection<CalendarEvent>(EventsCollection).DeleteMany(e => e.TaskId == tid);
+            _db.GetCollection<TaskItem>(TasksCollection).DeleteMany(t => t.ProjectId == id);
             _db.GetCollection<ProjectItem>("projects").Delete(id);
         }
 
         public void ClearAllData()
         {
+            // Core
             _db.DropCollection(EventsCollection);
             _db.DropCollection(TasksCollection);
             _db.DropCollection(SessionsCollection);
             _db.DropCollection(TemplatesCollection);
             _db.DropCollection("projects");
+            _db.DropCollection("task_templates");
+
+            // Habits
+            _db.DropCollection(HabitsCollection);
+            _db.DropCollection(HabitCompletionsCollection);
+            _db.DropCollection(HabitCategoriesCollection);
+            _db.DropCollection(HabitTemplatesCollection);
+
+            // Notes & mood
+            _db.DropCollection(NotesCollection);
+            _db.DropCollection(MoodEntriesCollection);
+            _db.DropCollection(MoodActivitiesCollection);
+
+            // Finance
+            _db.DropCollection(IncomeCollection);
+            _db.DropCollection(ExpenseCollection);
+            _db.DropCollection(FinSubCollection);
+            _db.DropCollection(LoanCollection);
+            _db.DropCollection(CategoryCollection);
+            _db.DropCollection(EarlyRepaymentCollection);
+            _db.DropCollection(SavingsCollection);
+            _db.DropCollection(SavingsTxCollection);
+
+            // Media & sounds
+            _db.DropCollection(MediaItemsCollection);
+            _db.DropCollection(UserSoundsCollection);
+
+            // Workouts
+            _db.DropCollection("workout_programs");
+            _db.DropCollection("workout_sessions");
+            _db.DropCollection("workout_profile");
 
             _db.GetCollection<CalendarEvent>(EventsCollection).EnsureIndex(e => e.Start);
             _db.GetCollection<TaskItem>(TasksCollection).EnsureIndex(t => t.DueDate);
@@ -1057,8 +1104,21 @@ namespace FocusFlowFinal.Services
             var col = _db.GetCollection<MoodEntry>(MoodEntriesCollection);
             if (entry.Id == 0)
             {
+                // Если запись за эту дату уже существует — обновляем её, а не создаём дубликат
+                var targetDate = entry.Date.Date;
+                var ownerKey   = _workspace.CurrentOwnerKey;
+                var existing   = col.FindAll()
+                    .FirstOrDefault(e => e.UserId == ownerKey && e.Date.Date == targetDate);
+                if (existing != null)
+                {
+                    entry.Id        = existing.Id;
+                    entry.CreatedAt = existing.CreatedAt;
+                    if (entry.UserId == null) entry.UserId = ownerKey;
+                    col.Update(entry);
+                    return entry.Id;
+                }
                 entry.CreatedAt = DateTime.Now;
-                if (entry.UserId == null) entry.UserId = _workspace.CurrentOwnerKey;
+                if (entry.UserId == null) entry.UserId = ownerKey;
                 return col.Insert(entry).AsInt32;
             }
             col.Update(entry); return entry.Id;

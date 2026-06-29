@@ -93,8 +93,6 @@ public partial class TaskListViewModel : ObservableObject
     {
         var tasks = _db.GetAllTasks().ToList();
 
-        if (Projects.Count == 0) LoadProjects();
-
         var projectColors = Projects.ToDictionary(p => p.Id, p => p.Color);
         foreach (var task in tasks)
         {
@@ -191,7 +189,11 @@ public partial class TaskListViewModel : ObservableObject
         FilteredTasks = new ObservableCollection<TaskItem>(result);
     }
 
-    public void RefreshTasks() => LoadTasks();
+    public void RefreshTasks()
+    {
+        LoadProjects();
+        LoadTasks();
+    }
 
     // ── Фильтр по приоритету ─────────────────────────────────────────
     [RelayCommand]
@@ -276,7 +278,7 @@ public partial class TaskListViewModel : ObservableObject
         if (result == true)
             _db.UpsertTask(task);
 
-        LoadTasks();
+        RefreshTasks();
         RefreshCalendarUI();
         TriggerMainStatsRefresh();
     }
@@ -300,7 +302,7 @@ public partial class TaskListViewModel : ObservableObject
         {
             _db.UpsertTask(newTask);
             if (newTask.DueDate.HasValue) _db.DeleteEventForTask(newTask.Id);
-            LoadTasks();
+            RefreshTasks();
             RefreshCalendarUI();
             TriggerMainStatsRefresh();
         }
