@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+             xmlns:models="clr-namespace:FocusFlowFinal.Models.Wishlist"
+             x:Class="FocusFlowFinal.Views.WishlistListView"
+             x:DataType="vm:WishlistListViewModel">
+
+	<DockPanel Margin="16">
+
+		<!-- Header -->
+		<Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto" Margin="0,0,0,16">
+			<StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2">
+				<TextBlock Text="Вишлисты" FontSize="20" FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+				<TextBlock Text="Создавайте таблицы с любыми данными"
+                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
+			</StackPanel>
+			<Button Grid.Column="1"
+                    Content="+ Новый вишлист"
+                    Command="{Binding CreateWishlistCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="8" Padding="14,8"
+                    FontWeight="SemiBold" Cursor="Hand"/>
+		</Grid>
+
+		<!-- Empty state -->
+		<StackPanel DockPanel.Dock="Top"
+                    IsVisible="{Binding IsEmpty}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="12" Margin="0,60,0,0">
+			<TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center"/>
+			<TextBlock Text="У вас ещё нет вишлистов" FontSize="16"
+                       Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
+			<TextBlock Text="Нажмите «+ Новый вишлист», чтобы создать первый"
+                       FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}"
+                       HorizontalAlignment="Center"/>
+		</StackPanel>
+
+		<!-- List -->
+		<ListBox ItemsSource="{Binding Wishlists}" Background="Transparent" BorderThickness="0">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="models:WishlistItem">
+					<Border Margin="0,4" Padding="14,12" CornerRadius="10"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+						<Grid ColumnDefinitions="*, Auto">
+							<StackPanel Grid.Column="0" Spacing="3">
+								<TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+								<TextBlock Text="{Binding Description}" FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           TextWrapping="Wrap"/>
+								<TextBlock Text="{Binding CreatedAt, StringFormat='Создан {0:dd.MM.yyyy}'}"
+                                           FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+							</StackPanel>
+							<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+								<Button Content="Открыть"
+                                        Command="{Binding $parent[UserControl].((vm:WishlistListViewModel)DataContext).OpenWishlistCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="{DynamicResource AccentBackground}" Foreground="White"
+                                        BorderThickness="0" CornerRadius="6" Padding="12,6"
+                                        FontSize="13" Cursor="Hand"/>
+								<Button Content="⚙"
+                                        Command="{Binding $parent[UserControl].((vm:WishlistListViewModel)DataContext).EditWishlistColumnsCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="{DynamicResource ButtonBackgroundBrush}"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                                        CornerRadius="6" Padding="10,6" FontSize="13" Cursor="Hand"
+                                        ToolTip.Tip="Редактировать колонки"/>
+								<Button Content="🔗"
+                                        Command="{Binding $parent[UserControl].((vm:WishlistListViewModel)DataContext).ShareWishlistCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="{DynamicResource ButtonBackgroundBrush}"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                                        CornerRadius="6" Padding="8,6" FontSize="13" Cursor="Hand"
+                                        ToolTip.Tip="Поделиться"/>
+								<Button Content="✕"
+                                        Command="{Binding $parent[UserControl].((vm:WishlistListViewModel)DataContext).DeleteWishlistCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent" Foreground="#EF4444"
+                                        BorderThickness="0" FontSize="15" Padding="6,0" Cursor="Hand"
+                                        ToolTip.Tip="Удалить вишлист"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+
+	</DockPanel>
+</UserControl>

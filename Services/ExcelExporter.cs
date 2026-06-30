@@ -16,7 +16,8 @@ public static class ExcelExporter
         List<FinanceExpense> expenses,
         List<FinanceSubscriptionItem> subscriptions,
         List<FinanceLoan> loans,
-        LocalizationService loc)
+        LocalizationService loc,
+        List<SavingsAccount>? savings = null)
     {
         using var wb = new XLWorkbook();
 
@@ -24,6 +25,8 @@ public static class ExcelExporter
         AddExpenseSheet(wb, expenses, loc);
         AddSubSheet(wb, subscriptions, loc);
         AddLoanSheet(wb, loans, loc);
+        if (savings != null && savings.Count > 0)
+            AddSavingsSheet(wb, savings, loc);
 
         wb.SaveAs(destination);
     }
@@ -116,6 +119,29 @@ public static class ExcelExporter
             ws.Cell(row, 5).Value = (double)x.MonthlyPayment;
             ws.Cell(row, 6).Value = (double)x.RemainingBalance;
             ws.Cell(row, 7).Value = x.StartDate.ToString("dd.MM.yyyy");
+            row++;
+        }
+        ws.Columns().AdjustToContents();
+    }
+
+    private static void AddSavingsSheet(XLWorkbook wb, List<SavingsAccount> items, LocalizationService loc)
+    {
+        var ws = wb.Worksheets.Add(loc["FinanceTab_Savings"]);
+        ws.Cell(1, 1).Value = loc["Savings_NameLbl"].TrimEnd(':');
+        ws.Cell(1, 2).Value = loc["Savings_CurrentBalanceLbl"].TrimEnd(':');
+        ws.Cell(1, 3).Value = loc["Savings_TargetLbl"].TrimEnd(':');
+        ws.Cell(1, 4).Value = loc["Savings_StartDateLbl"].TrimEnd(':');
+        ws.Cell(1, 5).Value = loc["Savings_NotesLbl"].TrimEnd(':');
+        StyleHeader(ws.Row(1));
+
+        int row = 2;
+        foreach (var x in items)
+        {
+            ws.Cell(row, 1).Value = x.Name;
+            ws.Cell(row, 2).Value = (double)x.CurrentBalance;
+            ws.Cell(row, 3).Value = x.TargetAmount > 0 ? (double)x.TargetAmount : 0;
+            ws.Cell(row, 4).Value = x.StartDate.ToString("dd.MM.yyyy");
+            ws.Cell(row, 5).Value = x.Notes;
             row++;
         }
         ws.Columns().AdjustToContents();

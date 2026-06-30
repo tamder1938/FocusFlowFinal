@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.WishlistShareDialog"
+        x:CompileBindings="False"
+        Title="Поделиться вишлистом"
+        Width="440" Height="480"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <DockPanel Margin="20">
+
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,16">
+            <TextBlock Text="Совместный доступ" FontSize="17" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+            <TextBlock Text="{Binding WishlistName}" FontSize="13"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+        </StackPanel>
+
+        <!-- Close button -->
+        <Button DockPanel.Dock="Bottom"
+                Content="Закрыть"
+                Command="{Binding CloseCommand}"
+                HorizontalAlignment="Right"
+                Background="{DynamicResource ButtonBackgroundBrush}"
+                Foreground="{DynamicResource SecondaryTextBrush}"
+                BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                CornerRadius="6" Padding="16,8" Cursor="Hand" Margin="0,12,0,0"/>
+
+        <!-- Error -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Foreground="#EF4444" FontSize="12" Margin="0,0,0,6"/>
+
+        <!-- Add share row -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,16" RowDefinitions="Auto">
+            <TextBox Grid.Column="0"
+                     Text="{Binding EmailInput}"
+                     Watermark="Email пользователя"
+                     CornerRadius="6" Padding="10,8" FontSize="13"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding Permissions}"
+                      SelectedItem="{Binding SelectedPermission}"
+                      Width="80" Margin="6,0"
+                      FontSize="12"
+                      Background="{DynamicResource InputBackgroundBrush}"/>
+            <Button Grid.Column="2"
+                    Content="+ Добавить"
+                    Command="{Binding AddShareCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="6" Padding="12,8"
+                    FontSize="13" Cursor="Hand"/>
+        </Grid>
+
+        <!-- Existing shares list -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Shares}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,3" Padding="12,10" CornerRadius="8"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="{Binding SharedWithEmail}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding Permission}" FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="· принято"
+                                                   IsVisible="{Binding IsAccepted}"
+                                                   FontSize="11" Foreground="#10B981"/>
+                                        <TextBlock Text="· ожидает"
+                                                   IsVisible="{Binding !IsAccepted}"
+                                                   FontSize="11" Foreground="#F59E0B"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Button Grid.Column="2"
+                                        Content="✕"
+                                        Command="{Binding $parent[ItemsControl].((vm:WishlistShareViewModel)DataContext).RemoveShareCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent" Foreground="#EF4444"
+                                        BorderThickness="0" Padding="6,0" FontSize="14" Cursor="Hand"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

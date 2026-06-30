@@ -15,6 +15,8 @@ namespace FocusFlowFinal.ViewModels;
 public partial class DayViewModel : ObservableObject
 {
     private readonly IDatabaseService _db;
+    private readonly IFriendCalendarService? _friendCalSvc;
+    private readonly ISharedCalendarService? _sharedCalSvc;
 
     [ObservableProperty] private DateTime _selectedDate;
     [ObservableProperty] private ObservableCollection<CalendarEvent> _events = new();
@@ -22,6 +24,7 @@ public partial class DayViewModel : ObservableObject
     // Задачи без времени начала — показываются как чипы вверху
     [ObservableProperty] private ObservableCollection<TaskItem> _dayTasks = new();
     [ObservableProperty] private ObservableCollection<EventDisplayItem> _eventDisplayItems = new();
+    [ObservableProperty] private ObservableCollection<FriendEventDisplayItem> _friendEventDisplayItems = new();
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -30,17 +33,22 @@ public partial class DayViewModel : ObservableObject
 
     public List<string> HourStrings { get; } = Enumerable.Range(0, 24).Select(h => $"{h:00}:00").ToList();
 
-    public DayViewModel(IDatabaseService db)
+    public DayViewModel(IDatabaseService db, IFriendCalendarService? friendCalSvc = null,
+        ISharedCalendarService? sharedCalSvc = null)
     {
         _db = db;
+        _friendCalSvc = friendCalSvc;
+        _sharedCalSvc = sharedCalSvc;
         LoadEvents();
         LoadTasks();
+        _ = LoadFriendEventsAsync();
     }
 
     partial void OnSelectedDateChanged(DateTime value)
     {
         LoadEvents();
         LoadTasks();
+        _ = LoadFriendEventsAsync();
         OnPropertyChanged(nameof(SelectedDateFormatted));
     }
 
@@ -128,6 +136,26 @@ public partial class DayViewModel : ObservableObject
                 OriginalEvent = ev
             });
         }
+    }
+
+    public bool HasSharedCalSvc => _sharedCalSvc != null;
+
+    private async Task LoadFriendEventsAsync()
+    {
+        if (_friendCalSvc == null) return;
+        var items = await _friendCalSvc.GetFriendEventsForDayAsync(SelectedDate);
+        FriendEventDisplayItems.Clear();
+        foreach (var item in items) FriendEventDisplayItems.Add(item);
+    }
+
+    [RelayCommand]
+    private async Task OpenSharedEvent()
+    {
+        if (_sharedCalSvc == null) return;
+        var vm = new AddSharedEventViewModel(_sharedCalSvc);
+        var dialog = new AddSharedEventDialog { DataContext = vm };
+        var desktop = App.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
+        await dialog.ShowDialog(desktop?.MainWindow);
     }
 
     [RelayCommand]

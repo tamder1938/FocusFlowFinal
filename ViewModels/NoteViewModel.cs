@@ -195,6 +195,9 @@ public partial class NoteViewModel : ObservableObject
         if (string.IsNullOrEmpty(tag) || EditTags.Contains(tag)) return;
         EditTags.Add(tag);
         NewTagInput = string.Empty;
+        // Make the tag visible in the filter list immediately (before autosave hits the db)
+        if (!AllTags.Contains(tag))
+            AllTags.Add(tag);
         ScheduleAutosave();
     }
 

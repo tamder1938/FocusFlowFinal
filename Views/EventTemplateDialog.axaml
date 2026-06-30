@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.EventTemplateDialog"
+        x:DataType="vm:EventTemplateDialogViewModel"
+        Title="Шаблон события"
+        Width="380" Height="360"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<ScrollViewer>
+		<StackPanel Margin="15" Spacing="10">
+			<Grid ColumnDefinitions="*, Auto">
+				<TextBlock Grid.Column="0" Text="Шаблон события" FontSize="18" FontWeight="Bold"
+                           Foreground="{DynamicResource HeaderForeground}"/>
+				<Button Grid.Column="1" Content="✕" Command="{Binding CancelCommand}"
+                        Background="Transparent" BorderThickness="0" Foreground="Gray"/>
+			</Grid>
+
+			<TextBlock Text="Имя шаблона:" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding Name}" Watermark="Например, Еженедельная встреча"/>
+
+			<TextBlock Text="Название события:" FontSize="12" Foreground="Gray"/>
+			<TextBox Text="{Binding Title}"/>
+
+			<CheckBox Content="Весь день" IsChecked="{Binding IsAllDay}"/>
+
+			<Grid ColumnDefinitions="Auto, Auto, Auto, Auto, Auto, Auto" IsEnabled="{Binding !IsAllDay}">
+				<TextBlock Grid.Column="0" Text="Начало:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<TextBox Grid.Column="1" Text="{Binding StartHour}" Width="45"/>
+				<TextBlock Grid.Column="2" Text=":" VerticalAlignment="Center" Margin="3,0"/>
+				<TextBox Grid.Column="3" Text="{Binding StartMinute}" Width="45"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="Auto, Auto, Auto, Auto, Auto, Auto" IsEnabled="{Binding !IsAllDay}">
+				<TextBlock Grid.Column="0" Text="Конец:   " VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<TextBox Grid.Column="1" Text="{Binding EndHour}" Width="45"/>
+				<TextBlock Grid.Column="2" Text=":" VerticalAlignment="Center" Margin="3,0"/>
+				<TextBox Grid.Column="3" Text="{Binding EndMinute}" Width="45"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
+				<Button Grid.Column="0" Content="Отмена" Command="{Binding CancelCommand}"
+                        Margin="5" Height="36" CornerRadius="6"/>
+				<Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}"
+                        Margin="5" Background="{DynamicResource PrimaryActionBrush}"
+                        Foreground="White" Height="36" CornerRadius="6" FontWeight="Bold"/>
+			</Grid>
+		</StackPanel>
+	</ScrollViewer>
+</Window>

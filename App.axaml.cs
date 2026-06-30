@@ -13,6 +13,7 @@ using FocusFlowFinal.Views;
 using FocusFlowFinal.Models.Finance;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 
 namespace FocusFlowFinal;
 
@@ -38,7 +39,19 @@ public partial class App : Application
             var authService = Services.GetRequiredService<IAuthService>();
             _ = authService.RestoreSessionAsync(); // synchronous-enough для локальной заглушки
 
-            var win = new MainWindow { DataContext = Services.GetRequiredService<MainViewModel>() };
+            MainWindow win;
+            try
+            {
+                win = new MainWindow { DataContext = Services.GetRequiredService<MainViewModel>() };
+            }
+            catch (Exception ex) when (ex is IOException || ex.InnerException is IOException)
+            {
+                var ioMsg = (ex.InnerException as IOException ?? (IOException)ex).Message;
+                var errorWin = BuildDbLockedWindow(ioMsg, desktop);
+                desktop.MainWindow = errorWin;
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
             desktop.MainWindow = win;
 
             win.Opened += (_, _) =>
@@ -81,7 +94,10 @@ public partial class App : Application
             if (nr != null) tv.TimerFinished += t => nr.NotifyTimerFinished(t ?? "");
 
             desktop.Exit += (_, _) =>
+            {
                 (Services.GetRequiredService<INotificationService>() as NotificationService)?.StopPolling();
+                (Services as IDisposable)?.Dispose(); // releases LiteDB file handle
+            };
         }
         base.OnFrameworkInitializationCompleted();
     }
@@ -249,5 +265,53 @@ public partial class App : Application
 
         // Годовая статистика
         s.AddSingleton<IYearStatisticsService, YearStatisticsService>();
+
+        // Места
+        s.AddSingleton<IPlaceRepository, PlaceRepository>();
+        s.AddSingleton<PlaceExportService>();
+
+        // Вишлисты
+        s.AddSingleton<IWishlistRepository, WishlistRepository>();
+        s.AddSingleton<WishlistExportService>();
+
+        // Друзья / социальные функции
+        s.AddSingleton<IFriendService, FriendService>();
+        s.AddSingleton<ICalendarShareService, CalendarShareService>();
+        s.AddSingleton<IFriendCalendarService, FriendCalendarService>();
+        s.AddSingleton<ISharedCalendarService, SharedCalendarService>();
+    }
+
+    private static Window BuildDbLockedWindow(string message, IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var text = new TextBlock
+        {
+            Text = message,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(20, 20, 20, 12),
+            FontSize = 13
+        };
+
+        var btn = new Button
+        {
+            Content = "Выйти",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Padding = new Thickness(24, 8),
+            Margin = new Thickness(0, 0, 0, 20)
+        };
+
+        var panel = new StackPanel { Children = { text, btn } };
+
+        var win = new Window
+        {
+            Title = "FocusFlow — ошибка запуска",
+            Content = panel,
+            Width = 500,
+            Height = 230,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            CanResize = false
+        };
+
+        btn.Click += (_, _) => desktop.Shutdown();
+        return win;
     }
 }

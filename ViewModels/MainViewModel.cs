@@ -125,17 +125,21 @@ public partial class MainViewModel : ObservableObject
 
     private void OnWorkspaceChanged(object? sender, EventArgs e)
     {
-        RefreshAllFeatureFlags();
-        RefreshFinanceModuleState();
-        RefreshHabitTrackerState();
-        RefreshTodayMiniStats();
-        CurrentTaskListViewModel?.RefreshTasks();
-        RefreshCurrentCalendarView();
+        // WorkspaceChanged can fire from a background thread (e.g., inside Supabase await
+        // continuations that use ConfigureAwait(false)). Dispatch all UI work to the UI thread.
+        Dispatcher.UIThread.Post(() =>
+        {
+            RefreshAllFeatureFlags();
+            RefreshFinanceModuleState();
+            RefreshHabitTrackerState();
+            RefreshTodayMiniStats();
+            CurrentTaskListViewModel?.RefreshTasks();
+            RefreshCurrentCalendarView();
 
-        // Если переключились в гостевой профиль — проверить лимиты
-        var workspace = _services.GetRequiredService<ICurrentWorkspace>();
-        if (workspace.CurrentOwnerKey == CurrentWorkspaceService.LocalOwner)
-            _ = CheckAndEnforceLimitsAsync();
+            var workspace = _services.GetRequiredService<ICurrentWorkspace>();
+            if (workspace.CurrentOwnerKey == CurrentWorkspaceService.LocalOwner)
+                _ = CheckAndEnforceLimitsAsync();
+        });
     }
 
     private async Task CheckAndEnforceLimitsAsync()
@@ -372,6 +376,59 @@ public partial class MainViewModel : ObservableObject
         var vm       = new MoodViewModel(repo, photoSvc, stats);
         var win      = new Views.MoodWindow { DataContext = vm };
         var owner    = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
+    private async void OpenPlaces()
+    {
+        var repo   = _services.GetRequiredService<IPlaceRepository>();
+        var maps   = _services.GetRequiredService<IYandexMapsService>();
+        var export = _services.GetRequiredService<PlaceExportService>();
+        var vm     = new PlacesViewModel(repo, maps, export);
+        var win    = new Views.PlacesWindow { DataContext = vm };
+        var owner  = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
+    private async void OpenWishlist()
+    {
+        if (!RequirePremium()) return;
+        var repo    = _services.GetRequiredService<IWishlistRepository>();
+        var exportSvc = _services.GetRequiredService<WishlistExportService>();
+        var vm      = new WishlistListViewModel(repo, exportSvc);
+        var win     = new Views.WishlistWindow { DataContext = vm };
+        var owner   = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
+    private async void OpenFriends()
+    {
+        if (!RequirePremium()) return;
+        var friendSvc = _services.GetRequiredService<IFriendService>();
+        var authSvc   = _services.GetRequiredService<IAuthService>();
+        var vm  = new FriendsViewModel(friendSvc, authSvc);
+        var win = new Views.FriendsWindow { DataContext = vm };
+        var owner = GetMainWindow();
+        if (owner != null) await win.ShowDialog(owner);
+        else win.Show();
+    }
+
+    [RelayCommand]
+    private async void OpenCalendarShare()
+    {
+        if (!RequirePremium()) return;
+        var shareSvc  = _services.GetRequiredService<ICalendarShareService>();
+        var friendSvc = _services.GetRequiredService<IFriendService>();
+        var authSvc   = _services.GetRequiredService<IAuthService>();
+        var vm  = new CalendarShareViewModel(shareSvc, friendSvc, authSvc);
+        var win = new Views.CalendarShareDialog { DataContext = vm };
+        var owner = GetMainWindow();
         if (owner != null) await win.ShowDialog(owner);
         else win.Show();
     }

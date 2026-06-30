@@ -1,0 +1,130 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FocusFlowFinal.Views.WishlistCondFormatDialog"
+        x:CompileBindings="False"
+        Title="Условное форматирование"
+        Width="520" Height="580"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+	<DockPanel Margin="16">
+
+		<!-- Header -->
+		<Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,12">
+			<TextBlock Text="Условное форматирование" FontSize="17" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+			<Button Grid.Column="1" Content="+ Правило" Command="{Binding AddRuleCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="6" Padding="10,6" Margin="0,0,8,0"/>
+			<Button Grid.Column="2" Content="✕" Command="{Binding CancelCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
+		</Grid>
+
+		<!-- Bottom buttons -->
+		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*, Auto, Auto" Margin="0,12,0,0">
+			<Button Grid.Column="1" Content="Отмена" Command="{Binding CancelCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                    CornerRadius="6" Padding="12,6" Margin="0,0,8,0"/>
+			<Button Grid.Column="2" Content="Сохранить" Command="{Binding SaveCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="6" Padding="14,6" FontWeight="SemiBold"/>
+		</Grid>
+
+		<!-- Hint when empty -->
+		<StackPanel DockPanel.Dock="Top" IsVisible="{Binding !Rules.Count}"
+                    HorizontalAlignment="Center" Margin="0,40,0,0" Spacing="8">
+			<TextBlock Text="🎨" FontSize="36" HorizontalAlignment="Center"/>
+			<TextBlock Text="Нет правил форматирования"
+                       FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}"
+                       HorizontalAlignment="Center"/>
+			<TextBlock Text="Нажмите «+ Правило», чтобы добавить"
+                       FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"
+                       HorizontalAlignment="Center"/>
+		</StackPanel>
+
+		<!-- Rules list -->
+		<ScrollViewer>
+			<ItemsControl ItemsSource="{Binding Rules}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Margin="0,4" Padding="12,10" CornerRadius="10"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+							<StackPanel Spacing="8">
+
+								<!-- Row: name + move + delete -->
+								<Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto">
+									<TextBox Grid.Column="0" Text="{Binding Name}"
+                                             Watermark="Название правила"
+                                             Background="Transparent" BorderThickness="0"
+                                             FontWeight="SemiBold" Padding="0"/>
+									<Button Grid.Column="1" Content="↑"
+                                            Command="{Binding $parent[Window].DataContext.MoveUpCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Padding="4,0"/>
+									<Button Grid.Column="2" Content="↓"
+                                            Command="{Binding $parent[Window].DataContext.MoveDownCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Padding="4,0"/>
+									<Button Grid.Column="3" Content="✕"
+                                            Command="{Binding $parent[Window].DataContext.DeleteRuleCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" Foreground="#EF4444"
+                                            BorderThickness="0" FontSize="14" Padding="4,0"/>
+								</Grid>
+
+								<!-- Column + Condition -->
+								<Grid ColumnDefinitions="*, 8, *">
+									<ComboBox Grid.Column="0" ItemsSource="{Binding Columns}"
+                                              SelectedItem="{Binding SelectedColumn}"
+                                              PlaceholderText="Колонка"
+                                              HorizontalAlignment="Stretch">
+										<ComboBox.ItemTemplate>
+											<DataTemplate>
+												<TextBlock Text="{Binding Name}"/>
+											</DataTemplate>
+										</ComboBox.ItemTemplate>
+									</ComboBox>
+									<ComboBox Grid.Column="2" ItemsSource="{Binding ConditionLabels}"
+                                              SelectedIndex="{Binding SelectedConditionIndex}"
+                                              HorizontalAlignment="Stretch"/>
+								</Grid>
+
+								<!-- Values -->
+								<Grid IsVisible="{Binding !IsBetween}">
+									<TextBox Text="{Binding FilterValue}" Watermark="Значение"/>
+								</Grid>
+								<Grid IsVisible="{Binding IsBetween}" ColumnDefinitions="*, Auto, *">
+									<TextBox Grid.Column="0" Text="{Binding FilterValue}" Watermark="От"/>
+									<TextBlock Grid.Column="1" Text="—" VerticalAlignment="Center" Margin="6,0"/>
+									<TextBox Grid.Column="2" Text="{Binding FilterValue2}" Watermark="До"/>
+								</Grid>
+
+								<!-- Style: BG color + Text color + Bold/Italic -->
+								<Grid ColumnDefinitions="*, 8, *, 8, Auto, 8, Auto">
+									<TextBox Grid.Column="0" Text="{Binding BackgroundColor}"
+                                             Watermark="Цвет фона (#RRGGBB)"/>
+									<TextBox Grid.Column="2" Text="{Binding TextColor}"
+                                             Watermark="Цвет текста (#RRGGBB)"/>
+									<CheckBox Grid.Column="4" Content="Ж" IsChecked="{Binding IsBold}"
+                                              FontWeight="Bold"/>
+									<CheckBox Grid.Column="6" Content="К" IsChecked="{Binding IsItalic}"
+                                              FontStyle="Italic"/>
+								</Grid>
+
+								<!-- Style hint -->
+								<TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Text="Цвета применяются в таблице при выполнении условия."/>
+
+							</StackPanel>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+
+	</DockPanel>
+</Window>

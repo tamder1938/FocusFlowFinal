@@ -9,64 +9,100 @@
 		<TextBlock DockPanel.Dock="Top" Text="Управление шаблонами" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
 		<TabControl>
-			<TabItem Header="Шаблоны задач">
-				<ListBox ItemsSource="{Binding TaskTemplates}">
-					<ListBox.ItemTemplate>
-						<DataTemplate x:DataType="models:TaskTemplate">
-							<Border Margin="0,4" Padding="10" CornerRadius="8"
-                                    Background="{DynamicResource CardBackground}">
-								<Grid ColumnDefinitions="*, Auto, Auto, Auto">
-									<StackPanel Grid.Column="0" Spacing="2">
-										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
-										<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
-									</StackPanel>
-									<!-- Кнопка редактирования -->
-									<Button Grid.Column="1" Content="✎"
-                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditTaskTemplateCommand}"
-                                            CommandParameter="{Binding}"
-                                            Margin="5,0" Padding="8,4"
-                                            Background="{DynamicResource AccentLightBrush}"
-                                            Foreground="{DynamicResource AccentTextBrush}"
-                                            CornerRadius="6"/>
-									<Button Grid.Column="2" Content="Создать"
-                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateTaskFromTemplateCommand}"
-                                            CommandParameter="{Binding}"
-                                            Margin="5,0" Padding="12,4"
-                                            Background="{DynamicResource AccentBackground}"
-                                            Foreground="White" CornerRadius="6"/>
-									<Button Grid.Column="3" Content="✕"
-                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTaskTemplateCommand}"
-                                            CommandParameter="{Binding}"
-                                            Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
-								</Grid>
-							</Border>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</TabItem>
-			<TabItem Header="Шаблоны событий">
-				<ListBox ItemsSource="{Binding EventTemplates}">
-					<ListBox.ItemTemplate>
-						<DataTemplate x:DataType="models:EventTemplate">
-							<Border Margin="0,4" Padding="10" CornerRadius="8"
-                                    Background="{DynamicResource CardBackground}">
-								<Grid ColumnDefinitions="*, Auto">
-									<StackPanel Grid.Column="0" Spacing="2">
-										<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
-										<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
-									</StackPanel>
-									<Button Grid.Column="1" Content="✕"
-                                            Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteEventTemplateCommand}"
-                                            CommandParameter="{Binding}"
-                                            Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
-								</Grid>
-							</Border>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</TabItem>
-			<TabItem Header="Шаблоны таймера">
+			<!-- ═══ Задачи ═══ -->
+			<TabItem Header="Задачи">
 				<DockPanel>
+					<Button DockPanel.Dock="Top"
+                            Content="+ Создать шаблон задачи"
+                            Command="{Binding CreateTaskTemplateCommand}"
+                            HorizontalAlignment="Stretch"
+                            Background="{DynamicResource AccentBackground}" Foreground="White"
+                            BorderThickness="0" CornerRadius="6" Padding="0,8" Margin="0,0,0,8"/>
+					<ListBox ItemsSource="{Binding TaskTemplates}">
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="models:TaskTemplate">
+								<Border Margin="0,4" Padding="10" CornerRadius="8"
+                                        Background="{DynamicResource CardBackground}">
+									<Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto">
+										<StackPanel Grid.Column="0" Spacing="2">
+											<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+											<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+										</StackPanel>
+										<Button Grid.Column="1" Content="✎"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditTaskTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Margin="4,0" Padding="8,4"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                Foreground="{DynamicResource AccentTextBrush}"
+                                                CornerRadius="6" ToolTip.Tip="Редактировать"/>
+										<Button Grid.Column="2" Content="📋"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateTaskFromTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Margin="4,0" Padding="8,4"
+                                                Background="{DynamicResource AccentBackground}"
+                                                Foreground="White" CornerRadius="6" ToolTip.Tip="Создать задачу"/>
+										<Button Grid.Column="3" Content="✕"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTaskTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" Foreground="#EF4444"
+                                                BorderThickness="0" FontSize="14" Padding="6,0" ToolTip.Tip="Удалить"/>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</DockPanel>
+			</TabItem>
+
+			<!-- ═══ События ═══ -->
+			<TabItem Header="События">
+				<DockPanel>
+					<Button DockPanel.Dock="Top"
+                            Content="+ Создать шаблон события"
+                            Command="{Binding CreateEventTemplateCommand}"
+                            HorizontalAlignment="Stretch"
+                            Background="{DynamicResource AccentBackground}" Foreground="White"
+                            BorderThickness="0" CornerRadius="6" Padding="0,8" Margin="0,0,0,8"/>
+					<ListBox ItemsSource="{Binding EventTemplates}">
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="models:EventTemplate">
+								<Border Margin="0,4" Padding="10" CornerRadius="8"
+                                        Background="{DynamicResource CardBackground}">
+									<Grid ColumnDefinitions="*, Auto, Auto">
+										<StackPanel Grid.Column="0" Spacing="2">
+											<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+											<TextBlock Text="{Binding Title}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+										</StackPanel>
+										<Button Grid.Column="1" Content="✎"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditEventTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Margin="4,0" Padding="8,4"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                Foreground="{DynamicResource AccentTextBrush}"
+                                                CornerRadius="6" ToolTip.Tip="Редактировать"/>
+										<Button Grid.Column="2" Content="✕"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteEventTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" Foreground="#EF4444"
+                                                BorderThickness="0" FontSize="14" Padding="6,0" ToolTip.Tip="Удалить"/>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</DockPanel>
+			</TabItem>
+
+			<!-- ═══ Таймер ═══ -->
+			<TabItem Header="Таймер">
+				<DockPanel>
+					<StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,8">
+						<Button Content="+ Создать шаблон таймера"
+                                Command="{Binding CreateTimerTemplateCommand}"
+                                HorizontalAlignment="Stretch"
+                                Background="{DynamicResource AccentBackground}" Foreground="White"
+                                BorderThickness="0" CornerRadius="6" Padding="0,8"/>
+					</StackPanel>
 					<Button DockPanel.Dock="Bottom"
                             Content="↺ Восстановить стандартные"
                             Command="{Binding RestoreDefaultTimerTemplatesCommand}"
@@ -79,7 +115,7 @@
 							<DataTemplate x:DataType="models:TimerTemplate">
 								<Border Margin="0,4" Padding="10" CornerRadius="8"
                                         Background="{DynamicResource CardBackground}">
-									<Grid ColumnDefinitions="*, Auto">
+									<Grid ColumnDefinitions="*, Auto, Auto">
 										<StackPanel Grid.Column="0" Spacing="2">
 											<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
 											<TextBlock FontSize="12" Opacity="0.7">
@@ -90,10 +126,18 @@
 												<Run Text="{Binding Cycles}"/>
 											</TextBlock>
 										</StackPanel>
-										<Button Grid.Column="1" Content="✕"
+										<Button Grid.Column="1" Content="✎"
+                                                Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).EditTimerTemplateCommand}"
+                                                CommandParameter="{Binding}"
+                                                Margin="4,0" Padding="8,4"
+                                                Background="{DynamicResource AccentLightBrush}"
+                                                Foreground="{DynamicResource AccentTextBrush}"
+                                                CornerRadius="6" ToolTip.Tip="Редактировать"/>
+										<Button Grid.Column="2" Content="✕"
                                                 Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).DeleteTimerTemplateCommand}"
                                                 CommandParameter="{Binding}"
-                                                Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" Padding="6,0"/>
+                                                Background="Transparent" Foreground="#EF4444"
+                                                BorderThickness="0" FontSize="14" Padding="6,0" ToolTip.Tip="Удалить"/>
 									</Grid>
 								</Border>
 							</DataTemplate>

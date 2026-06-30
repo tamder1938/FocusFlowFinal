@@ -1,4 +1,5 @@
 using FocusFlowFinal.Models;
+using FocusFlowFinal.Models.Wishlist;
 using FocusFlowFinal.Services.Supabase.Rows;
 using static Supabase.Postgrest.Constants;
 using System;
@@ -15,6 +16,7 @@ public class SupabaseSyncService : ISyncService
     private readonly IDatabaseService _db;
     private readonly IAuthService _auth;
     private readonly SupabaseClientProvider _provider;
+    private readonly IWishlistRepository _wishlistRepo;
 
     // Нижняя граница диапазона синхронизации при первом запуске (избегаем DateTime.MinValue)
     private static readonly DateTime SyncEpoch = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -22,11 +24,13 @@ public class SupabaseSyncService : ISyncService
     public DateTime? LastSyncUtc { get; private set; }
     public string?   LastSyncError { get; private set; }
 
-    public SupabaseSyncService(IDatabaseService db, IAuthService auth, SupabaseClientProvider provider)
+    public SupabaseSyncService(IDatabaseService db, IAuthService auth, SupabaseClientProvider provider,
+        IWishlistRepository wishlistRepo)
     {
         _db = db;
         _auth = auth;
         _provider = provider;
+        _wishlistRepo = wishlistRepo;
         LastSyncUtc = AppSettings.Load().LastSyncUtc;
     }
 
@@ -89,6 +93,26 @@ public class SupabaseSyncService : ISyncService
                 .Get();
             MergeProjects(remoteProjects.Models ?? new List<ProjectRow>());
 
+            // ── Wishlists ──────────────────────────────────────────────────
+            await PushWishlistsAsync(client, userId, since);
+            var remoteWishlists = await client.From<WishlistItemRow>()
+                .Filter("user_id", Operator.Equals, userId)
+                .Filter("updated_at", Operator.GreaterThan, sinceStr)
+                .Get();
+            MergeWishlists(remoteWishlists.Models ?? new List<WishlistItemRow>());
+
+            await PushWishlistColumnsAsync(client, since);
+            await PushWishlistRowsAsync(client, since);
+            await PushWishlistCellsAsync(client, since);
+            await PushWishlistSharesAsync(client, userId, since);
+
+            // Pull shared wishlists (where this user is shared_with)
+            var sharedWishlists = await client.From<WishlistShareRow>()
+                .Filter("shared_with_user_id", Operator.Equals, userId)
+                .Filter("is_deleted", Operator.Equals, "false")
+                .Get();
+            await PullSharedWishlistDataAsync(client, sharedWishlists.Models ?? new List<WishlistShareRow>(), since);
+
             var now      = DateTime.UtcNow;
             LastSyncUtc  = now;
             var settings = AppSettings.Load();
@@ -120,7 +144,8 @@ public class SupabaseSyncService : ISyncService
 
     private async Task PushTasksAsync(global::Supabase.Client client, string userId, DateTime since)
     {
-        var changed = _db.GetAllTasks()
+        // Include soft-deleted tasks so Supabase also marks them deleted
+        var changed = _db.GetAllTasksIncludingDeleted()
             .Where(t => t.LastModified > since)
             .Select(t => ToRow(t, userId))
             .ToList();
@@ -153,19 +178,24 @@ public class SupabaseSyncService : ISyncService
 
     private void MergeTasks(IEnumerable<TaskRow> remoteRows)
     {
-        var localBySync = _db.GetAllTasks().ToDictionary(t => t.SyncId.ToString());
+        // Include soft-deleted tasks so we recognize them and don't re-insert
+        var localBySync = _db.GetAllTasksIncludingDeleted().ToDictionary(t => t.SyncId.ToString());
 
         foreach (var row in remoteRows)
         {
             if (localBySync.TryGetValue(row.Id, out var local))
             {
+                // Local is as new or newer — local wins
                 if (row.UpdatedAt <= local.LastModified) continue;
-                var updated = FromRow(row, local.Id);
-                _db.UpsertTask(updated);
+                // Task was deleted locally — never resurrect it from an older server copy
+                if (local.IsDeleted) continue;
+                _db.UpsertTask(FromRow(row, local.Id));
             }
             else
             {
-                _db.UpsertTask(FromRow(row, 0));
+                // Unknown locally — only insert if the server copy is not deleted
+                if (!row.IsDeleted)
+                    _db.UpsertTask(FromRow(row, 0));
             }
         }
     }
@@ -287,5 +317,231 @@ public class SupabaseSyncService : ISyncService
         Color = r.Color,
         IsDeleted = r.IsDeleted,
         LastModified = r.UpdatedAt
+    };
+
+    // ── Wishlist push ──────────────────────────────────────────────────────
+
+    private async Task PushWishlistsAsync(global::Supabase.Client client, string userId, DateTime since)
+    {
+        var changed = _wishlistRepo.GetAllForSync()
+            .Where(w => w.UpdatedAt > since)
+            .Select(w => ToWishlistRow(w, userId))
+            .ToList();
+        if (changed.Count == 0) return;
+        await client.From<WishlistItemRow>().Upsert(changed);
+    }
+
+    private async Task PushWishlistColumnsAsync(global::Supabase.Client client, DateTime since)
+    {
+        var allWishlists = _wishlistRepo.GetAllForSync().ToList();
+        var rows = new List<WishlistColumnRow>();
+        foreach (var w in allWishlists)
+            rows.AddRange(_wishlistRepo.GetColumnsForSync(w.Id)
+                .Where(c => c.UpdatedAt > since)
+                .Select(c => ToColumnRow(c, w.SyncId)));
+        if (rows.Count == 0) return;
+        await client.From<WishlistColumnRow>().Upsert(rows);
+    }
+
+    private async Task PushWishlistRowsAsync(global::Supabase.Client client, DateTime since)
+    {
+        var allWishlists = _wishlistRepo.GetAllForSync().ToList();
+        var rows = new List<WishlistRowRow>();
+        foreach (var w in allWishlists)
+            rows.AddRange(_wishlistRepo.GetRowsForSync(w.Id)
+                .Where(r => r.UpdatedAt > since)
+                .Select(r => ToRowRow(r, w.SyncId)));
+        if (rows.Count == 0) return;
+        await client.From<WishlistRowRow>().Upsert(rows);
+    }
+
+    private async Task PushWishlistCellsAsync(global::Supabase.Client client, DateTime since)
+    {
+        var changed = _wishlistRepo.GetAllCellsForSync()
+            .Where(c => c.UpdatedAt > since)
+            .Select(c => ToCellRow(c))
+            .ToList();
+        if (changed.Count == 0) return;
+        await client.From<WishlistCellRow>().Upsert(changed);
+    }
+
+    private async Task PushWishlistSharesAsync(global::Supabase.Client client, string userId, DateTime since)
+    {
+        var allWishlists = _wishlistRepo.GetAllForSync().ToList();
+        var rows = _wishlistRepo.GetAllSharesForSync()
+            .Select(s =>
+            {
+                var w = allWishlists.FirstOrDefault(x => x.Id == s.WishlistId);
+                return ToShareRow(s, userId, w?.SyncId ?? Guid.Empty);
+            })
+            .Where(r => r != null)
+            .Cast<WishlistShareRow>()
+            .ToList();
+        if (rows.Count == 0) return;
+        await client.From<WishlistShareRow>().Upsert(rows);
+    }
+
+    private void MergeWishlists(IEnumerable<WishlistItemRow> remoteRows)
+    {
+        foreach (var row in remoteRows)
+        {
+            var syncId = Guid.Parse(row.Id);
+            var local = _wishlistRepo.GetBySyncId(syncId);
+            var model = FromWishlistRow(row, local?.Id ?? 0);
+            _wishlistRepo.UpsertFromSync(model);
+        }
+    }
+
+    private async Task PullSharedWishlistDataAsync(global::Supabase.Client client,
+        IEnumerable<WishlistShareRow> shares, DateTime since)
+    {
+        foreach (var share in shares)
+        {
+            _wishlistRepo.UpsertShareFromSync(FromShareRow(share));
+
+            // Pull the shared wishlist itself
+            var wResult = await client.From<WishlistItemRow>()
+                .Filter("id", Operator.Equals, share.WishlistId)
+                .Get();
+            MergeWishlists(wResult.Models ?? new List<WishlistItemRow>());
+
+            // Pull columns/rows/cells for this wishlist since last sync
+            var sinceStr = since.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            var colResult = await client.From<WishlistColumnRow>()
+                .Filter("wishlist_id", Operator.Equals, share.WishlistId)
+                .Filter("updated_at", Operator.GreaterThan, sinceStr)
+                .Get();
+            foreach (var c in colResult.Models ?? new List<WishlistColumnRow>())
+                _wishlistRepo.UpsertColumnFromSync(FromColumnRow(c));
+
+            var rowResult = await client.From<WishlistRowRow>()
+                .Filter("wishlist_id", Operator.Equals, share.WishlistId)
+                .Filter("updated_at", Operator.GreaterThan, sinceStr)
+                .Get();
+            foreach (var r in rowResult.Models ?? new List<WishlistRowRow>())
+            {
+                _wishlistRepo.UpsertRowFromSync(FromRowRow(r));
+                var cellResult = await client.From<WishlistCellRow>()
+                    .Filter("row_id", Operator.Equals, r.Id)
+                    .Filter("updated_at", Operator.GreaterThan, sinceStr)
+                    .Get();
+                foreach (var cell in cellResult.Models ?? new List<WishlistCellRow>())
+                    _wishlistRepo.UpsertCellFromSync(FromCellRow(cell));
+            }
+        }
+    }
+
+    // ── Wishlist mappers ───────────────────────────────────────────────────
+
+    private static WishlistItemRow ToWishlistRow(WishlistItem w, string userId) => new()
+    {
+        Id = w.SyncId.ToString(),
+        UserId = userId,
+        Name = w.Name,
+        Description = w.Description,
+        CreatedAt = w.CreatedAt,
+        UpdatedAt = w.UpdatedAt,
+        IsDeleted = w.IsDeleted
+    };
+
+    private static WishlistItem FromWishlistRow(WishlistItemRow r, int localId) => new()
+    {
+        Id = localId,
+        SyncId = Guid.Parse(r.Id),
+        UserId = r.UserId,
+        Name = r.Name,
+        Description = r.Description,
+        CreatedAt = r.CreatedAt,
+        UpdatedAt = r.UpdatedAt,
+        IsDeleted = r.IsDeleted
+    };
+
+    private static WishlistColumnRow ToColumnRow(WishlistColumn c, Guid wishlistSyncId) => new()
+    {
+        Id = c.SyncId.ToString(),
+        WishlistId = wishlistSyncId.ToString(),
+        Name = c.Name,
+        ColType = (int)c.Type,
+        ColOrder = c.Order,
+        OptionsJson = c.OptionsJson,
+        IsHidden = c.IsHidden,
+        UpdatedAt = c.UpdatedAt,
+        IsDeleted = c.IsDeleted
+    };
+
+    private static WishlistColumn FromColumnRow(WishlistColumnRow r) => new()
+    {
+        SyncId = Guid.Parse(r.Id),
+        Name = r.Name,
+        Type = (WishlistColumnType)r.ColType,
+        Order = r.ColOrder,
+        OptionsJson = r.OptionsJson,
+        IsHidden = r.IsHidden,
+        UpdatedAt = r.UpdatedAt,
+        IsDeleted = r.IsDeleted
+    };
+
+    private static WishlistRowRow ToRowRow(WishlistRow row, Guid wishlistSyncId) => new()
+    {
+        Id = row.SyncId.ToString(),
+        WishlistId = wishlistSyncId.ToString(),
+        RowOrder = row.Order,
+        UpdatedAt = row.UpdatedAt,
+        IsDeleted = row.IsDeleted
+    };
+
+    private static WishlistRow FromRowRow(WishlistRowRow r) => new()
+    {
+        SyncId = Guid.Parse(r.Id),
+        Order = r.RowOrder,
+        UpdatedAt = r.UpdatedAt,
+        IsDeleted = r.IsDeleted
+    };
+
+    private static WishlistCellRow ToCellRow(WishlistCell c) => new()
+    {
+        Id = c.SyncId.ToString(),
+        RowId = c.RowId.ToString(),
+        ColumnId = c.ColumnId.ToString(),
+        Value = c.Value,
+        Extra = c.Extra,
+        UpdatedAt = c.UpdatedAt
+    };
+
+    private static WishlistCell FromCellRow(WishlistCellRow r) => new()
+    {
+        SyncId = Guid.Parse(r.Id),
+        Value = r.Value,
+        Extra = r.Extra,
+        UpdatedAt = r.UpdatedAt
+    };
+
+    private static WishlistShareRow? ToShareRow(WishlistShare s, string ownerUserId, Guid wishlistSyncId)
+    {
+        if (wishlistSyncId == Guid.Empty) return null;
+        return new WishlistShareRow
+        {
+            Id = s.SyncId.ToString(),
+            WishlistId = wishlistSyncId.ToString(),
+            OwnerUserId = ownerUserId,
+            SharedWithEmail = s.SharedWithEmail,
+            SharedWithUserId = s.SharedWithUserId,
+            Permission = s.Permission,
+            IsAccepted = s.IsAccepted,
+            CreatedAt = s.CreatedAt,
+            IsDeleted = s.IsDeleted
+        };
+    }
+
+    private static WishlistShare FromShareRow(WishlistShareRow r) => new()
+    {
+        SyncId = Guid.Parse(r.Id),
+        WishlistSyncId = Guid.TryParse(r.WishlistId, out var wid) ? wid : Guid.Empty,
+        SharedWithEmail = r.SharedWithEmail,
+        SharedWithUserId = r.SharedWithUserId,
+        Permission = r.Permission,
+        IsAccepted = r.IsAccepted,
+        CreatedAt = r.CreatedAt,
+        IsDeleted = r.IsDeleted
     };
 }

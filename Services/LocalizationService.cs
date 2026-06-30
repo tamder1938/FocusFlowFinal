@@ -21,6 +21,8 @@ public class LocalizationService : ObservableObject
             ["Русский"] = new Dictionary<string, string>
             {
                 // Окно настроек
+                ["Wishlists"] = "Вишлисты",
+                ["Templates"] = "Шаблоны",
                 ["Settings"] = "Настройки",
                 ["General"] = "Общие",
                 ["Notifications"] = "Уведомления",
@@ -895,6 +897,8 @@ public class LocalizationService : ObservableObject
             ["English"] = new Dictionary<string, string>
             {
                 // Settings window
+                ["Wishlists"] = "Wishlists",
+                ["Templates"] = "Templates",
                 ["Settings"] = "Settings",
                 ["General"] = "General",
                 ["Notifications"] = "Notifications",

@@ -1,0 +1,225 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        xmlns:models="clr-namespace:FocusFlowFinal.Models"
+        x:Class="FocusFlowFinal.Views.PlacesWindow"
+        x:Name="PlacesWin"
+        x:CompileBindings="False"
+        Title="Места"
+        Width="860" Height="640"
+        MinWidth="680" MinHeight="480"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.place-action">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="6,4"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="CornerRadius"    Value="4"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Foreground"      Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+        <Style Selector="Button.place-action:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+        <Style Selector="Button.add-btn">
+            <Setter Property="Background"      Value="{DynamicResource AccentBackground}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="14,7"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+        <Style Selector="Button.add-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <!-- ── Header ──────────────────────────────────────────────────── -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,14">
+            <Grid ColumnDefinitions="*, 10, 155, 10, 163, 10, Auto">
+
+                <!-- Search -->
+                <TextBox Grid.Column="0"
+                         Text="{Binding SearchText}"
+                         PlaceholderText="🔍 Поиск по названию или адресу…"
+                         CornerRadius="6" Padding="10,7" FontSize="13"
+                         Background="{DynamicResource InputBackgroundBrush}"
+                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+                <!-- Status filter -->
+                <ComboBox Grid.Column="2"
+                          ItemsSource="{Binding StatusOptions}"
+                          SelectedIndex="{Binding StatusIndex}"
+                          HorizontalAlignment="Stretch" FontSize="13"
+                          Background="{DynamicResource InputBackgroundBrush}"
+                          BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+                <!-- Category filter -->
+                <ComboBox Grid.Column="4"
+                          ItemsSource="{Binding CategoryLabels}"
+                          SelectedIndex="{Binding CategoryComboIndex}"
+                          HorizontalAlignment="Stretch" FontSize="13"
+                          Background="{DynamicResource InputBackgroundBrush}"
+                          BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+                <!-- Right buttons -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="8">
+                    <Button Background="{DynamicResource ButtonBackgroundBrush}"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                            CornerRadius="6" Padding="10,7" FontSize="13" Cursor="Hand"
+                            Content="⬇ CSV" ToolTip.Tip="Экспорт всех мест в CSV"
+                            Command="{Binding ExportCsvCommand}"/>
+                    <Button Classes="add-btn"
+                            Content="+ Добавить"
+                            Command="{Binding AddPlaceCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ── Info bar ─────────────────────────────────────────────────── -->
+        <Border DockPanel.Dock="Top" Padding="20,5">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock IsVisible="{Binding !IsEmpty}"
+                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"
+                           Text="{Binding TotalCount, StringFormat='Мест: {0}'}"
+                           VerticalAlignment="Center"/>
+                <TextBlock IsVisible="{Binding ExportMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           Text="{Binding ExportMessage}"
+                           FontSize="12" Foreground="{DynamicResource AccentTextBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ── Empty state ──────────────────────────────────────────────── -->
+        <StackPanel DockPanel.Dock="Top"
+                    IsVisible="{Binding IsEmpty}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0,60" Spacing="10">
+            <TextBlock Text="📍" FontSize="52" HorizontalAlignment="Center"/>
+            <TextBlock Text="Нет мест"
+                       FontSize="18" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Сохраняйте кафе, парки, магазины — всё, куда хотите вернуться"
+                       FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}"
+                       HorizontalAlignment="Center"/>
+            <Button Classes="add-btn" Content="+ Добавить место"
+                    Command="{Binding AddPlaceCommand}"
+                    HorizontalAlignment="Center" Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- ── Cards ────────────────────────────────────────────────────── -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,4,12,16">
+            <ItemsControl ItemsSource="{Binding Places}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="252" Margin="4"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="10"
+                                Padding="14,12">
+                            <StackPanel Spacing="7">
+
+                                <!-- Name -->
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           TextWrapping="Wrap" MaxLines="2"/>
+
+                                <!-- Category + Status pills -->
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Border Background="{DynamicResource AccentLightBrush}"
+                                            CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="{Binding Category}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource AccentTextBrush}"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource MutedBackgroundBrush}"
+                                            CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="{Binding StatusLabel}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Address -->
+                                <TextBlock IsVisible="{Binding HasAddress}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           TextWrapping="Wrap" MaxLines="2">
+                                    <Run Text="📍 "/><Run Text="{Binding Address}"/>
+                                </TextBlock>
+
+                                <!-- Rating -->
+                                <TextBlock IsVisible="{Binding HasRating}"
+                                           Text="{Binding RatingText}"
+                                           FontSize="14"
+                                           Foreground="#F59E0B"/>
+
+                                <!-- Visited date -->
+                                <TextBlock IsVisible="{Binding HasVisitedDate}"
+                                           Text="{Binding VisitedLabel}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                                <!-- Notes snippet -->
+                                <TextBlock IsVisible="{Binding HasNotes}"
+                                           Text="{Binding NotesSnippet}"
+                                           FontSize="12" FontStyle="Italic"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           TextWrapping="Wrap" MaxLines="2"/>
+
+                                <!-- Divider -->
+                                <Border Height="1"
+                                        Background="{DynamicResource BorderBrush}"
+                                        Margin="0,2"/>
+
+                                <!-- Action buttons -->
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Classes="place-action"
+                                            Content="✏️ Изменить"
+                                            Command="{Binding #PlacesWin.DataContext.EditPlaceCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Classes="place-action"
+                                            Content="✓ Посетил"
+                                            IsVisible="{Binding IsNotVisited}"
+                                            Command="{Binding #PlacesWin.DataContext.MarkVisitedCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Classes="place-action"
+                                            Content="{Binding FavoriteIcon}"
+                                            Command="{Binding #PlacesWin.DataContext.ToggleFavoriteCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Classes="place-action"
+                                            Content="🗑 Удалить"
+                                            Foreground="#EF4444"
+                                            Command="{Binding #PlacesWin.DataContext.DeletePlaceCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </WrapPanel>
+
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

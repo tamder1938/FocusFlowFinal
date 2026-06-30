@@ -187,15 +187,21 @@ public class SoundService : ISoundService, IDisposable
     private void FadeIn(IEnumerable<string> ids, Dictionary<string, float> volumes, Func<string, string> resolvePath)
     {
         var list = ids.ToList();
-        // Запускаем с нулевой громкости
+        var newlyStarted = new System.Collections.Generic.HashSet<string>();
         foreach (var id in list)
         {
             if (!_volumes.ContainsKey(id))
                 _volumes[id] = volumes.TryGetValue(id, out var v2) ? v2 : 1f;
             if (!IsActive(id))
+            {
                 Play(id, resolvePath(id));
-            if (_players.TryGetValue(id, out var e)) e.player.Volume = 0;
+                newlyStarted.Add(id);
+                // Start at zero so the fade-in is audible
+                if (_players.TryGetValue(id, out var e0)) e0.player.Volume = 0;
+            }
         }
+
+        if (newlyStarted.Count == 0) return;
 
         Task.Run(async () =>
         {
@@ -204,7 +210,7 @@ public class SoundService : ISoundService, IDisposable
             for (int i = 0; i <= steps; i++)
             {
                 float fac = (float)i / steps;
-                foreach (var id in list)
+                foreach (var id in newlyStarted)
                 {
                     if (_players.TryGetValue(id, out var e))
                     {
@@ -225,22 +231,18 @@ public class SoundService : ISoundService, IDisposable
 
         if (phase == PomodoroPhase.Work)
         {
-            // Затухаем нормальные, включаем помодоро
-            var toStop = _players.Keys.Except(_pomodoroSoundIds).ToList();
-            FadeOutThenStop(toStop);
-            FadeIn(_pomodoroSoundIds, _pomodoroVolumes, id => ResolvePath(id));
-        }
-        else if (phase == PomodoroPhase.Break)
-        {
-            var toStop = _players.Keys.Intersect(_pomodoroSoundIds).ToList();
-            FadeOutThenStop(toStop);
-        }
-        else // Stopped
-        {
-            // Возврат к нормальному режиму
-            var toStop = _players.Keys.Except(_normalSoundIds).ToList();
-            FadeOutThenStop(toStop);
+            // Re-read from settings so we always get the latest user selection
+            // (SaveState keeps ActiveSoundIds current after every chip toggle)
+            var s = AppSettings.Load();
+            _normalSoundIds = new(s.ActiveSoundIds);
+            _normalVolumes  = new(s.SoundVolumes);
+
             FadeIn(_normalSoundIds, _normalVolumes, id => ResolvePath(id));
+        }
+        else
+        {
+            // Break, Pause, Stopped — stop everything that's playing
+            FadeOutThenStop(_players.Keys.ToList());
         }
     }
 

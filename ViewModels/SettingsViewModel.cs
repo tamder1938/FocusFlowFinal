@@ -365,6 +365,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             var services = ((App)App.Current!).Services!;
             var db = services.GetRequiredService<IDatabaseService>();
             db.ClearAllData();
+            services.GetRequiredService<ITemplateService>().ClearAll();
 
             RefreshMainWindow();
             ShowExportStatus($"✅ {Loc["ClearSuccess"]}", false);

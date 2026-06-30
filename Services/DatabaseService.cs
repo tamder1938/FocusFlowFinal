@@ -155,6 +155,10 @@ namespace FocusFlowFinal.Services
         // Идемпотентный сидинг 3 стандартных шаблонов таймера (проверка по имени)
         private static void DoSeedDefaultTimerTemplates(LiteDB.ILiteCollection<TimerTemplate> col)
         {
+            // Seed only on a fresh/empty collection so deleted presets stay deleted.
+            // The public SeedDefaultTimerTemplates() (Restore button) uses name-based checks.
+            if (col.Count() > 0) return;
+
             var defaults = new[]
             {
                 new TimerTemplate { Name = "Рутина 25/5",  WorkMinutes = 25, BreakMinutes = 5,  Cycles = 4, IsBuiltIn = true },
@@ -162,10 +166,7 @@ namespace FocusFlowFinal.Services
                 new TimerTemplate { Name = "Код 90/20",    WorkMinutes = 90, BreakMinutes = 20, Cycles = 2, IsBuiltIn = true },
             };
             foreach (var d in defaults)
-            {
-                if (!col.Exists(t => t.Name == d.Name))
-                    col.Insert(d);
-            }
+                col.Insert(d);
         }
 
         public void SeedDefaultTimerTemplates()
@@ -459,6 +460,16 @@ namespace FocusFlowFinal.Services
         {
             var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
+                      .Find(t => t.UserId == owner && !t.IsDeleted)
+                      .OrderBy(t => t.DueDate)
+                      .ThenByDescending(t => t.Priority)
+                      .ToList();
+        }
+
+        public IEnumerable<TaskItem> GetAllTasksIncludingDeleted()
+        {
+            var owner = _workspace.CurrentOwnerKey;
+            return _db.GetCollection<TaskItem>(TasksCollection)
                       .Find(t => t.UserId == owner)
                       .OrderBy(t => t.DueDate)
                       .ThenByDescending(t => t.Priority)
@@ -486,15 +497,29 @@ namespace FocusFlowFinal.Services
 
         public void DeleteTask(int id)
         {
-            _db.GetCollection<TaskItem>(TasksCollection).Delete(id);
-            _db.GetCollection<CalendarEvent>(EventsCollection).DeleteMany(e => e.TaskId == id);
+            var taskCol = _db.GetCollection<TaskItem>(TasksCollection);
+            var task    = taskCol.FindById(id);
+            if (task == null) return;
+            task.IsDeleted    = true;
+            task.LastModified = DateTime.UtcNow;
+            taskCol.Update(task);
+
+            // Soft-delete linked calendar events so sync propagates the deletion
+            var evCol  = _db.GetCollection<CalendarEvent>(EventsCollection);
+            var events = evCol.Find(e => e.TaskId == id).ToList();
+            foreach (var ev in events)
+            {
+                ev.IsDeleted    = true;
+                ev.LastModified = DateTime.UtcNow;
+                evCol.Update(ev);
+            }
         }
 
         public IEnumerable<TaskItem> GetTasksByDate(DateTime date)
         {
             var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
-                      .Find(t => t.UserId == owner && t.DueDate == date.Date)
+                      .Find(t => t.UserId == owner && t.DueDate == date.Date && !t.IsDeleted)
                       .ToList();
         }
 
@@ -502,7 +527,7 @@ namespace FocusFlowFinal.Services
         {
             var owner = _workspace.CurrentOwnerKey;
             return _db.GetCollection<TaskItem>(TasksCollection)
-                      .Find(t => t.UserId == owner && t.DueDate >= start.Date && t.DueDate < end.Date)
+                      .Find(t => t.UserId == owner && t.DueDate >= start.Date && t.DueDate < end.Date && !t.IsDeleted)
                       .ToList();
         }
 

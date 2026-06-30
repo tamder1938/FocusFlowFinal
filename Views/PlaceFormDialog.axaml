@@ -1,0 +1,145 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.PlaceFormDialog"
+        x:CompileBindings="False"
+        Title="Место"
+        Width="440" Height="560"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <DockPanel Margin="24">
+
+        <!-- Buttons -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
+                    HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Отмена"
+                    Command="{Binding CancelCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                    CornerRadius="6" Padding="14,8" Cursor="Hand"/>
+            <Button Content="Сохранить"
+                    Command="{Binding SaveCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="6" Padding="16,8"
+                    FontWeight="SemiBold" Cursor="Hand"/>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+
+                <!-- Error -->
+                <Border Background="#FEE2E2" CornerRadius="6" Padding="10,8"
+                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#DC2626" FontSize="13"/>
+                </Border>
+
+                <!-- Name -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Название *" FontSize="13" FontWeight="Medium"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBox Text="{Binding Name}"
+                             PlaceholderText="Кафе Уют, Центральный парк, IKEA…"
+                             CornerRadius="6" Padding="10,8" FontSize="13"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                </StackPanel>
+
+                <!-- Category + Status row -->
+                <Grid ColumnDefinitions="*, 8, *">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Категория" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <ComboBox ItemsSource="{Binding Categories}"
+                                  SelectedIndex="{Binding CategoryIndex}"
+                                  HorizontalAlignment="Stretch" FontSize="13"
+                                  Background="{DynamicResource InputBackgroundBrush}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Статус" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <ComboBox ItemsSource="{Binding Statuses}"
+                                  SelectedIndex="{Binding StatusIndex}"
+                                  HorizontalAlignment="Stretch" FontSize="13"
+                                  Background="{DynamicResource InputBackgroundBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Address -->
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Адрес" FontSize="13" FontWeight="Medium"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <TextBlock Text="(автодополнение Яндекс)"
+                                   IsVisible="{Binding MapsAvailable}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBox Text="{Binding Address}"
+                             PlaceholderText="Начните вводить адрес…"
+                             CornerRadius="6" Padding="10,8" FontSize="13"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                    <!-- Suggestions dropdown -->
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="6" MaxHeight="160"
+                            IsVisible="{Binding ShowSuggestions}">
+                        <ListBox x:Name="SuggestionsList"
+                                 ItemsSource="{Binding Suggestions}"
+                                 Background="Transparent"
+                                 BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="13" Padding="2"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </StackPanel>
+
+                <!-- Map preview -->
+                <Border IsVisible="{Binding HasMapPreview}"
+                        CornerRadius="8" ClipToBounds="True"
+                        Height="160" Margin="0,4">
+                    <Image Source="{Binding MapPreviewBitmap}"
+                           Stretch="UniformToFill"/>
+                </Border>
+
+                <!-- Visited date (when Visited) -->
+                <StackPanel Spacing="4" IsVisible="{Binding IsVisited}">
+                    <TextBlock Text="Дата посещения" FontSize="13" FontWeight="Medium"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <DatePicker SelectedDate="{Binding VisitedAt}" FontSize="13"/>
+                </StackPanel>
+
+                <!-- Rating -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Оценка" FontSize="13" FontWeight="Medium"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <ComboBox ItemsSource="{Binding Ratings}"
+                              SelectedIndex="{Binding RatingIndex}"
+                              HorizontalAlignment="Stretch" FontSize="13"
+                              Background="{DynamicResource InputBackgroundBrush}"/>
+                </StackPanel>
+
+                <!-- Notes -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Заметки" FontSize="13" FontWeight="Medium"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBox Text="{Binding Notes}"
+                             PlaceholderText="Впечатления, описание, как добраться…"
+                             AcceptsReturn="True" MinHeight="72"
+                             CornerRadius="6" Padding="10,8" FontSize="13"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

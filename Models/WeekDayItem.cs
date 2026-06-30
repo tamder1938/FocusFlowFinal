@@ -12,6 +12,7 @@ public class WeekDayItem
     public string DayNumber { get; set; } = string.Empty;
     public bool IsToday { get; set; }
     public ObservableCollection<CalendarEvent> Events { get; set; } = new();
+    public ObservableCollection<FriendEventDisplayItem> FriendEvents { get; set; } = new();
 
     public WeekDayItem(DateTime date)
     {

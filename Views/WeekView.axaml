@@ -121,30 +121,58 @@
 
 								<!-- Список событий дня -->
 								<ScrollViewer VerticalScrollBarVisibility="Auto">
-									<ItemsControl ItemsSource="{Binding Events}" Margin="0,4,0,0">
-										<ItemsControl.ItemTemplate>
-											<DataTemplate x:DataType="models:CalendarEvent">
-												<Button Classes="ev-btn"
-                                                        Command="{Binding $parent[UserControl].DataContext.EditEventCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        ToolTip.Tip="{Binding Title}">
-													<Border CornerRadius="6" Padding="6,5"
-                                                            Background="{Binding Color}">
-														<StackPanel Spacing="1">
-															<TextBlock Text="{Binding Title}"
-                                                                       FontSize="11" FontWeight="SemiBold"
-                                                                       Foreground="White"
-                                                                       TextWrapping="Wrap"
-                                                                       MaxLines="2"/>
-															<TextBlock Text="{Binding Start, StringFormat='{}{0:HH:mm}'}"
-                                                                       FontSize="10" Foreground="White"
+									<StackPanel Spacing="0">
+										<ItemsControl ItemsSource="{Binding Events}" Margin="0,4,0,0">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate x:DataType="models:CalendarEvent">
+													<Button Classes="ev-btn"
+                                                            Command="{Binding $parent[UserControl].DataContext.EditEventCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="{Binding Title}">
+														<Border CornerRadius="6" Padding="6,5"
+                                                                Background="{Binding Color}">
+															<StackPanel Spacing="1">
+																<TextBlock Text="{Binding Title}"
+                                                                           FontSize="11" FontWeight="SemiBold"
+                                                                           Foreground="White"
+                                                                           TextWrapping="Wrap"
+                                                                           MaxLines="2"/>
+																<TextBlock Text="{Binding Start, StringFormat='{}{0:HH:mm}'}"
+                                                                           FontSize="10" Foreground="White"
+                                                                           Opacity="0.8"/>
+															</StackPanel>
+														</Border>
+													</Button>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+										<!-- Friend events (read-only) -->
+										<ItemsControl ItemsSource="{Binding FriendEvents}" Margin="0,2,0,0">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate x:DataType="models:FriendEventDisplayItem">
+													<Border CornerRadius="5" Padding="5,3" Margin="0,1"
+                                                            BorderBrush="{Binding Color}" BorderThickness="1"
+                                                            Background="Transparent" Opacity="0.75"
+                                                            ToolTip.Tip="{Binding Title}">
+														<StackPanel Spacing="0">
+															<TextBlock FontSize="10" FontWeight="SemiBold"
+                                                                       Foreground="{Binding Color}"
+                                                                       Text="{Binding FriendName}"
                                                                        Opacity="0.8"/>
+															<TextBlock Text="{Binding Title}"
+                                                                       FontSize="10"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                       TextWrapping="Wrap" MaxLines="1"/>
+															<TextBlock Text="{Binding TimeLabel}"
+                                                                       FontSize="9"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                       Opacity="0.7"/>
 														</StackPanel>
 													</Border>
-												</Button>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
 								</ScrollViewer>
 
 							</DockPanel>

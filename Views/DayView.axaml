@@ -54,6 +54,11 @@
 			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
 				<Button Classes="day-nav" Content="›" Command="{Binding NextDayCommand}"/>
 				<Button Classes="add-event-btn"
+                        Content="📤 Другу"
+                        Command="{Binding OpenSharedEventCommand}"
+                        IsVisible="{Binding HasSharedCalSvc}"
+                        ToolTip.Tip="Добавить событие в календарь друга"/>
+				<Button Classes="add-event-btn"
                         Content="{Binding Loc[AddEventBtn]}"
                         Command="{Binding AddEventCommand}"/>
 			</StackPanel>
@@ -173,6 +178,39 @@
 											<Run Text="&#128205;"/>
 											<Run Text="{Binding LocationShort}"/>
 										</TextBlock>
+									</StackPanel>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<!-- Friend events (read-only layer) -->
+					<ItemsControl ItemsSource="{Binding FriendEventDisplayItems}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate><Canvas Background="Transparent"/></ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemContainerTheme>
+							<ControlTheme TargetType="ContentPresenter"
+							              x:DataType="models:FriendEventDisplayItem">
+								<Setter Property="Canvas.Top"  Value="{Binding Top}"/>
+								<Setter Property="Canvas.Left" Value="{Binding Left}"/>
+								<Setter Property="Width"       Value="{Binding Width}"/>
+								<Setter Property="Height"      Value="{Binding Height}"/>
+							</ControlTheme>
+						</ItemsControl.ItemContainerTheme>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="models:FriendEventDisplayItem">
+								<Border BorderBrush="{Binding Color}" BorderThickness="1" CornerRadius="5"
+								        Padding="6,4" Background="#22000000" Opacity="0.8"
+								        ToolTip.Tip="{Binding Title}">
+									<StackPanel Spacing="1">
+										<TextBlock FontSize="9" FontWeight="SemiBold"
+										           Foreground="{Binding Color}"
+										           Text="{Binding FriendName}"/>
+										<TextBlock Text="{Binding Title}" FontSize="10"
+										           Foreground="White" TextWrapping="Wrap" MaxLines="2"/>
+										<TextBlock Text="{Binding TimeLabel}" FontSize="9"
+										           Foreground="White" Opacity="0.7"/>
 									</StackPanel>
 								</Border>
 							</DataTemplate>

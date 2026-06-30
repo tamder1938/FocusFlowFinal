@@ -97,7 +97,7 @@
                 Background="{DynamicResource CardBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-			<Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" Margin="16,0">
+			<Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto, Auto" Margin="16,0">
 
 				<!-- Логотип -->
 				<StackPanel Grid.Column="0" Orientation="Horizontal"
@@ -162,10 +162,9 @@
 					</Button>
 				</StackPanel>
 
-				<!-- Кнопки модулей + иконка настроек -->
+				<!-- Привычки + Финансы (всегда видны) + ⋯ Ещё (остальные модули) -->
 				<StackPanel Grid.Column="4" Orientation="Horizontal"
-                            VerticalAlignment="Center" Spacing="2" Margin="8,0,0,0">
-					<!-- Привычки (всегда видна, активна только когда включена) -->
+                            VerticalAlignment="Center" Spacing="2" Margin="8,0,4,0">
 					<Button IsEnabled="{Binding IsHabitTrackerEnabled}"
                             Command="{Binding OpenHabitsCommand}"
                             Content="{Binding Loc[Habits]}"
@@ -174,9 +173,8 @@
                             BorderBrush="{DynamicResource ButtonBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
+                            FontWeight="Medium" Cursor="Hand"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
-					<!-- Финансы (всегда видна, активна только когда включена) -->
 					<Button IsEnabled="{Binding IsFinanceModuleEnabled}"
                             Command="{Binding OpenFinanceCommand}"
                             Content="{Binding Loc[Finance]}"
@@ -184,62 +182,129 @@
                             Foreground="{DynamicResource OnAccentBrush}"
                             BorderThickness="0"
                             CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0"
+                            FontWeight="SemiBold" Cursor="Hand" Margin="2,0,0,0"
                             ToolTip.Tip="{Binding Loc[Finance_EnabledInSettings]}"/>
-					<!-- Трекер настроения -->
-					<Button IsVisible="{Binding IsMoodTrackerEnabled}"
-                            Command="{Binding OpenMoodCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
+					<!-- ⋯ Ещё: flyout со всеми остальными модулями -->
+					<Button Background="{DynamicResource ButtonBackgroundBrush}"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             BorderBrush="{DynamicResource ButtonBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
-                            ToolTip.Tip="{Binding Loc[Feat_MoodTrackerLbl]}">
-						<TextBlock Text="😊" FontSize="14"/>
-					</Button>
-					<!-- Заметки и дневник -->
-					<Button IsVisible="{Binding IsNotesAndDiaryEnabled}"
-                            Command="{Binding OpenNotesCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            BorderBrush="{DynamicResource ButtonBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
-                            ToolTip.Tip="{Binding Loc[Feat_NotesAndDiaryLbl]}">
-						<TextBlock Text="📝" FontSize="14"/>
-					</Button>
-					<!-- Трекер тренировок -->
-					<Button IsVisible="{Binding IsWorkoutTrackerEnabled}"
-                            Command="{Binding OpenWorkoutCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            BorderBrush="{DynamicResource ButtonBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
-                            ToolTip.Tip="{Binding Loc[Feat_WorkoutTrackerLbl]}">
-						<TextBlock Text="🏋️" FontSize="14"/>
-					</Button>
-					<!-- Трекер медиа -->
-					<Button IsVisible="{Binding IsMediaTrackerEnabled}"
-                            Command="{Binding OpenMediaCommand}"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            BorderBrush="{DynamicResource ButtonBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6" Padding="12,5" FontSize="13"
-                            FontWeight="Medium" Cursor="Hand" Margin="0,0,4,0"
-                            ToolTip.Tip="{Binding Loc[Feat_MediaTrackerLbl]}">
-						<TextBlock Text="🎬" FontSize="14"/>
-					</Button>
-					<Button Classes="icon-btn" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Loc[Settings]}">
-						<PathIcon Width="16" Height="16"
-                                  Foreground="{DynamicResource SecondaryTextBrush}"
-                                  Data="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                            FontWeight="Medium" Cursor="Hand" Margin="2,0,0,0"
+                            ToolTip.Tip="Ещё модули">
+						<Button.Flyout>
+							<Flyout Placement="BottomEdgeAlignedRight">
+								<StackPanel Spacing="1" Margin="4" Width="240">
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenMoodCommand}"
+                                            IsVisible="{Binding IsMoodTrackerEnabled}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="😊" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Feat_MoodTrackerLbl]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenNotesCommand}"
+                                            IsVisible="{Binding IsNotesAndDiaryEnabled}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="📝" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Feat_NotesAndDiaryLbl]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenWorkoutCommand}"
+                                            IsVisible="{Binding IsWorkoutTrackerEnabled}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="🏋️" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Feat_WorkoutTrackerLbl]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenMediaCommand}"
+                                            IsVisible="{Binding IsMediaTrackerEnabled}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="🎬" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Feat_MediaTrackerLbl]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenPlacesCommand}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="📍" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="Места" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenWishlistCommand}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="🛍️" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Wishlists]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenFriendsCommand}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="👥" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="Друзья" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenCalendarShareCommand}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="📅" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="Общий доступ к календарю" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                            Padding="10,7" CornerRadius="6" Cursor="Hand"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding OpenTemplatesCommand}">
+										<StackPanel Orientation="Horizontal" Spacing="10">
+											<TextBlock Text="📋" FontSize="14" VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding Loc[Templates]}" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+								</StackPanel>
+							</Flyout>
+						</Button.Flyout>
+						<TextBlock Text="⋯ Ещё" FontSize="13" VerticalAlignment="Center"/>
 					</Button>
 				</StackPanel>
+
+				<!-- Иконка настроек — всегда закреплена справа -->
+				<Button Grid.Column="5" Classes="icon-btn"
+                        Command="{Binding OpenSettingsCommand}"
+                        VerticalAlignment="Center" Margin="4,0,0,0"
+                        ToolTip.Tip="{Binding Loc[Settings]}">
+					<PathIcon Width="16" Height="16"
+                              Foreground="{DynamicResource SecondaryTextBrush}"
+                              Data="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+				</Button>
 
 			</Grid>
 		</Border>

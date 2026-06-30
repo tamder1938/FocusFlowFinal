@@ -1,0 +1,116 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FocusFlowFinal.ViewModels"
+        x:Class="FocusFlowFinal.Views.AddSharedEventDialog"
+        x:CompileBindings="False"
+        Title="Добавить в календарь друга"
+        Width="400" Height="420"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <DockPanel Margin="20">
+
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Добавить событие в чужой календарь"
+                   FontSize="16" FontWeight="Bold"
+                   Foreground="{DynamicResource PrimaryTextBrush}"
+                   Margin="0,0,0,4"/>
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Доступно только для друзей с разрешением «sync»"
+                   FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"
+                   Margin="0,0,0,16"/>
+
+        <!-- Buttons -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
+                    HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Отмена" Command="{Binding CancelCommand}"
+                    Background="{DynamicResource ButtonBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    BorderBrush="{DynamicResource ButtonBorderBrush}" BorderThickness="1"
+                    CornerRadius="6" Padding="14,8" Cursor="Hand"/>
+            <Button Content="Добавить" Command="{Binding SaveCommand}"
+                    Background="{DynamicResource AccentBackground}" Foreground="White"
+                    BorderThickness="0" CornerRadius="6" Padding="14,8"
+                    FontWeight="SemiBold" Cursor="Hand"/>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Top" Spacing="12">
+
+            <!-- Error -->
+            <TextBlock Text="{Binding ErrorMessage}"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="#EF4444" FontSize="12"/>
+
+            <!-- No sync friends -->
+            <StackPanel IsVisible="{Binding !HasSyncFriends}" Spacing="6">
+                <TextBlock Text="⚠️ Нет друзей с разрешением «sync»"
+                           FontSize="13" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <TextBlock Text="Попросите друга открыть вам доступ «sync» в разделе «Общий доступ к календарю»"
+                           FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <StackPanel IsVisible="{Binding HasSyncFriends}" Spacing="12">
+
+                <!-- Friend selector -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="В чей календарь:" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <ComboBox ItemsSource="{Binding SyncFriends}"
+                              SelectedItem="{Binding SelectedFriendId}"
+                              HorizontalAlignment="Stretch"
+                              Background="{DynamicResource InputBackgroundBrush}"
+                              FontSize="13">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding name}" FontSize="13"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Title -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Название:" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBox Text="{Binding Title}"
+                             PlaceholderText="Название события"
+                             CornerRadius="6" Padding="10,8" FontSize="13"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                </StackPanel>
+
+                <!-- Date & Time -->
+                <Grid ColumnDefinitions="*, Auto, *" RowDefinitions="Auto, Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Дата:" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Время начала:" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <DatePicker Grid.Row="1" Grid.Column="0"
+                                SelectedDate="{Binding StartDate}"
+                                FontSize="13"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="  " VerticalAlignment="Center"/>
+                    <TimePicker Grid.Row="1" Grid.Column="2"
+                                SelectedTime="{Binding StartTime}"
+                                ClockIdentifier="24HourClock"
+                                FontSize="13"/>
+                </Grid>
+
+                <!-- Duration -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Длительность (ч):" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <NumericUpDown Value="{Binding Duration.TotalHours}"
+                                  Minimum="0.25" Maximum="24" Increment="0.25"
+                                  FormatString="0.##"
+                                  CornerRadius="6" FontSize="13"
+                                  Background="{DynamicResource InputBackgroundBrush}"/>
+                </StackPanel>
+
+            </StackPanel>
+
+        </StackPanel>
+
+    </DockPanel>
+</Window>

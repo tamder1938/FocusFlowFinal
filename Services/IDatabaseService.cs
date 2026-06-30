@@ -26,6 +26,7 @@ public interface IDatabaseService
 
     // ── Задачи ──────────────────────────────────────────────────────
     IEnumerable<TaskItem> GetAllTasks();
+    IEnumerable<TaskItem> GetAllTasksIncludingDeleted();
     TaskItem? GetTask(int id);
     void UpsertTask(TaskItem task);
     void DeleteTask(int id);

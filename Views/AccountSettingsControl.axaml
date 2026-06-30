@@ -93,7 +93,14 @@
 			<Border Classes="AccountCard" Opacity="0.4" IsEnabled="False">
 				<StackPanel Spacing="8">
 					<StackPanel Orientation="Horizontal" Spacing="10">
-						<Ellipse Width="40" Height="40" Fill="{DynamicResource AccentBackground}"/>
+						<Panel Width="40" Height="40">
+							<Ellipse Width="40" Height="40" Fill="{DynamicResource AccentBackground}"
+							         IsVisible="{Binding AvatarBitmap, Converter={x:Static ObjectConverters.IsNull}}"/>
+							<Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True"
+							        IsVisible="{Binding AvatarBitmap, Converter={x:Static ObjectConverters.IsNotNull}}">
+								<Image Source="{Binding AvatarBitmap}" Stretch="UniformToFill"/>
+							</Border>
+						</Panel>
 						<StackPanel VerticalAlignment="Center" Spacing="2">
 							<TextBlock Text="username" FontWeight="Bold" FontSize="13"
 							           Foreground="{DynamicResource PrimaryText}"/>
@@ -172,7 +179,14 @@
 					<StackPanel Spacing="12">
 						<!-- Аватар + кнопка -->
 						<StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-							<Ellipse Width="44" Height="44" Fill="{DynamicResource AccentBackground}"/>
+							<Panel Width="44" Height="44">
+								<Ellipse Width="44" Height="44" Fill="{DynamicResource AccentBackground}"
+								         IsVisible="{Binding AvatarBitmap, Converter={x:Static ObjectConverters.IsNull}}"/>
+								<Border Width="44" Height="44" CornerRadius="22" ClipToBounds="True"
+								        IsVisible="{Binding AvatarBitmap, Converter={x:Static ObjectConverters.IsNotNull}}">
+									<Image Source="{Binding AvatarBitmap}" Stretch="UniformToFill"/>
+								</Border>
+							</Panel>
 							<StackPanel VerticalAlignment="Center" Spacing="4">
 								<TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14"
 								           Foreground="{DynamicResource PrimaryText}"/>

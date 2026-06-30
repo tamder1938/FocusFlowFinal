@@ -219,6 +219,8 @@ public partial class TaskDialogViewModel : ObservableObject
         LocationText = task.Location?.DisplayName ?? string.Empty;
 
         LoadTaskTemplates();
+        _templateService.TemplatesChanged += (_, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(LoadTaskTemplates);
     }
 
     // ── Подзадачи ──────────────────────────────────────────────────────

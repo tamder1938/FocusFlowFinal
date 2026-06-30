@@ -1027,7 +1027,8 @@ public partial class FinanceViewModel : ObservableObject
             if (file == null) return;
 
             await using var stream = await file.OpenWriteAsync();
-            ExcelExporter.Export(stream, Incomes.ToList(), Expenses.ToList(), Subscriptions.ToList(), Loans.ToList(), Loc);
+            ExcelExporter.Export(stream, Incomes.ToList(), Expenses.ToList(), Subscriptions.ToList(), Loans.ToList(), Loc,
+                savings: _db.GetAllSavingsAccounts().Where(a => !a.IsArchived).ToList());
         }
         catch (Exception ex)
         {

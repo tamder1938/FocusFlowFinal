@@ -207,6 +207,8 @@ public partial class EventDialogViewModel : ObservableObject
         LocationText = evt.Location?.DisplayName ?? string.Empty;
 
         LoadEventTemplates();
+        _templateService.TemplatesChanged += (_, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(LoadEventTemplates);
     }
 
     private void LoadEventTemplates()

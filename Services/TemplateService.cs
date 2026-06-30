@@ -9,17 +9,23 @@ namespace FocusFlowFinal.Services;
 
 public interface ITemplateService
 {
+    event EventHandler TemplatesChanged;
     IEnumerable<TaskTemplate> GetAllTaskTemplates();
     void UpsertTaskTemplate(TaskTemplate template);
     void DeleteTaskTemplate(int id);
     List<EventTemplate> GetEventTemplates();
     void SaveEventTemplate(EventTemplate template);
     void DeleteEventTemplate(int id);
+    void ClearAll();
 }
 
 public class TemplateService : ITemplateService
 {
     private readonly string _dbPath;
+
+    public event EventHandler TemplatesChanged = delegate { };
+
+    private void RaiseTemplatesChanged() => TemplatesChanged.Invoke(this, EventArgs.Empty);
 
     public TemplateService()
     {
@@ -30,7 +36,7 @@ public class TemplateService : ITemplateService
 
     private LiteDatabase GetDatabase() => new LiteDatabase(_dbPath);
 
-    // === Задачи ===
+    // === пїЅпїЅпїЅпїЅпїЅпїЅ ===
     public IEnumerable<TaskTemplate> GetAllTaskTemplates()
     {
         using var db = GetDatabase();
@@ -48,15 +54,17 @@ public class TemplateService : ITemplateService
             col.Insert(template);
         else
             col.Update(template);
+        RaiseTemplatesChanged();
     }
 
     public void DeleteTaskTemplate(int id)
     {
         using var db = GetDatabase();
         db.GetCollection<TaskTemplate>("task_templates").Delete(id);
+        RaiseTemplatesChanged();
     }
 
-    // === События ===
+    // === пїЅпїЅпїЅпїЅпїЅпїЅпїЅ ===
     public List<EventTemplate> GetEventTemplates()
     {
         using var db = GetDatabase();
@@ -74,11 +82,20 @@ public class TemplateService : ITemplateService
             col.Insert(template);
         else
             col.Update(template);
+        RaiseTemplatesChanged();
     }
 
     public void DeleteEventTemplate(int id)
     {
         using var db = GetDatabase();
         db.GetCollection<EventTemplate>("event_templates").Delete(id);
+        RaiseTemplatesChanged();
+    }
+
+    public void ClearAll()
+    {
+        using var db = GetDatabase();
+        db.DropCollection("task_templates");
+        db.DropCollection("event_templates");
     }
 }

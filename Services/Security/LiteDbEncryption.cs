@@ -54,26 +54,53 @@ public static class LiteDbEncryption
     /// <summary>
     /// Opens an encrypted LiteDB. Migrates from unencrypted if needed.
     /// If the password is null, returns a plain LiteDatabase.
+    /// Throws <see cref="IOException"/> with a user-friendly message when the file
+    /// is locked by another process.
     /// </summary>
     public static LiteDatabase Open(string dbPath, string? password)
     {
         if (string.IsNullOrEmpty(password))
-            return new LiteDatabase(dbPath);
+            return OpenSafe(dbPath);
 
-        var encPath = dbPath; // encrypted DB lives at the same path
+        var encPath   = dbPath;
         var plainPath = dbPath + ".plain_backup";
 
-        // If unencrypted DB exists and no encrypted version → migrate
-        if (File.Exists(dbPath) && !IsEncrypted(dbPath, password))
+        if (File.Exists(dbPath))
         {
-            if (!TryMigrate(dbPath, plainPath, password))
+            bool encrypted;
+            try
             {
-                // Migration failed — open without password (data safety first)
-                return new LiteDatabase(dbPath);
+                encrypted = IsEncrypted(dbPath, password);
+            }
+            catch (IOException ex)
+            {
+                throw new IOException(
+                    "Не удалось открыть базу данных — файл заблокирован другим процессом. " +
+                    "Закройте предыдущую копию FocusFlow и запустите снова.\n\n" + ex.Message, ex);
+            }
+
+            if (!encrypted)
+            {
+                if (!TryMigrate(dbPath, plainPath, password))
+                    return OpenSafe(dbPath); // migration failed → fall back to plain (data safety)
             }
         }
 
-        return new LiteDatabase($"Filename={encPath};Password={password}");
+        return OpenSafe($"Filename={encPath};Password={password}");
+    }
+
+    private static LiteDatabase OpenSafe(string connectionString)
+    {
+        try
+        {
+            return new LiteDatabase(connectionString);
+        }
+        catch (IOException ex)
+        {
+            throw new IOException(
+                "Не удалось открыть базу данных — файл заблокирован другим процессом. " +
+                "Закройте предыдущую копию FocusFlow и запустите снова.\n\n" + ex.Message, ex);
+        }
     }
 
     private static bool IsEncrypted(string path, string password)
@@ -81,12 +108,16 @@ public static class LiteDbEncryption
         try
         {
             using var db = new LiteDatabase($"Filename={path};Password={password}");
-            _ = db.GetCollectionNames(); // triggers read to verify password
+            _ = db.GetCollectionNames();
             return true;
+        }
+        catch (IOException)
+        {
+            throw; // file locked by another process — propagate, don't treat as "unencrypted"
         }
         catch
         {
-            return false;
+            return false; // wrong password = plain DB
         }
     }
 

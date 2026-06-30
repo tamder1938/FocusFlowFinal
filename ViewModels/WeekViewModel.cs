@@ -6,6 +6,7 @@ using FocusFlowFinal.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FocusFlowFinal.ViewModels;
@@ -13,6 +14,7 @@ namespace FocusFlowFinal.ViewModels;
 public partial class WeekViewModel : ObservableObject
 {
     private readonly IDatabaseService _db;
+    private readonly IFriendCalendarService? _friendCalSvc;
 
     public LocalizationService Loc => LocalizationService.Instance;
 
@@ -26,9 +28,10 @@ public partial class WeekViewModel : ObservableObject
 
     public event Action<DateTime>? DaySelected;
 
-    public WeekViewModel(IDatabaseService db)
+    public WeekViewModel(IDatabaseService db, IFriendCalendarService? friendCalSvc = null)
     {
         _db = db;
+        _friendCalSvc = friendCalSvc;
 
         for (int i = 0; i < 24; i++)
             HourStrings.Add($"{i:D2}:00");
@@ -74,6 +77,33 @@ public partial class WeekViewModel : ObservableObject
             WeekDaysCustomCollection.Clear();
             foreach (var item in newItems)
                 WeekDaysCustomCollection.Add(item);
+
+            // Load friend events (non-blocking, silently fail if offline)
+            if (_friendCalSvc != null)
+            {
+                var weekEnd = weekStart.AddDays(6);
+                var friendData = await _friendCalSvc.GetFriendEventsForWeekAsync(weekStart, weekEnd);
+                foreach (var (friendName, friendUserId, events) in friendData)
+                {
+                    foreach (var ev in events)
+                    {
+                        var dayItem = WeekDaysCustomCollection
+                            .FirstOrDefault(d => d.DayDate.Date == ev.Start.Date);
+                        if (dayItem == null) continue;
+                        dayItem.FriendEvents.Add(new FriendEventDisplayItem
+                        {
+                            EventId      = 0,
+                            Title        = ev.Title,
+                            Color        = ev.Color,
+                            Top          = ev.Start.Hour * 60 + ev.Start.Minute,
+                            Height       = 20,
+                            TimeLabel    = $"{ev.Start:HH:mm}",
+                            FriendName   = friendName,
+                            FriendUserId = friendUserId
+                        });
+                    }
+                }
+            }
 
             IsWeekReady   = true;
             IsWeekLoading = false;

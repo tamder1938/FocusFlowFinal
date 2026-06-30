@@ -19,7 +19,11 @@ public class WorkoutInitService : IWorkoutInitService
 
     public async Task EnsureSeededAsync()
     {
-        if (_exercises.IsSeeded()) return;
+        if (_exercises.IsSeeded())
+        {
+            await FixExerciseMetricsAsync();
+            return;
+        }
 
         await Task.Run(() =>
         {
@@ -59,6 +63,31 @@ public class WorkoutInitService : IWorkoutInitService
                 _exercises.BulkInsert(exercises);
             }
             catch { /* не блокируем запуск при ошибке инициализации */ }
+        });
+    }
+
+    private async Task FixExerciseMetricsAsync()
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                foreach (var ex in _exercises.GetAll())
+                {
+                    var expected = ex.Type switch
+                    {
+                        ExerciseType.Cardio     => ExerciseMetric.TimeOnly,
+                        ExerciseType.Stretching => ExerciseMetric.TimeOnly,
+                        _                       => ex.Metric
+                    };
+                    if (ex.Metric != expected)
+                    {
+                        ex.Metric = expected;
+                        _exercises.Upsert(ex);
+                    }
+                }
+            }
+            catch { }
         });
     }
 

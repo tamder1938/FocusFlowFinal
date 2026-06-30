@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlowFinal.Models;
@@ -6,6 +7,7 @@ using FocusFlowFinal.Services;
 using FocusFlowFinal.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -39,9 +41,25 @@ public partial class AccountSettingsViewModel : ObservableObject
     [ObservableProperty] private string _subscriptionStatusText = string.Empty;
 
     // ── Профиль ───────────────────────────────────────────────────────
-    [ObservableProperty] private string _username = string.Empty;
-    [ObservableProperty] private string _email = string.Empty;
+    [ObservableProperty] private string  _username    = string.Empty;
+    [ObservableProperty] private string  _email       = string.Empty;
     [ObservableProperty] private string? _avatarPath;
+    [ObservableProperty] private Bitmap? _avatarBitmap;
+
+    private static readonly string AvatarsDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "FocusFlow", "avatars");
+
+    private void LoadAvatarBitmap(string? path)
+    {
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+        {
+            AvatarBitmap = null;
+            return;
+        }
+        try { AvatarBitmap = new Bitmap(path); }
+        catch { AvatarBitmap = null; }
+    }
 
     // Режимы редактирования отдельных полей (карандаш → текстовое поле)
     [ObservableProperty] private bool _isEditingUsername;
@@ -83,6 +101,7 @@ public partial class AccountSettingsViewModel : ObservableObject
         Username   = user?.Username ?? string.Empty;
         Email      = user?.Email ?? string.Empty;
         AvatarPath = user?.AvatarPath;
+        LoadAvatarBitmap(AvatarPath);
 
         if (IsDeveloper)
             SubscriptionStatusText = Loc["DeveloperModeLbl"];
@@ -193,10 +212,24 @@ public partial class AccountSettingsViewModel : ObservableObject
         var file = files.FirstOrDefault();
         if (file == null) return;
 
-        // ИСПРАВЛЕНО (Общие требования): сохраняем путь к файлу аватара.
-        // TODO (реальный бэкенд): загрузить файл на сервер (multipart/form-data
-        // на /api/users/avatar) и сохранить вернувшийся URL вместо локального пути.
-        AvatarPath = file.Path.LocalPath;
+        try
+        {
+            Directory.CreateDirectory(AvatarsDir);
+            var userId   = _auth.CurrentUser?.UserId ?? "local";
+            var destPath = Path.Combine(AvatarsDir, $"{userId}.png");
+            File.Copy(file.Path.LocalPath, destPath, overwrite: true);
+            AvatarPath = destPath;
+        }
+        catch
+        {
+            // Fallback: use original path if copy fails
+            AvatarPath = file.Path.LocalPath;
+        }
+
+        LoadAvatarBitmap(AvatarPath);
+
+        // Auto-save avatar path immediately (don't wait for SaveProfile)
+        await _auth.UpdateProfileAsync(null, null, AvatarPath);
     }
 
     // ── Сохранить изменения профиля (Часть 2, п.5) ───────────────────
